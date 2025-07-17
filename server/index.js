@@ -40,12 +40,14 @@ Devuélvelo en JSON con campos: cambios, coste_pilas, riesgo_fuga, coste_multas.
   `.trim();
 
   try {
-    const completion = await openai.createChatCompletion({
-      model: 'gpt-4-turbo',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0
-    });
-    const info = JSON.parse(completion.data.choices[0].message.content);
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4-mini",
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: userPrompt }
+    ]
+  });
+    const info = JSON.parse(completion.choices[0].message.content);
     res.json(info);
   } catch (err) {
     console.error(err);
