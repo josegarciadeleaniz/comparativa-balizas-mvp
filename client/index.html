@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Comparativa Balizas IoT</title>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; }
+    .hidden { display: none; }
+    fieldset { margin-bottom: 1rem; }
+    button { margin-top: .5rem; }
+  </style>
+</head>
+<body>
+  <h1>Calculadora de Costes de Baliza (12 años)</h1>
+
+  <!-- Paso 0 -->
+  <fieldset id="step0">
+    <legend>¿Qué sabes de tu baliza?</legend>
+    <p>Elige la opción que describe mejor tu caso para no pedirte datos innecesarios.</p>
+    <button data-ctx="A">Sé qué pilas lleva mi baliza</button>
+    <button data-ctx="B">Sé qué modelo de baliza tengo</button>
+    <button data-ctx="C">Solo sé dónde la voy a comprar</button>
+  </fieldset>
+
+  <!-- Camino A -->
+  <form id="formA" class="hidden">
+    <legend>Detalle de pilas</legend>
+    <p>Conocer tus pilas es clave: afecta costes y riesgo de fuga.</p>
+    <label>Tipo de pilas:
+      <select name="tipo">
+        <option>Alcalinas</option>
+        <option>NiMH recargables</option>
+        <option>Litio</option>
+        <option>Otro</option>
+      </select>
+    </label><br>
+    <label>Marca de pilas:
+      <select name="marca">
+        <option>Duracell</option>
+        <option>Energizer</option>
+        <option>Genérica</option>
+        <option>Otra</option>
+      </select>
+    </label><br>
+    <label>Desconexión interna:
+      <select name="desconecta"><option>Sí</option><option>No</option></select>
+    </label><br>
+    <label>Funda térmica:
+      <select name="funda"><option>Sí</option><option>No</option></select>
+    </label><br>
+    <label>Provincia y aparcamiento:
+      <select name="estacionamiento">
+        <option value="Subterráneo">Garaje subterráneo</option>
+        <option value="Normal">Garaje normal</option>
+        <option value="Calle">En la calle</option>
+      </select>
+    </label><br>
+    <button type="submit">Calcular coste</button>
+  </form>
+
+  <!-- Camino B -->
+  <form id="formB" class="hidden">
+    <legend>Modelo de baliza</legend>
+    <p>Selecciona tu modelo (PVP + pack de pilas preconfigurado).</p>
+    <label>Modelo:
+      <select name="modelo">
+        <option value="v16-standard">V16 Standard – 30 €</option>
+        <option value="v16-pro">V16 Pro – 45 €</option>
+        <option value="v16-luxe">V16 Luxe – 60 €</option>
+      </select>
+    </label><br>
+    <label>Desconexión interna:
+      <select name="desconecta"><option>Sí</option><option>No</option></select>
+    </label><br>
+    <label>Funda térmica:
+      <select name="funda"><option>Sí</option><option>No</option></select>
+    </label><br>
+    <label>Provincia y aparcamiento:
+      <select name="estacionamiento">
+        <option value="Subterráneo">Garaje subterráneo</option>
+        <option value="Normal">Garaje normal</option>
+        <option value="Calle">En la calle</option>
+      </select>
+    </label><br>
+    <button type="submit">Calcular coste</button>
+  </form>
+
+  <!-- Camino C -->
+  <form id="formC" class="hidden">
+    <legend>Punto de compra</legend>
+    <p>Entender dónde la vas a comprar te ayuda a estimar el modelo y sus costes.</p>
+    <label>Tienda:
+      <select name="tienda">
+        <option>Aurgi</option>
+        <option>Carrefour</option>
+        <option>El Corte Inglés</option>
+        <option>Amazon</option>
+      </select>
+    </label><br>
+    <label>Presupuesto (€):
+      <input type="number" name="presupuesto" min="0" step="1" placeholder="p.ej. 25"/>
+    </label><br>
+    <button type="submit">Evaluar coste</button>
+  </form>
+
+  <!-- Resultado -->
+  <pre id="resultado" class="hidden"></pre>
+
+  <script src="script.js"></script>
+</body>
+</html>
