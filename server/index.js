@@ -58,13 +58,13 @@ Devuélvelo únicamente en formato JSON con campos:
   try {
     console.log('Usando prompt:', userPrompt);
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-mini",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user",   content: userPrompt }
-      ]
-    });
+ const completion = await openai.chat.completions.create({
+  model: "gpt-3.5-turbo",
+  messages: [
+    { role: "system", content: SYSTEM_PROMPT },
+    { role: "user",   content: userPrompt }
+  ]
+});
 
     // Extraemos el JSON de la IA
     const info = JSON.parse(completion.choices[0].message.content);
