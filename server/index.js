@@ -11,6 +11,16 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+// **Definimos el prompt del sistema**
+const SYSTEM_PROMPT = `
+Eres un analista frío y preciso. Devuélveme *solo* un JSON con estos campos:
+  - cambios: número entero (veces que cambiarás pilas)
+  - coste_pilas: número (euros)
+  - riesgo_fuga: número (porcentaje)
+  - coste_multas: número (euros)
+  - coste_total: número (euros)
+Nada de texto adicional ni comentarios.`;
+
 app.post('/api/calcula', async (req, res) => {
   const { tipo, marca, desconecta, funda, estacionamiento, provincia, packCost } = req.body;
   const clima = {
