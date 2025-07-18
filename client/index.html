@@ -4,108 +4,197 @@
   <meta charset="UTF-8">
   <title>Comparativa Balizas IoT</title>
   <style>
-    body { font-family: sans-serif; padding: 1rem; }
-    .hidden { display: none; }
-    fieldset { margin-bottom: 1rem; }
-    button { margin-top: .5rem; }
+    @import url('https://fonts.googleapis.com/css2?family=Forum&display=swap');
+    :root {
+      --color-primary: #2c7d3e;
+      --color-secondary: #f0f9f1;
+      --color-accent: #f5f5f5;
+      --radius: 0.5rem;
+      --transition: 0.3s ease;
+      --font-base: 'Forum', serif;
+    }
+    body {
+      font-family: var(--font-base);
+      background: var(--color-accent);
+      color: #333;
+      margin: 0 auto;
+      padding: 1rem;
+      max-width: 900px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: var(--color-primary);
+      margin-bottom: 1rem;
+    }
+    .choices {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .choice {
+      flex: 1;
+      cursor: pointer;
+      text-align: center;
+      border: 2px solid transparent;
+      border-radius: var(--radius);
+      padding: 0.5rem;
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .choice img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: var(--radius);
+    }
+    .choice:hover, .choice.selected {
+      transform: translateY(-4px);
+      border-color: var(--color-primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .choice span { display: block; margin-top: .5rem; font-weight: bold; }
+
+    .forms-container {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    form { display: none; }
+    form.active { display: block; }
+    label {
+      display: block;
+      margin-bottom: .75rem;
+      font-weight: bold;
+      color: #555;
+    }
+    select, input[type="number"], input[type="text"], input[type="email"] {
+      width: 100%; padding: .5rem; border:1px solid #ddd; border-radius: var(--radius);
+      margin-top: .25rem; font-size: 1rem; transition: border-color var(--transition);
+    }
+    select:focus, input:focus { border-color: var(--color-primary); outline:none; }
+    .btn-back, form button[type="submit"] {
+      background: var(--color-primary); color: #fff; border:none; padding:.75rem 1rem;
+      border-radius: var(--radius); cursor:pointer; margin-top:1rem; margin-right:.5rem;
+      transition: transform var(--transition), filter var(--transition);
+    }
+    .btn-back:hover, form button[type="submit"]:hover {
+      transform: translateY(-2px); filter: brightness(1.1);
+    }
+    pre#resultado {
+      background: var(--color-secondary); padding:1rem; border-radius:var(--radius);
+      border:1px solid #ccc; white-space: pre-wrap; margin-top:1rem;
+    }
   </style>
 </head>
 <body>
   <h1>Calculadora de Costes de Baliza (12 años)</h1>
+  <h2 id="subtitle">Elige tu punto de partida</h2>
 
-  <!-- Paso 0 -->
-  <fieldset id="step0">
-    <legend>¿Qué sabes de tu baliza?</legend>
-    <p>Elige la opción que describe mejor tu caso para no pedirte datos innecesarios.</p>
-    <button data-ctx="A">Sé qué pilas lleva mi baliza</button>
-    <button data-ctx="B">Sé qué modelo de baliza tengo</button>
-    <button data-ctx="C">Solo sé dónde la voy a comprar</button>
-  </fieldset>
+  <div class="choices">
+    <div class="choice" data-ctx="A">
+      <img src="images/pilas.png" alt="Conozco las pilas" />
+      <span>Conozco las pilas</span>
+    </div>
+    <div class="choice" data-ctx="B">
+      <img src="images/modelos.png" alt="Coste por marca de baliza" />
+      <span>Coste fijo y variable por marca de baliza</span>
+    </div>
+    <div class="choice" data-ctx="C">
+      <img src="images/tiendas.png" alt="Donde la voy a comprar" />
+      <span>Donde la voy a comprar</span>
+    </div>
+  </div>
 
-  <!-- Camino A -->
-  <form id="formA" class="hidden">
-    <legend>Detalle de pilas</legend>
-    <p>Conocer tus pilas es clave: afecta costes y riesgo de fuga.</p>
-    <label>Tipo de pilas:
-      <select name="tipo">
-        <option>Alcalinas</option>
-        <option>NiMH recargables</option>
-        <option>Litio</option>
-        <option>Otro</option>
-      </select>
-    </label><br>
-    <label>Marca de pilas:
-      <select name="marca">
-        <option>Duracell</option>
-        <option>Energizer</option>
-        <option>Genérica</option>
-        <option>Otra</option>
-      </select>
-    </label><br>
-    <label>Desconexión interna:
-      <select name="desconecta"><option>Sí</option><option>No</option></select>
-    </label><br>
-    <label>Funda térmica:
-      <select name="funda"><option>Sí</option><option>No</option></select>
-    </label><br>
-    <label>Provincia y aparcamiento:
-      <select name="estacionamiento">
-        <option value="Subterráneo">Garaje subterráneo</option>
-        <option value="Normal">Garaje normal</option>
-        <option value="Calle">En la calle</option>
-      </select>
-    </label><br>
-    <button type="submit">Calcular coste</button>
-  </form>
+  <div class="forms-container">
+    <!-- Form A -->
+    <form id="formA">
+      <legend>Tengo una baliza nueva y quiero calcular el gasto de mantenimiento</legend>
+      <label>Tipo de pila:
+        <select name="tipo_pila">
+          <option value="alcalina_9v">Alcalina 9V (6LR61)</option>
+          <option value="alcalina_aa">Alcalina AA (LR6)</option>
+          <option value="alcalina_aaa">Alcalina AAA (LR03)</option>
+          <option value="litio_recargable">Litio recargable (con BMS)</option>
+          <option value="salina">Pila salina (zinc-carbono) – NO HOMOLOGADA</option>
+          <option value="desconocido">Desconocido</option>
+        </select>
+      </label>
+      <label>Marca de pila:
+        <select name="marca_pila">
+          <option value="duracell">Duracell Industrial</option>
+          <option value="energizer">Energizer Industrial</option>
+          <option value="varta">Varta Professional</option>
+          <option value="marca_blanca">Sin marca visible</option>
+          <option value="otra">Otra</option>
+        </select>
+      </label>
+      <label>Desconexión interna:<br/>
+        <input type="radio" name="desconexion_interna" value="si" /> Sí
+        <input type="radio" name="desconexion_interna" value="no" /> No
+        <input type="radio" name="desconexion_interna" value="no_sabe" /> No lo sé
+      </label>
+      <label>Funda térmica:<br/>
+        <input type="radio" name="funda_termica" value="si" /> Sí
+        <input type="radio" name="funda_termica" value="no" /> No
+        <input type="radio" name="funda_termica" value="no_sabe" /> No lo sé
+      </label>
+      <label>Provincia donde duerme el coche:
+        <select name="provincia">
+          <option value="almeria">Almería</option>
+          <option value="madrid">Madrid</option>
+          <option value="sevilla">Sevilla</option>
+          <!-- ...resto provincias... -->
+        </select>
+      </label>
+      <button type="submit">Calcular coste</button>
+      <button type="button" class="btn-back">Volver</button>
+    </form>
 
-  <!-- Camino B -->
-  <form id="formB" class="hidden">
-    <legend>Modelo de baliza</legend>
-    <p>Selecciona tu modelo (PVP + pack de pilas preconfigurado).</p>
-    <label>Modelo:
-      <select name="modelo">
-        <option value="v16-standard">V16 Standard – 30 €</option>
-        <option value="v16-pro">V16 Pro – 45 €</option>
-        <option value="v16-luxe">V16 Luxe – 60 €</option>
-      </select>
-    </label><br>
-    <label>Desconexión interna:
-      <select name="desconecta"><option>Sí</option><option>No</option></select>
-    </label><br>
-    <label>Funda térmica:
-      <select name="funda"><option>Sí</option><option>No</option></select>
-    </label><br>
-    <label>Provincia y aparcamiento:
-      <select name="estacionamiento">
-        <option value="Subterráneo">Garaje subterráneo</option>
-        <option value="Normal">Garaje normal</option>
-        <option value="Calle">En la calle</option>
-      </select>
-    </label><br>
-    <button type="submit">Calcular coste</button>
-  </form>
+    <!-- Form B -->
+    <form id="formB">
+      <legend>Coste fijo y variable por marca de baliza</legend>
+      <label>Marca y modelo de baliza:
+        <select name="modelo" id="selectBeacon"></select>
+      </label>
+      <label>Provincia donde duerme el coche:
+        <select name="provincia">
+          <option value="almeria">Almería</option>
+          <option value="madrid">Madrid</option>
+          <option value="sevilla">Sevilla</option>
+          <!-- ...resto provincias... -->
+        </select>
+      </label>
+      <button type="submit">Calcular coste</button>
+      <button type="button" class="btn-back">Volver</button>
+    </form>
 
-  <!-- Camino C -->
-  <form id="formC" class="hidden">
-    <legend>Punto de compra</legend>
-    <p>Entender dónde la vas a comprar te ayuda a estimar el modelo y sus costes.</p>
-    <label>Tienda:
-      <select name="tienda">
-        <option>Aurgi</option>
-        <option>Carrefour</option>
-        <option>El Corte Inglés</option>
-        <option>Amazon</option>
-      </select>
-    </label><br>
-    <label>Presupuesto (€):
-      <input type="number" name="presupuesto" min="0" step="1" placeholder="p.ej. 25"/>
-    </label><br>
-    <button type="submit">Evaluar coste</button>
-  </form>
+    <!-- Form C -->
+    <form id="formC">
+      <legend>Donde la voy a comprar</legend>
+      <label>Tienda:
+        <select name="tienda" id="selectTienda"></select>
+      </label>
+      <label>Modelo en tienda:
+        <select name="modelo_tienda" id="selectModeloTienda" disabled></select>
+      </label>
+      <label>Provincia donde duerme el coche:
+        <select name="provincia">
+          <option value="almeria">Almería</option>
+          <option value="madrid">Madrid</option>
+          <option value="sevilla">Sevilla</option>
+          <!-- ...resto provincias... -->
+        </select>
+      </label>
+      <button type="submit">Calcular coste</button>
+      <button type="button" class="btn-back">Volver</button>
+    </form>
 
-  <!-- Resultado -->
-  <pre id="resultado" class="hidden"></pre>
+    <pre id="resultado"></pre>
+  </div>
 
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
