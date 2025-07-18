@@ -1,11 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const app     = express();
-const OpenAI = require('openai');
+const { OpenAI } = require('openai');
 
 const app = express();
-// Permite solo tu front‑end
+
+// Permitir CORS solo desde tu front-end
 app.use(cors({ origin: 'https://comparativabalizas.es' }));
 app.use(express.json());
 
@@ -13,7 +13,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// Prompt del sistema: instruye a ChatGPT a devolver solo JSON
+// Prompt del sistema: devuelve solo JSON
 const SYSTEM_PROMPT = `
 Eres un analista frío y preciso. Devuélveme *solo* un JSON con estos campos:
   - cambios: número entero (veces que cambiarás pilas)
@@ -33,18 +33,18 @@ app.post('/api/calcula', async (req, res) => {
     Normal:       { verano: 10, invierno: 0 },
     Calle:        { verano: 20, invierno: -10 }
   };
-  const baseTemp = 20;
+  const baseTemp     = 20;
   const { verano, invierno } = clima[estacionamiento] || clima.Normal;
-  const tVerano = baseTemp + verano;
-  const tInvierno = baseTemp + invierno;
+  const tVerano      = baseTemp + verano;
+  const tInvierno    = baseTemp + invierno;
 
-  // **Definimos aquí la variable userPrompt** con TODO el texto
   const userPrompt = `
 Basándote en:
 - Tipo de pila: ${tipo}
 - Marca: ${marca}
 - Autodesconexión: ${desconecta}
 - Funda térmica: ${funda}
+- Provincia: ${provincia}
 - Condiciones de temperatura: verano ${tVerano}°C, invierno ${tInvierno}°C
 - Coste por pack de pilas (4 uds): ${packCost}€
 Para 12 años de uso, calcula:
@@ -57,18 +57,18 @@ Devuélvelo únicamente en formato JSON con campos:
 `.trim();
 
   try {
-    console.log('Usando prompt:', userPrompt);
+    console.log('Prompt usado:', userPrompt);
 
- const completion = await openai.chat.completions.create({
-  model: "gpt-3.5-turbo",
-  messages: [
-    { role: "system", content: SYSTEM_PROMPT },
-    { role: "user",   content: userPrompt }
-  ]
-});
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user',   content: userPrompt }
+      ]
+    });
 
-    // Extraemos el JSON de la IA
-    const info = JSON.parse(completion.choices[0].message.content);
+    const jsonResponse = completion.choices[0].message.content;
+    const info = JSON.parse(jsonResponse);
     return res.json(info);
 
   } catch (err) {
