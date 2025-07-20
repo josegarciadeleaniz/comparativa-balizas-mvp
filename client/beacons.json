@@ -1,0 +1,167 @@
+[
+  {
+    "id_marca": 1,
+    "nombre_marca": "Geoblueshield49",
+    "pais": "España",
+    "actuacion": "Fabrica",
+    "pvp": 54.95,
+    "alimentacion": "9V",
+    "marca_bateria": "Energizer",
+    "desconectable": "Si",
+    "funda": "Si"
+  },
+  {
+    "id_marca": 2,
+    "nombre_marca": "Helios v16 beacon",
+    "pais": "China",
+    "actuacion": "Fabrica",
+    "pvp": 39.90,
+    "alimentacion": "3x AA",
+    "marca_bateria": "No",
+    "desconectable": "No",
+    "funda": "No"
+  },
+  {
+    "id_marca": 3,
+    "nombre_marca": "Geobaliza beacon V16",
+    "pais": "China",
+    "actuacion": "Fabrica",
+    "pvp": 38.90,
+    "alimentacion": "3x AAA",
+    "marca_bateria": "No",
+    "desconectable": "No",
+    "funda": "No"
+  },
+  {
+    "id_marca": 4,
+    "nombre_marca": "Light Mup beacon",
+    "pais": "China",
+    "actuacion": "Fabrica",
+    "pvp": 46.00,
+    "alimentacion": "3x AAA",
+    "marca_bateria": "No",
+    "desconectable": "No",
+    "funda": "Si"
+  },
+  {
+    "id_marca": 5,
+    "nombre_marca": "SOS Traffic",
+    "pais": "España",
+    "actuacion": "Fabrica",
+    "pvp": 49.95,
+    "alimentacion": "9V",
+    "marca_bateria": "Marca Blanca",
+    "desconectable": "Si",
+    "funda": "No"
+  },
+  {
+    "id_marca": 6,
+    "nombre_marca": "Fase Light V16",
+    "pais": "España",
+    "actuacion": "Ensamblaje",
+    "pvp": 45.99,
+    "alimentacion": "3x AAA",
+    "marca_bateria": "Incluidas",
+    "desconectable": "No",
+    "funda": "No"
+  },
+  {
+    "id_marca": 7,
+    "nombre_marca": "SOS Flash Connected",
+    "pais": "España",
+    "actuacion": "Ensamblaje",
+    "pvp": 44.95,
+    "alimentacion": "3x AAA",
+    "marca_bateria": "Incluidas",
+    "desconectable": "No",
+    "funda": "No"
+  },
+  {
+    "id_marca": 8,
+    "nombre_marca": "Hero Driver",
+    "pais": "España",
+    "actuacion": "Ensamblaje",
+    "pvp": 49.90,
+    "alimentacion": "n/a",
+    "marca_bateria": "No",
+    "desconectable": "No",
+    "funda": "No"
+  },
+  {
+    "id_marca": 9,
+    "nombre_marca": "Car-Lite",
+    "pais": "España",
+    "actuacion": "Ensamblaje",
+    "pvp": 59.90,
+    "alimentacion": "9V",
+    "marca_bateria": "No",
+    "desconectable": "No",
+    "funda": "No"
+  },
+  {
+    "id_marca": 10,
+    "nombre_marca": "FlashLED SOS V16",
+    "pais": "España",
+    "actuacion": "Ensamblaje",
+    "pvp": 49.90,
+    "alimentacion": "9V",
+    "marca_bateria": "Marca Blanca",
+    "desconectable": "No",
+    "funda": "No"
+  },
+  {
+    "id_marca": 11,
+    "nombre_marca": "Osram LEDguardian V16",
+    "pais": "China",
+    "actuacion": "Fabrica",
+    "pvp": 51.99,
+    "alimentacion": "9V",
+    "marca_bateria": "Marca Blanca",
+    "desconectable": "n/a",
+    "funda": "No"
+  },
+  {
+    "id_marca": 12,
+    "nombre_marca": "Help Flash IoT 9V",
+    "pais": "España",
+    "actuacion": "Ensamblaje",
+    "pvp": 49.95,
+    "alimentacion": "4x AAA",
+    "marca_bateria": "Marca Blanca",
+    "desconectable": "No",
+    "funda": "No"
+  },
+  {
+    "id_marca": 13,
+    "nombre_marca": "Ledone Connected",
+    "pais": "España",
+    "actuacion": "Fabrica",
+    "pvp": 52.99,
+    "alimentacion": "9V",
+    "marca_bateria": "No",
+    "desconectable": "No",
+    "funda": "No"
+  },
+  {
+    "id_marca": 14,
+    "nombre_marca": "Hella V16",
+    "pais": "China",
+    "actuacion": "Fabrica",
+    "pvp": 51.99,
+    "alimentacion": "9V",
+    "marca_bateria": "No",
+    "desconectable": "No",
+    "funda": "No"
+  },
+  {
+    "id_marca": 15,
+    "nombre_marca": "KSIX V16 IoT GPS",
+    "pais": "España",
+    "actuacion": "Ensamblaje",
+    "pvp": 49.90,
+    "alimentacion": "9V",
+    "marca_bateria": "No",
+    "desconectable": "No",
+    "funda": "No"
+  }
+]

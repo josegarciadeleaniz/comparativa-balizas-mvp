@@ -130,17 +130,21 @@
           <option value="marca_blanca">Sin marca visible</option>
           <option value="otra">Otra</option>
         </select>
-      </label>
-      <label>Desconexión interna:<br/>
-        <input type="radio" name="desconexion_interna" value="si" /> Sí
-        <input type="radio" name="desconexion_interna" value="no" /> No
-        <input type="radio" name="desconexion_interna" value="no_sabe" /> No lo sé
-      </label>
-      <label>Funda térmica:<br/>
-        <input type="radio" name="funda_termica" value="si" /> Sí
-        <input type="radio" name="funda_termica" value="no" /> No
-        <input type="radio" name="funda_termica" value="no_sabe" /> No lo sé
-      </label>
+    <div>
+    <label for="desconexion_interna">Las pilas pueden permanecer desconectadas si apagas la baliza:</label>
+    <select name="desconexion_interna" id="desconexion_interna">
+      <option value="si">Sí</option>
+      <option value="no">No</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="funda_termica">Tu baliza vino con una funda térmica incluida:</label>
+    <select name="funda_termica" id="funda_termica">
+      <option value="si">Sí</option>
+      <option value="no">No</option>
+    </select>
+  </div>
       <label>Provincia donde duerme el coche:
         <select name="provincia">
           <option value="almeria">Almería</option>
