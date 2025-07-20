@@ -1,0 +1,147 @@
+{
+  "formulario_pilas": {
+    "secciones": [
+      {
+        "titulo": "Configuración de Pilas",
+        "preguntas": [
+          {
+            "id": 1,
+            "pregunta": "¿Qué tipo de alimentación utiliza la baliza?",
+            "tipo": "selector",
+            "opciones": [
+              "3x AAA",
+              "4x AAA", 
+              "3x AA",
+              "4x AA",
+              "9V Alcalina",
+              "9V No alcalina",
+              "Otro (especificar)"
+            ],
+            "requerido": true
+          }
+        ]
+      },
+      {
+        "titulo": "Marca de las Pilas",
+        "preguntas": [
+          {
+            "id": 2,
+            "pregunta": "¿Las pilas son de marca reconocida?",
+            "tipo": "selector",
+            "opciones": [
+              "Energizer",
+              "Duracell",
+              "Varta",
+              "Marca Blanca",
+              "Chinas genéricas",
+              "Otras (especificar)"
+            ],
+            "requerido": true
+          }
+        ]
+      },
+      {
+        "titulo": "Características de Seguridad",
+        "preguntas": [
+          {
+            "id": 3,
+            "pregunta": "¿La baliza permite desconectar los polos para evitar contacto permanente con las pilas?",
+            "explicacion": "Esta función previene fugas de batería y corrosión cuando no se usa la baliza",
+            "tipo": "radio",
+            "opciones": [
+              {"valor": "si", "label": "Sí"},
+              {"valor": "no", "label": "No"}
+            ],
+            "requerido": true
+          },
+          {
+            "id": 4,
+            "pregunta": "¿Incluye funda térmica para protección contra temperaturas extremas?",
+            "tipo": "radio",
+            "opciones": [
+              {"valor": "si", "label": "Sí"},
+              {"valor": "no", "label": "No"}
+            ],
+            "requerido": true
+          }
+        ]
+      },
+      {
+        "titulo": "Datos Adicionales (Opcionales)",
+        "preguntas": [
+          {
+            "id": 5,
+            "pregunta": "¿Cuánto te costó la baliza? (€)",
+            "tipo": "numero",
+            "requerido": false
+          },
+          {
+            "id": 6,
+            "pregunta": "¿Dónde la compraste?",
+            "tipo": "texto",
+            "requerido": false
+          },
+          {
+            "id": 7,
+            "pregunta": "Marca de la baliza",
+            "tipo": "texto",
+            "requerido": false
+          }
+        ]
+      }
+    ],
+    "algoritmo_riesgo": {
+      "parametros": [
+        {
+          "nombre": "calidad_pilas",
+          "peso": 0.4,
+          "escala": {
+            "Energizer/Duracell": 1,
+            "Varta": 1.2,
+            "Marca Blanca": 1.8,
+            "Chinas genéricas": 2.5
+          }
+        },
+        {
+          "nombre": "desconexion_polos",
+          "peso": 0.3,
+          "escala": {
+            "si": 1,
+            "no": 2
+          }
+        },
+        {
+          "nombre": "proteccion_termica",
+          "peso": 0.2,
+          "escala": {
+            "si": 1,
+            "no": 1.5
+          }
+        },
+        {
+          "nombre": "tipo_alimentacion",
+          "peso": 0.1,
+          "escala": {
+            "9V Alcalina": 1,
+            "4x AA": 1.1,
+            "3x AA": 1.2,
+            "4x AAA": 1.3,
+            "3x AAA": 1.4,
+            "9V No alcalina": 1.8
+          }
+        }
+      ],
+      "formula": "(calidad_pilas * 0.4) + (desconexion_polos * 0.3) + (proteccion_termica * 0.2) + (tipo_alimentacion * 0.1)",
+      "niveles_riesgo": [
+        {"rango": "1-1.4", "clasificacion": "Bajo riesgo", "multiplicador_multa": 1},
+        {"rango": "1.5-2.2", "clasificacion": "Riesgo moderado", "multiplicador_multa": 2},
+        {"rango": "2.3-3.5", "clasificacion": "Alto riesgo", "multiplicador_multa": 3},
+        {"rango": ">3.5", "clasificacion": "Riesgo muy alto", "multiplicador_multa": 4}
+      ]
+    },
+    "api_integration": {
+      "endpoint": "https://api.openai.com/v1/chat/completions",
+      "prompt_template": "Evalúa el riesgo de obsolescencia y posibles multas para una baliza V16 con las siguientes características:\n- Tipo de pilas: {tipo_pilas}\n- Marca pilas: {marca_pilas}\n- Desconexión polos: {desconexion_polos}\n- Funda térmica: {funda_termica}\n\nConsidera estos factores:\n1. Calidad de pilas (penalización por fugas)\n2. Riesgo de corrosión\n3. Protección contra temperaturas extremas\n4. Vida útil estimada\n\nProporciona:\n- Índice de riesgo calculado: {indice_riesgo}\n- Multiplicador de multa aplicable: x{multiplicador_multa}\n- Recomendaciones técnicas\n- Alternativas de mejora"
+    }
+  }
+}
