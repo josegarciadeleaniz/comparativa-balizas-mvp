@@ -104,6 +104,11 @@ return res.status(500).json({ error: err.message });
 }
 });
 
+// Ruta raíz para comprobar que el servicio está vivo
+app.get('/', (req, res) => {
+  res.status(200).send('API Balizas OK');
+});
+
 // Health check endpoint to prevent cold starts
 app.get('/health', (req, res) => {
 res.status(200).send('OK');
