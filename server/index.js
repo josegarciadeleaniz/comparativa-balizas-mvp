@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
-const cors    = require('cors');
-const fs      = require('fs');
-const path    = require('path');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 const { OpenAI } = require('openai');
 
 const app = express();
@@ -39,6 +39,16 @@ La fórmula general: suma del coste inicial más costes de mantenimiento, dividi
 No hagas comparaciones de bueno/malo ni recomendaciones específicas, solo explica qué datos debe tener en cuenta el cliente y cómo se calcula el coste medio mensual.
 `.trim();
 
+// Ruta raíz para comprobar que el servicio está vivo
+app.get('/', (req, res) => {
+res.status(200).send('API Balizas OK');
+});
+
+// Health check para evitar cold starts
+app.get('/health', (req, res) => {
+res.status(200).send('OK');
+});
+
 app.post('/api/calcula', async (req, res) => {
 const {
 tipo, marca, desconecta, funda,
@@ -46,7 +56,7 @@ estacionamiento, provincia, packCost,
 coste_inicial = 0, anonymous = true
 } = req.body;
 
-// ── Registrar petición en CSV ─────────────────────────────────────────
+// Registrar petición en CSV
 const line = [
 new Date().toISOString(), 'api_calcula',
 tipo||'', marca||'', desconecta||'', funda||'',
@@ -55,18 +65,18 @@ coste_inicial, anonymous
 ].join(',') + '\n';
 fs.appendFileSync(csvPath, line);
 
-// ── Ajuste climático para la guantera ─────────────────────────────────
+// Ajuste climático para la guantera
 const clima = {
 Subterráneo: { verano: 0,  invierno: -5 },
 Normal:      { verano: 10, invierno:  0 },
 Calle:       { verano: 20, invierno: -10 }
 };
-const baseTemp       = 20;
+const baseTemp        = 20;
 const { verano, invierno } = clima[estacionamiento] || clima.Normal;
-const tVerano        = baseTemp + verano;
-const tInvierno      = baseTemp + invierno;
+const tVerano         = baseTemp + verano;
+const tInvierno       = baseTemp + invierno;
 
-// ── Construir prompt con datos concretos ───────────────────────────────
+// Construir prompt con datos concretos
 const userPrompt = `
 Datos recibidos:
 
@@ -102,16 +112,6 @@ return res.json({ explanation });
 console.error('Error en /api/calcula:', err);
 return res.status(500).json({ error: err.message });
 }
-});
-
-// Ruta raíz para comprobar que el servicio está vivo
-app.get('/', (req, res) => {
-  res.status(200).send('API Balizas OK');
-});
-
-// Health check endpoint to prevent cold starts
-app.get('/health', (req, res) => {
-res.status(200).send('OK');
 });
 
 const PORT = process.env.PORT || 4000;
