@@ -47,7 +47,7 @@ app.get('/health', (req, res) => {
 });
 
 app.post('/api/calcula', async (req, res) => {
-  // <<<<<<<<<<<<<<<<<<<<< Log inicial para verificar llegada
+  // <<<<<<<< Log inicial para verificar llegada
   console.log('🟢 POST /api/calcula recibido con body:', req.body);
 
   const {
