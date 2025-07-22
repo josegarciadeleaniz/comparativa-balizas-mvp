@@ -47,6 +47,9 @@ app.get('/health', (req, res) => {
 });
 
 app.post('/api/calcula', async (req, res) => {
+  // <<<<<<<<<<<<<<<<<<<<< Log inicial para verificar llegada
+  console.log('🟢 POST /api/calcula recibido con body:', req.body);
+
   const {
     tipo, marca, desconecta, funda,
     estacionamiento, provincia, packCost,
@@ -88,6 +91,9 @@ Por favor, explica en un párrafo:
 `.trim();
 
   try {
+    console.log('SYSTEM_PROMPT:', SYSTEM_PROMPT);
+    console.log('USER_PROMPT:', userPrompt);
+
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
@@ -95,8 +101,10 @@ Por favor, explica en un párrafo:
         { role: 'user',   content: userPrompt }
       ]
     });
+
     const explanation = response.choices[0].message.content.trim();
     return res.json({ explanation });
+
   } catch (err) {
     console.error('Error en /api/calcula:', err);
     return res.status(500).json({ error: err.message });
