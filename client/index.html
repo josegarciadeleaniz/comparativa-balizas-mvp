@@ -110,6 +110,20 @@
         <select id="selModeloA" name="modelo_compra"><option value="">— opcional —</option></select>
       </label>
       <button type="submit">Calcular coste</button><button type="button" class="btn-back">Volver</button>
+	<div id="results" style="display:none; margin-top:1em;">
+	  <table>
+	    <tr><th>Concepto</th><th>Importe</th></tr>
+	    <tr><td>Coste inicial</td><td id="res_initialCost">–</td></tr>
+	    <tr><td>Reposes baterías</td><td id="res_reps">–</td></tr>
+	    <tr><td>Coste baterías</td><td id="res_batteryCost">–</td></tr>
+	    <tr><td>Coste funda</td><td id="res_caseCost">–</td></tr>
+	    <tr><td>Coste fuga</td><td id="res_leakCost">–</td></tr>
+	    <tr><td>Coste multas</td><td id="res_fineCost">–</td></tr>
+	    <tr><td><strong>Total (12 años)</strong></td><td id="res_totalCost12y">–</td></tr>
+	    <tr><td><strong>Coste medio mensual</strong></td><td id="res_monthlyCost">–</td></tr>
+	  </table>
+	  <p id="res_qualitative"></p>
+	</div>	    
     </form>
 
     <!-- FORM B -->
@@ -129,6 +143,20 @@
       <label>¿Incluye funda térmica con la compra?<input type="text" id="funda_B" readonly></label>
       <label>Provincia donde resides:<select id="provincia_B" name="provincia"></select></label>
       <button type="submit">Calcular coste</button><button type="button" class="btn-back">Volver</button>
+	 <div id="results" style="display:none; margin-top:1em;">
+	  <table>
+	    <tr><th>Concepto</th><th>Importe</th></tr>
+	    <tr><td>Coste inicial</td><td id="res_initialCost">–</td></tr>
+	    <tr><td>Reposes baterías</td><td id="res_reps">–</td></tr>
+	    <tr><td>Coste baterías</td><td id="res_batteryCost">–</td></tr>
+	    <tr><td>Coste funda</td><td id="res_caseCost">–</td></tr>
+	    <tr><td>Coste fuga</td><td id="res_leakCost">–</td></tr>
+	    <tr><td>Coste multas</td><td id="res_fineCost">–</td></tr>
+	    <tr><td><strong>Total (12 años)</strong></td><td id="res_totalCost12y">–</td></tr>
+	    <tr><td><strong>Coste medio mensual</strong></td><td id="res_monthlyCost">–</td></tr>
+	  </table>
+	  <p id="res_qualitative"></p>
+	</div>
     </form>
 
     <!-- FORM C -->
@@ -150,6 +178,20 @@
       <label>Fuente oficial:<input type="text" id="fuente_C" readonly></label>
       <label>Provincia donde resides:<select id="provincia_C" name="provincia"></select></label>
       <button type="submit">Calcular coste</button><button type="button" class="btn-back">Volver</button>
+	<div id="results" style="display:none; margin-top:1em;">
+	  <table>
+	    <tr><th>Concepto</th><th>Importe</th></tr>
+	    <tr><td>Coste inicial</td><td id="res_initialCost">–</td></tr>
+	    <tr><td>Reposes baterías</td><td id="res_reps">–</td></tr>
+	    <tr><td>Coste baterías</td><td id="res_batteryCost">–</td></tr>
+	    <tr><td>Coste funda</td><td id="res_caseCost">–</td></tr>
+	    <tr><td>Coste fuga</td><td id="res_leakCost">–</td></tr>
+	    <tr><td>Coste multas</td><td id="res_fineCost">–</td></tr>
+	    <tr><td><strong>Total (12 años)</strong></td><td id="res_totalCost12y">–</td></tr>
+	    <tr><td><strong>Coste medio mensual</strong></td><td id="res_monthlyCost">–</td></tr>
+	  </table>
+	  <p id="res_qualitative"></p>
+	</div>
     </form>
 
     <pre id="resultado"></pre>
