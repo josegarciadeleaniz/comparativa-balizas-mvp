@@ -1,3 +1,4 @@
+// index.js
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
@@ -7,26 +8,32 @@ const { OpenAI } = require('openai');
 
 const app = express();
 
-// ── Preparar carpeta y archivo CSV ─────────────────────────────────────
+// ── Preparar CSV de logs ───────────────────────────────────────────────
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
+
 const csvPath = path.join(dataDir, 'requests.csv');
 if (!fs.existsSync(csvPath)) {
   const header = [
-    'timestamp','ctx','tipo','marca','desconecta','funda',
-    'estacionamiento','provincia','packCost','coste_inicial','anonymous'
+    'timestamp','ctx',
+    'tipo_pila','marca_pila','desconexion_polos','proteccion_termica',
+    'provincia','packCost','precio_inicial','anonymous',
+    'response'
   ].join(',') + '\n';
-  fs.writeFileSync(csvPath, header);
+  fs.writeFileSync(csvPath, header, 'utf8');
 }
 
-// Configurar CORS y JSON
-app.use(cors({ origin: 'https://comparativabalizas.es' }));
+// ── Middleware ────────────────────────────────────────────────────────
+app.use(cors({
+  origin: 'https://comparativabalizas.es',
+  methods: ['GET','POST']
+}));
 app.use(express.json());
 
-// Cliente OpenAI
+// ── Cliente OpenAI ───────────────────────────────────────────────────
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Prompt del sistema: guía informativa de costes sin juicios
+// ── Prompt del sistema ─────────────────────────────────────────────────
 const SYSTEM_PROMPT = `
 Eres un asesor neutral de coste total de propiedad de balizas IoT.
 Genera un solo párrafo claro y profesional que indique:
@@ -36,53 +43,42 @@ Genera un solo párrafo claro y profesional que indique:
 No hagas comparaciones de bueno/malo ni recomendaciones específicas, solo explica qué datos debe tener en cuenta el cliente y cómo se calcula el coste medio mensual.
 `.trim();
 
-// Ruta raíz para comprobar que el servicio está vivo
-app.get('/', (req, res) => {
-  res.status(200).send('API Balizas OK');
-});
-
-// Health check para evitar cold starts
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
-});
+// ── Endpoints ─────────────────────────────────────────────────────────
+app.get('/',       (req, res) => res.send('API Balizas OK'));
+app.get('/health', (req, res) => res.send('OK'));
 
 app.post('/api/calcula', async (req, res) => {
-  // <<<<<<<< Log inicial para verificar llegada
-  console.log('🟢 POST /api/calcula recibido con body:', req.body);
-
   const {
-    tipo, marca, desconecta, funda,
-    estacionamiento, provincia, packCost,
-    coste_inicial = 0, anonymous = true
+    context,
+    tipo_pila, marca_pila, desconexion_polos, proteccion_termica,
+    provincia, packCost = 0, precio_inicial = 0, anonymous = true
   } = req.body;
 
-  // Registrar petición en CSV
-  const line = [
-    new Date().toISOString(), 'api_calcula',
-    tipo||'', marca||'', desconecta||'', funda||'',
-    estacionamiento||'', provincia||'', packCost||'',
-    coste_inicial, anonymous
+  // 1) Log petición
+  const lineReq = [
+    new Date().toISOString(),
+    context,
+    tipo_pila || '',
+    marca_pila || '',
+    desconexion_polos || '',
+    proteccion_termica || '',
+    provincia || '',
+    packCost,
+    precio_inicial,
+    anonymous
   ].join(',') + '\n';
-  fs.appendFileSync(csvPath, line);
+  try {
+    fs.appendFileSync(csvPath, lineReq, 'utf8');
+  } catch (e) {
+    console.warn('⚠️ No se pudo escribir petición en CSV:', e.message);
+  }
 
-  // Ajuste climático para la guantera
-  const clima = {
-    Subterráneo: { verano: 0,  invierno: -5 },
-    Normal:      { verano: 10, invierno:  0 },
-    Calle:       { verano: 20, invierno: -10 }
-  };
-  const baseTemp       = 20;
-  const { verano, invierno } = clima[estacionamiento] || clima.Normal;
-  const tVerano        = baseTemp + verano;
-  const tInvierno      = baseTemp + invierno;
-
-  // Construir prompt con datos concretos
+  // 2) Construir prompt de usuario
   const userPrompt = `
 Datos recibidos:
-- Pilas: tipo ${tipo}, marca ${marca}, desconexión: ${desconecta}, funda: ${funda}
+- Pilas: tipo ${tipo_pila}, marca ${marca_pila}, desconexión: ${desconexion_polos}, funda: ${proteccion_termica}
 - Provincia: ${provincia}
-- Temperaturas en guantera: verano ${tVerano}°C, invierno ${tInvierno}°C
-- Coste inicial: ${coste_inicial}€
+- Coste inicial: ${precio_inicial}€
 - Coste por pack de pilas (4 uds): ${packCost}€
 Por favor, explica en un párrafo:
 - Qué factores considerar para calcular el coste total durante 12 años
@@ -91,26 +87,43 @@ Por favor, explica en un párrafo:
 `.trim();
 
   try {
-    console.log('SYSTEM_PROMPT:', SYSTEM_PROMPT);
-    console.log('USER_PROMPT:', userPrompt);
-
-    const response = await openai.chat.completions.create({
+    // 3) Llamada a OpenAI
+    const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user',   content: userPrompt }
       ]
     });
+    const explanation = completion.choices[0].message.content.trim();
 
-    const explanation = response.choices[0].message.content.trim();
+    console.log('✅ OpenAI explicó:', explanation);
+
+    // 4) Log respuesta
+    const lineRes = [
+      new Date().toISOString(),
+      context,
+      '', '', '', '', '', '', '', '', // rellenamos columnas previas para alinear
+      explanation.replace(/\r?\n/g, ' ')
+    ].join(',') + '\n';
+    try {
+      fs.appendFileSync(csvPath, lineRes, 'utf8');
+    } catch (e) {
+      console.warn('⚠️ No se pudo escribir respuesta en CSV:', e.message);
+    }
+
+    // 5) Devolver al front
     return res.json({ explanation });
 
   } catch (err) {
-    console.error('Error en /api/calcula:', err);
-    return res.status(500).json({ error: err.message });
+    console.error('❌ Error en /api/calcula:', err);
+    return res.status(500).json({
+      error: 'Error interno procesando la petición',
+      details: err.message
+    });
   }
 });
 
-// Escucha en el puerto definido
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`API en puerto ${PORT}`));
+// ── Arranque del servidor ───────────────────────────────────────────────
+const PORT = parseInt(process.env.PORT, 10) || 4000;
+app.listen(PORT, () => console.log(`API escuchando en puerto ${PORT}`));
