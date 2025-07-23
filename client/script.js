@@ -1,4 +1,4 @@
-// script.js
+// prueba para ver si funciona GitHub script.js
 // --------------------------------------------------
 console.log('🔥 script.js cargado');
 
@@ -211,3 +211,4 @@ async function initApp() {
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
+// TEST COMMIT
