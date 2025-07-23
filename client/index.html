@@ -63,18 +63,17 @@
       transition: transform var(--transition), filter var(--transition);
     }
     .btn-back:hover, form button[type="submit"]:hover { transform: translateY(-2px); filter: brightness(1.1); }
-    pre#resultado {
-      background: var(--color-secondary); padding: 1rem;
-      border-radius: var(--radius); border: 1px solid #ccc;
-      white-space: pre-wrap; margin-top: 1rem;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #ddd; padding: .5rem; text-align: left; }
+    th { background: var(--color-secondary); }
+    #results { background: #fff; padding: 1rem; border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     img.preview { max-width: 200px; display: block; margin: 1rem 0; border: 1px solid #ddd; border-radius: var(--radius); }
   </style>
 </head>
 <body>
-<div id="privacy-notice" style="background:#f9f9f9; padding:10px; border:1px solid #ddd; margin-bottom:1rem;">
-  <p><strong>Aviso:</strong> Tus datos serán utilizados con fines estadísticos y almacenados de forma anónima.</p>
-</div>
+  <div id="privacy-notice" style="background:#f9f9f9; padding:10px; border:1px solid #ddd; margin-bottom:1rem;">
+    <p><strong>Aviso:</strong> Tus datos serán utilizados con fines estadísticos y almacenados de forma anónima.</p>
+  </div>
   <h1>(TCO) Coste total a 12 años de tu baliza</h1>
   <h2 id="subtitle">Selecciona tu punto de partida</h2>
 
@@ -95,42 +94,42 @@
         <select id="selMarcaPilaA" name="marca_pila"></select>
       </label>
       <label>¿Se pueden desconectar las pilas de sus polos al apagar para evitar desgaste?
-        <select id="desconexion_interna_A" name="desconexion_interna"><option value="si">Sí</option><option value="no">No</option></select>
+        <select id="desconexion_interna_A" name="desconexion_interna">
+          <option value="si">Sí</option>
+          <option value="no">No</option>
+        </select>
       </label>
       <label>¿Incluye funda térmica con la compra?
-        <select id="funda_termica_A" name="funda_termica"><option value="si">Sí</option><option value="no">No</option></select>
+        <select id="funda_termica_A" name="funda_termica">
+          <option value="si">Sí</option>
+          <option value="no">No</option>
+        </select>
       </label>
       <label>Provincia donde resides:
         <select id="provincia_A" name="provincia"></select>
       </label>
       <label>¿Cuánto pagaste por tu baliza? (€)
-        <input type="number" name="precio_compra" step="0.01">
+        <input id="precio_compra_A" name="precio_compra" type="number" step="0.01">
+      </label>
+      <label>¿Edad de tu coche? (años)
+        <input id="car_age_A" name="car_age" type="number" min="0" max="30" value="5">
       </label>
       <label>¿Quieres indicarnos la marca y modelo?
-        <select id="selModeloA" name="modelo_compra"><option value="">— opcional —</option></select>
+        <select id="selModeloA" name="modelo_compra">
+          <option value="">— opcional —</option>
+        </select>
       </label>
-      <button type="submit">Calcular coste</button><button type="button" class="btn-back">Volver</button>
-	<div id="results" style="display:none; margin-top:1em;">
-	  <table>
-	    <tr><th>Concepto</th><th>Importe</th></tr>
-	    <tr><td>Coste inicial</td><td id="res_initialCost">–</td></tr>
-	    <tr><td>Reposes baterías</td><td id="res_reps">–</td></tr>
-	    <tr><td>Coste baterías</td><td id="res_batteryCost">–</td></tr>
-	    <tr><td>Coste funda</td><td id="res_caseCost">–</td></tr>
-	    <tr><td>Coste fuga</td><td id="res_leakCost">–</td></tr>
-	    <tr><td>Coste multas</td><td id="res_fineCost">–</td></tr>
-	    <tr><td><strong>Total (12 años)</strong></td><td id="res_totalCost12y">–</td></tr>
-	    <tr><td><strong>Coste medio mensual</strong></td><td id="res_monthlyCost">–</td></tr>
-	  </table>
-	  <p id="res_qualitative"></p>
-	</div>	    
+      <button type="submit">Calcular coste</button>
+      <button type="button" class="btn-back">Volver</button>
     </form>
 
     <!-- FORM B -->
     <form id="formB">
       <legend>(B) Aún no sé qué baliza comprar</legend>
       <label>Marca y modelo de baliza:
-        <select id="selectBeacon" name="modelo" required><option value="" disabled selected>-- Selecciona baliza --</option></select>
+        <select id="selectBeacon" name="modelo" required>
+          <option value="" disabled selected>-- Selecciona baliza --</option>
+        </select>
       </label>
       <img id="previewBeaconB" class="preview" src="images/beacons/placeholder.png">
       <label>Fabricante:<input type="text" id="fabricante_B" readonly></label>
@@ -139,32 +138,30 @@
       <label>Precio de venta (€):<input type="text" id="precio_venta_B" readonly></label>
       <label>Alimentación:<input type="text" id="alimentacion_B" readonly></label>
       <label>Marca de pilas:<input type="text" id="marca_pilas_B" readonly></label>
-      <label>¿Se pueden desconectar las pilas de sus polos al apagar para evitar desgaste?:<input type="text" id="desconectable_B" readonly></label>
-      <label>¿Incluye funda térmica con la compra?<input type="text" id="funda_B" readonly></label>
-      <label>Provincia donde resides:<select id="provincia_B" name="provincia"></select></label>
-      <button type="submit">Calcular coste</button><button type="button" class="btn-back">Volver</button>
-	 <div id="results" style="display:none; margin-top:1em;">
-	  <table>
-	    <tr><th>Concepto</th><th>Importe</th></tr>
-	    <tr><td>Coste inicial</td><td id="res_initialCost">–</td></tr>
-	    <tr><td>Reposes baterías</td><td id="res_reps">–</td></tr>
-	    <tr><td>Coste baterías</td><td id="res_batteryCost">–</td></tr>
-	    <tr><td>Coste funda</td><td id="res_caseCost">–</td></tr>
-	    <tr><td>Coste fuga</td><td id="res_leakCost">–</td></tr>
-	    <tr><td>Coste multas</td><td id="res_fineCost">–</td></tr>
-	    <tr><td><strong>Total (12 años)</strong></td><td id="res_totalCost12y">–</td></tr>
-	    <tr><td><strong>Coste medio mensual</strong></td><td id="res_monthlyCost">–</td></tr>
-	  </table>
-	  <p id="res_qualitative"></p>
-	</div>
+      <label>¿Desconectable?:<input type="text" id="desconectable_B" readonly></label>
+      <label>¿Funda térmica?:<input type="text" id="funda_B" readonly></label>
+      <label>Provincia donde resides:
+        <select id="provincia_B" name="provincia"></select>
+      </label>
+      <label>¿Edad de tu coche? (años)
+        <input id="car_age_B" name="car_age" type="number" min="0" max="30" value="5">
+      </label>
+      <button type="submit">Calcular coste</button>
+      <button type="button" class="btn-back">Volver</button>
     </form>
 
     <!-- FORM C -->
     <form id="formC">
       <legend>(C) Quiero ver balizas en tienda</legend>
-      <label>Tienda:<select id="selectTienda" name="tienda" required><option value="" disabled selected>-- Selecciona tienda --</option></select></label>
+      <label>Tienda:
+        <select id="selectTienda" name="tienda" required>
+          <option value="" disabled selected>-- Selecciona tienda --</option>
+        </select>
+      </label>
       <label>Modelo en tienda:
-        <select id="selectModeloTienda" name="modelo_tienda" disabled required><option value="" disabled selected>-- Selecciona baliza --</option></select>
+        <select id="selectModeloTienda" name="modelo_tienda" disabled required>
+          <option value="" disabled selected>-- Selecciona baliza --</option>
+        </select>
       </label>
       <img id="previewBeaconC" class="preview" src="images/beacons/placeholder.png">
       <label>Fabricante:<input type="text" id="fabricante_C" readonly></label>
@@ -173,29 +170,39 @@
       <label>Precio de venta (€):<input type="text" id="precio_venta_C" readonly></label>
       <label>Alimentación:<input type="text" id="alimentacion_C" readonly></label>
       <label>Marca de pilas:<input type="text" id="marca_pilas_C" readonly></label>
-      <label>¿Se pueden desconectar las pilas de sus polos al apagar para evitar desgaste?:<input type="text" id="desconectable_C" readonly></label>
-      <label>¿Incluye funda térmica con la compra?<input type="text" id="funda_C" readonly></label>
+      <label>¿Desconectable?:<input type="text" id="desconectable_C" readonly></label>
+      <label>¿Funda térmica?:<input type="text" id="funda_C" readonly></label>
       <label>Fuente oficial:<input type="text" id="fuente_C" readonly></label>
-      <label>Provincia donde resides:<select id="provincia_C" name="provincia"></select></label>
-      <button type="submit">Calcular coste</button><button type="button" class="btn-back">Volver</button>
-	<div id="results" style="display:none; margin-top:1em;">
-	  <table>
-	    <tr><th>Concepto</th><th>Importe</th></tr>
-	    <tr><td>Coste inicial</td><td id="res_initialCost">–</td></tr>
-	    <tr><td>Reposes baterías</td><td id="res_reps">–</td></tr>
-	    <tr><td>Coste baterías</td><td id="res_batteryCost">–</td></tr>
-	    <tr><td>Coste funda</td><td id="res_caseCost">–</td></tr>
-	    <tr><td>Coste fuga</td><td id="res_leakCost">–</td></tr>
-	    <tr><td>Coste multas</td><td id="res_fineCost">–</td></tr>
-	    <tr><td><strong>Total (12 años)</strong></td><td id="res_totalCost12y">–</td></tr>
-	    <tr><td><strong>Coste medio mensual</strong></td><td id="res_monthlyCost">–</td></tr>
-	  </table>
-	  <p id="res_qualitative"></p>
-	</div>
+      <label>Provincia donde resides:
+        <select id="provincia_C" name="provincia"></select>
+      </label>
+      <label>¿Edad de tu coche? (años)
+        <input id="car_age_C" name="car_age" type="number" min="0" max="30" value="5">
+      </label>
+      <button type="submit">Calcular coste</button>
+      <button type="button" class="btn-back">Volver</button>
     </form>
-
-    <pre id="resultado"></pre>
   </div>
-	<script src="script.js" defer></script>
+
+  <!-- Un único contenedor de resultados -->
+  <div id="results" style="display:none; margin-top:1em;">
+    <table>
+      <tr><th>Concepto</th><th>Importe</th></tr>
+      <tr><td>Coste inicial</td><td id="res_initialCost">–</td></tr>
+      <tr><td>Reposes baterías</td><td id="res_reps">–</td></tr>
+      <tr><td>Coste baterías</td><td id="res_batteryCost">–</td></tr>
+      <tr><td>Coste funda</td><td id="res_caseCost">–</td></tr>
+      <tr><td>Coste fuga</td><td id="res_leakCost">–</td></tr>
+      <tr><td>Coste multas</td><td id="res_fineCost">–</td></tr>
+      <tr><td><strong>Total (12 años)</strong></td><td id="res_totalCost12y">–</td></tr>
+      <tr><td><strong>Coste medio mensual</strong></td><td id="res_monthlyCost">–</td></tr>
+    </table>
+    <p id="res_qualitative"></p>
+  </div>
+
+  <!-- Para debug si lo necesitas -->
+  <pre id="debugResultado"></pre>
+
+  <script src="script.js" defer></script>
 </body>
 </html>
