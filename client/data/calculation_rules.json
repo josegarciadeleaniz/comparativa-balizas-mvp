@@ -1,0 +1,9 @@
+{
+  "formula": "(calidad_pilas * 0.4) + (desconexion_polos * 0.3) + (proteccion_termica * 0.2) + (tipo_alimentacion * 0.1)",
+  "niveles_riesgo": [
+    { "rango": "1-1.4", "clasificacion": "Bajo riesgo", "multiplicador_multa": 1 },
+    { "rango": "1.5-2.2", "clasificacion": "Riesgo moderado", "multiplicador_multa": 2 },
+    { "rango": "2.3-3.5", "clasificacion": "Alto riesgo", "multiplicador_multa": 3 },
+    { "rango": ">3.5",  "clasificacion": "Riesgo muy alto", "multiplicador_multa": 4 }
+  ]
+}
