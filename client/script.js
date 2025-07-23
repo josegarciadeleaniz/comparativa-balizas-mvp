@@ -178,32 +178,35 @@ async function initApp() {
       data.modelo_tienda = selModeloTienda.value;
       data.provincia     = data.provincia;
     }
+console.log('Enviando a OpenAI:', data);
+resultado.textContent = '';
+// Ocultamos el placeholder de texto y mostramos la sección de resultados
+document.getElementById('results').style.display = 'block';
 
-    console.log('Enviando a OpenAI:', data);
-    resultado.textContent = '';
-    if (context==='A') loadingA.style.display='inline';
-    if (context==='B') loadingB.style.display='inline';
-    if (context==='C') loadingC.style.display='inline';
+try {
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  const json = await res.json();
+  console.log('✅ OpenAI respondió:', json);
 
-    try {
-      const res = await fetch(endpoint, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(data)
-      });
-      const json = await res.json();
-      console.log('✅ OpenAI respondió:', json);
-      resultado.textContent = json.explanation || JSON.stringify(json, null,2);
-    } catch(err) {
-      console.error(err);
-      resultado.textContent = '❌ Error al conectar con la API';
-    } finally {
-      loadingA.style.display='none';
-      loadingB.style.display='none';
-      loadingC.style.display='none';
-    }
-  }
+  // Rellenar la tabla de resultados con los campos del JSON
+  document.getElementById('res_initialCost').textContent  = json.initialCost + ' €';
+  document.getElementById('res_reps').textContent         = json.batteryReps;
+  document.getElementById('res_batteryCost').textContent  = json.batteryCost + ' €';
+  document.getElementById('res_caseCost').textContent     = json.caseCost + ' €';
+  document.getElementById('res_leakCost').textContent     = json.leakCost + ' €';
+  document.getElementById('res_fineCost').textContent     = json.fineCost + ' €';
+  document.getElementById('res_totalCost12y').textContent = json.totalCost12y + ' €';
+  document.getElementById('res_monthlyCost').textContent  = json.monthlyCost + ' €';
+  document.getElementById('res_qualitative').textContent  = json.qualitative;
 
+} catch (err) {
+  console.error(err);
+  resultado.textContent = '❌ Error al conectar con la API';
+}
   // Attach submit handlers
   formA.addEventListener('submit', e => { e.preventDefault(); submitForm(formA); });
   formB.addEventListener('submit', e => { e.preventDefault(); submitForm(formB); });
