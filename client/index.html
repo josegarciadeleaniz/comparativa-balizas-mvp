@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Comparativa Balizas IoT</title>
+  <title>Calculadora TCO Balizas IoT</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Forum&display=swap');
     :root {
@@ -30,7 +30,7 @@
       display: flex;
       justify-content: space-between;
       gap: 1rem;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
     .choice {
       flex: 1;
@@ -39,166 +39,121 @@
       border: 2px solid transparent;
       border-radius: var(--radius);
       padding: 0.5rem;
-      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
       background: #fff;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
     }
-    .choice img {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-      border-radius: var(--radius);
-    }
-    .choice:hover, .choice.selected {
-      transform: translateY(-4px);
-      border-color: var(--color-primary);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
+    .choice img { width: 100%; height: 120px; object-fit: cover; border-radius: var(--radius); }
     .choice span { display: block; margin-top: .5rem; font-weight: bold; }
-
-    .forms-container {
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: var(--radius);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
+    .choice.selected { border-color: var(--color-primary); transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .forms-container { background: #fff; padding: 1.5rem; border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     form { display: none; }
     form.active { display: block; }
-    label {
-      display: block;
-      margin-bottom: .75rem;
-      font-weight: bold;
-      color: #555;
-    }
-    select, input[type="number"], input[type="text"], input[type="email"] {
-      width: 100%; padding: .5rem; border:1px solid #ddd; border-radius: var(--radius);
+    legend { font-size: 1.1rem; font-weight: bold; margin-bottom: .75rem; color: #555; }
+    label { display: block; margin-bottom: .75rem; font-weight: bold; color: #555; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%; padding: .5rem; border: 1px solid #ddd; border-radius: var(--radius);
       margin-top: .25rem; font-size: 1rem; transition: border-color var(--transition);
     }
-    select:focus, input:focus { border-color: var(--color-primary); outline:none; }
+    select:focus, input:focus { border-color: var(--color-primary); outline: none; }
     .btn-back, form button[type="submit"] {
-      background: var(--color-primary); color: #fff; border:none; padding:.75rem 1rem;
-      border-radius: var(--radius); cursor:pointer; margin-top:1rem; margin-right:.5rem;
+      background: var(--color-primary); color: #fff; border: none;
+      padding: .75rem 1rem; border-radius: var(--radius); cursor: pointer;
+      margin-top: 1rem; margin-right: .5rem;
       transition: transform var(--transition), filter var(--transition);
     }
-    .btn-back:hover, form button[type="submit"]:hover {
-      transform: translateY(-2px); filter: brightness(1.1);
-    }
+    .btn-back:hover, form button[type="submit"]:hover { transform: translateY(-2px); filter: brightness(1.1); }
     pre#resultado {
-      background: var(--color-secondary); padding:1rem; border-radius:var(--radius);
-      border:1px solid #ccc; white-space: pre-wrap; margin-top:1rem;
+      background: var(--color-secondary); padding: 1rem;
+      border-radius: var(--radius); border: 1px solid #ccc;
+      white-space: pre-wrap; margin-top: 1rem;
     }
+    img.preview { max-width: 200px; display: block; margin: 1rem 0; border: 1px solid #ddd; border-radius: var(--radius); }
   </style>
 </head>
 <body>
-  <h1>Calculadora de Costes de Baliza (12 años)</h1>
-  <h2 id="subtitle">Elige tu punto de partida</h2>
+<div id="privacy-notice" style="background:#f9f9f9; padding:10px; border:1px solid #ddd; margin-bottom:1rem;">
+  <p><strong>Aviso:</strong> Tus datos serán utilizados con fines estadísticos y almacenados de forma anónima.</p>
+</div>
+  <h1>(TCO) Coste total a 12 años de tu baliza</h1>
+  <h2 id="subtitle">Selecciona tu punto de partida</h2>
 
   <div class="choices">
-    <div class="choice" data-ctx="A">
-      <img src="images/pilas.png" alt="Conozco las pilas" />
-      <span>Conozco las pilas</span>
-    </div>
-    <div class="choice" data-ctx="B">
-      <img src="images/modelos.png" alt="Coste por marca de baliza" />
-      <span>Coste fijo y variable por marca de baliza</span>
-    </div>
-    <div class="choice" data-ctx="C">
-      <img src="images/tiendas.png" alt="Donde la voy a comprar" />
-      <span>Donde la voy a comprar</span>
-    </div>
+    <div class="choice" data-ctx="A"><img src="images/pilas.png"><span>Ya tengo mi baliza</span></div>
+    <div class="choice" data-ctx="B"><img src="images/modelos.png"><span>No sé qué baliza comprar</span></div>
+    <div class="choice" data-ctx="C"><img src="images/tiendas.png"><span>Ver balizas en tienda</span></div>
   </div>
 
   <div class="forms-container">
-    <!-- Form A -->
+    <!-- FORM A -->
     <form id="formA">
-      <legend>Tengo una baliza nueva y quiero calcular el gasto de mantenimiento</legend>
-      <label>Tipo de pila:
-        <select name="tipo_pila">
-          <option value="alcalina_9v">Alcalina 9V (6LR61)</option>
-          <option value="alcalina_aa">Alcalina AA (LR6)</option>
-          <option value="alcalina_aaa">Alcalina AAA (LR03)</option>
-          <option value="litio_recargable">Litio recargable (con BMS)</option>
-          <option value="salina">Pila salina (zinc-carbono) – NO HOMOLOGADA</option>
-          <option value="desconocido">Desconocido</option>
-        </select>
+      <legend>(A) Ya tengo mi baliza</legend>
+      <label>¿Qué pilas lleva tu baliza?
+        <select id="selPilaA" name="tipo_pila"></select>
       </label>
-      <label>Marca de pila:
-        <select name="marca_pila">
-          <option value="duracell">Duracell Industrial</option>
-          <option value="energizer">Energizer Industrial</option>
-          <option value="varta">Varta Professional</option>
-          <option value="marca_blanca">Sin marca visible</option>
-          <option value="otra">Otra</option>
-        </select>
-    <div>
-    <label for="desconexion_interna">Las pilas pueden permanecer desconectadas si apagas la baliza:</label>
-    <select name="desconexion_interna" id="desconexion_interna">
-      <option value="si">Sí</option>
-      <option value="no">No</option>
-    </select>
-  </div>
-
-  <div>
-    <label for="funda_termica">Tu baliza vino con una funda térmica incluida:</label>
-    <select name="funda_termica" id="funda_termica">
-      <option value="si">Sí</option>
-      <option value="no">No</option>
-    </select>
-  </div>
-      <label>Provincia donde duerme el coche:
-        <select name="provincia">
-          <option value="almeria">Almería</option>
-          <option value="madrid">Madrid</option>
-          <option value="sevilla">Sevilla</option>
-          <!-- ...resto provincias... -->
-        </select>
+      <label>Marca de esas pilas:
+        <select id="selMarcaPilaA" name="marca_pila"></select>
       </label>
-      <button type="submit">Calcular coste</button>
-      <button type="button" class="btn-back">Volver</button>
+      <label>¿Se pueden desconectar las pilas de sus polos al apagar para evitar desgaste?
+        <select id="desconexion_interna_A" name="desconexion_interna"><option value="si">Sí</option><option value="no">No</option></select>
+      </label>
+      <label>¿Incluye funda térmica con la compra?
+        <select id="funda_termica_A" name="funda_termica"><option value="si">Sí</option><option value="no">No</option></select>
+      </label>
+      <label>Provincia donde resides:
+        <select id="provincia_A" name="provincia"></select>
+      </label>
+      <label>¿Cuánto pagaste por tu baliza? (€)
+        <input type="number" name="precio_compra" step="0.01">
+      </label>
+      <label>¿Quieres indicarnos la marca y modelo?
+        <select id="selModeloA" name="modelo_compra"><option value="">— opcional —</option></select>
+      </label>
+      <button type="submit">Calcular coste</button><button type="button" class="btn-back">Volver</button>
     </form>
 
-    <!-- Form B -->
+    <!-- FORM B -->
     <form id="formB">
-      <legend>Coste fijo y variable por marca de baliza</legend>
+      <legend>(B) Aún no sé qué baliza comprar</legend>
       <label>Marca y modelo de baliza:
-        <select name="modelo" id="selectBeacon"></select>
+        <select id="selectBeacon" name="modelo" required><option value="" disabled selected>-- Selecciona baliza --</option></select>
       </label>
-      <label>Provincia donde duerme el coche:
-        <select name="provincia">
-          <option value="almeria">Almería</option>
-          <option value="madrid">Madrid</option>
-          <option value="sevilla">Sevilla</option>
-          <!-- ...resto provincias... -->
-        </select>
-      </label>
-      <button type="submit">Calcular coste</button>
-      <button type="button" class="btn-back">Volver</button>
+      <img id="previewBeaconB" class="preview" src="images/beacons/placeholder.png">
+      <label>Fabricante:<input type="text" id="fabricante_B" readonly></label>
+      <label>Origen:<input type="text" id="origen_B" readonly></label>
+      <label>Actuación realizada en España:<input type="text" id="actuacion_B" readonly></label>
+      <label>Precio de venta (€):<input type="text" id="precio_venta_B" readonly></label>
+      <label>Alimentación:<input type="text" id="alimentacion_B" readonly></label>
+      <label>Marca de pilas:<input type="text" id="marca_pilas_B" readonly></label>
+      <label>¿Se pueden desconectar las pilas de sus polos al apagar para evitar desgaste?:<input type="text" id="desconectable_B" readonly></label>
+      <label>¿Incluye funda térmica con la compra?<input type="text" id="funda_B" readonly></label>
+      <label>Provincia donde resides:<select id="provincia_B" name="provincia"></select></label>
+      <button type="submit">Calcular coste</button><button type="button" class="btn-back">Volver</button>
     </form>
 
-    <!-- Form C -->
+    <!-- FORM C -->
     <form id="formC">
-      <legend>Donde la voy a comprar</legend>
-      <label>Tienda:
-        <select name="tienda" id="selectTienda"></select>
-      </label>
+      <legend>(C) Quiero ver balizas en tienda</legend>
+      <label>Tienda:<select id="selectTienda" name="tienda" required><option value="" disabled selected>-- Selecciona tienda --</option></select></label>
       <label>Modelo en tienda:
-        <select name="modelo_tienda" id="selectModeloTienda" disabled></select>
+        <select id="selectModeloTienda" name="modelo_tienda" disabled required><option value="" disabled selected>-- Selecciona baliza --</option></select>
       </label>
-      <label>Provincia donde duerme el coche:
-        <select name="provincia">
-          <option value="almeria">Almería</option>
-          <option value="madrid">Madrid</option>
-          <option value="sevilla">Sevilla</option>
-          <!-- ...resto provincias... -->
-        </select>
-      </label>
-      <button type="submit">Calcular coste</button>
-      <button type="button" class="btn-back">Volver</button>
+      <img id="previewBeaconC" class="preview" src="images/beacons/placeholder.png">
+      <label>Fabricante:<input type="text" id="fabricante_C" readonly></label>
+      <label>Origen:<input type="text" id="origen_C" readonly></label>
+      <label>Actuación realizada en España:<input type="text" id="actuacion_C" readonly></label>
+      <label>Precio de venta (€):<input type="text" id="precio_venta_C" readonly></label>
+      <label>Alimentación:<input type="text" id="alimentacion_C" readonly></label>
+      <label>Marca de pilas:<input type="text" id="marca_pilas_C" readonly></label>
+      <label>¿Se pueden desconectar las pilas de sus polos al apagar para evitar desgaste?:<input type="text" id="desconectable_C" readonly></label>
+      <label>¿Incluye funda térmica con la compra?<input type="text" id="funda_C" readonly></label>
+      <label>Fuente oficial:<input type="text" id="fuente_C" readonly></label>
+      <label>Provincia donde resides:<select id="provincia_C" name="provincia"></select></label>
+      <button type="submit">Calcular coste</button><button type="button" class="btn-back">Volver</button>
     </form>
 
     <pre id="resultado"></pre>
   </div>
-
-  <script src="script.js" defer></script>
+	<script src="script.js" defer></script>
 </body>
 </html>
