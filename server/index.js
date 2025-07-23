@@ -72,7 +72,7 @@ app.get('/',       (req, res) => res.send('API Balizas OK'));
 app.get('/health', (req, res) => res.send('OK'));
 
 app.post('/api/calcula', async (req, res) => {
-  // ── 1) Desestructurar incluyendo car_age ───────────────────────────
+  // 1) Desestructuramos inputs
   const {
     context,
     tipo_pila, marca_pila, desconexion_polos, proteccion_termica,
@@ -80,74 +80,73 @@ app.post('/api/calcula', async (req, res) => {
     car_age = 0, anonymous = true
   } = req.body;
 
-  // ── 2) Log de petición ─────────────────────────────────────────────
-  const lineReq = [
-    new Date().toISOString(),
-    context,
+  // 2) Log petición (igual que antes)
+  const lineReq = [new Date().toISOString(), context,
     tipo_pila||'', marca_pila||'', desconexion_polos||'', proteccion_termica||'',
     provincia||'', packCost, precio_inicial, car_age, anonymous
   ].join(',') + '\n';
-  try {
-    fs.appendFileSync(csvPath, lineReq, 'utf8');
-  } catch (e) {
-    console.warn('⚠️ No se pudo escribir petición en CSV:', e.message);
+  fs.appendFileSync(csvPath, lineReq, 'utf8');
+
+  // 3) Parámetros base de vida útil y riesgo fuga
+  const baseParams = {
+    '3x AA':      { vida: 2.5,  pFuga: 0.60, unitCost: 0.50 },
+    '3x AAA':     { vida: 2.5,  pFuga: 0.60, unitCost: 0.50 },
+    '9 V':        { vida: 1.75, pFuga: 0.78, unitCost: 2.00 },
+    'Litio':      { vida: 17.5, pFuga: 0.05, unitCost: 5.00 },
+    'NiMH LSD':   { vida: 6.0,  pFuga: 0.15, unitCost: 3.50 }
+  };
+  const param = baseParams[tipo_pila] || { vida:2, pFuga:0.5, unitCost:0 };
+
+  // 4) Ajustes por marca
+  let vida = param.vida;
+  if (marca_pila === 'Energizer' || marca_pila === 'Duracell') {
+    // vida = max
+  } else if (marca_pila === 'Varta') {
+    vida *= 0.85;
+  } else if (marca_pila === 'Marca blanca') {
+    vida *= 0.5;
   }
 
-  // ── 3) Cálculo de P_inc según edad del coche ────────────────────────
-  let pInc;
-  if (car_age <= 0)      pInc = 0.015;
-  else if (car_age >= 15) pInc = 0.258;
-  else pInc = 0.015 + (0.258 - 0.015) * (car_age / 15);
-  console.log(`📊 Probabilidad incidencia (edad ${car_age} años): ${(pInc*100).toFixed(2)} %`);
+  // 5) Ajustes por desconexión
+  if (desconexion_polos === 'sí') vida *= 2;
 
-  // ── 4) Construir prompt de usuario ─────────────────────────────────
-  const userPrompt = `
-Datos recibidos:
-- Pilas: tipo ${tipo_pila}, marca ${marca_pila}, desconexión: ${desconexion_polos}, funda: ${proteccion_termica}
-- Provincia: ${provincia}
-- Coste inicial: ${precio_inicial}€
-- Coste por pack de pilas (4 uds): ${packCost}€
-- Edad del coche: ${car_age} años → Probabilidad de incidencia en 12 años: ${(pInc*100).toFixed(2)} %.
-Calcula el TCO según las instrucciones del sistema, incluyendo el coste esperado de multas usando esta probabilidad.
-`.trim();
-
-  try {
-    // ── 5) Llamada a OpenAI ───────────────────────────────────────────
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user',   content: userPrompt }
-      ]
-    });
-    const explanation = completion.choices[0].message.content.trim();
-    console.log('✅ OpenAI explicó:', explanation);
-
-    // ── 6) Log de respuesta ──────────────────────────────────────────
-    const lineRes = [
-      new Date().toISOString(),
-      context,
-      '', '', '', '', '', '', '', '', '', // columnas previas vacías
-      explanation.replace(/\r?\n/g, ' ')
-    ].join(',') + '\n';
-    try {
-      fs.appendFileSync(csvPath, lineRes, 'utf8');
-    } catch (e) {
-      console.warn('⚠️ No se pudo escribir respuesta en CSV:', e.message);
-    }
-
-    // ── 7) Devolver al front ─────────────────────────────────────────
-    res.json({ explanation });
-
-  } catch (err) {
-    console.error('❌ Error en /api/calcula:', err);
-    res.status(500).json({
-      error: 'Error interno procesando la petición',
-      details: err.message
-    });
+  // 6) Ajustes por funda
+  let pFuga = param.pFuga;
+  if (proteccion_termica === 'sí') {
+    vida *= 1 + (Math.random()*0.5 + 1.0 - 1); // +100–150%, aquí simplifico +125%
+    pFuga *= 0.6;  // −40%
   }
+
+  // 7) Cálculos
+  const reps = Math.ceil(12 / vida);
+  const batteryCostTotal = reps * (packCost || (4 * param.unitCost));
+  const caseCost = proteccion_termica==='sí' ? 8 : 0;
+  const leakCost = pFuga * 20;
+  // P_inc según edad coche
+  let pInc = car_age <= 0 ? 0.015
+           : car_age >= 15 ? 0.258
+           : 0.015 + (0.258-0.015)*(car_age/15);
+  const fineCost = pInc * 0.32 * 200;  // 32% P(fallo batería)
+  const totalCost = precio_inicial + batteryCostTotal + caseCost + leakCost + fineCost;
+  const monthlyCost = +(totalCost / 144).toFixed(2);
+
+  // 8) Log respuesta
+  const lineRes = [new Date().toISOString(), context,
+    '', '', '', '', '', '', '', '', '', // columnas anteriores
+    totalCost.toFixed(2)
+  ].join(',') + '\n';
+  fs.appendFileSync(csvPath, lineRes, 'utf8');
+
+  // 9) Devolver JSON estructurado
+  return res.json({
+    initialCost:      precio_inicial,
+    batteryReps:      reps,
+    batteryCost:      +batteryCostTotal.toFixed(2),
+    caseCost:         caseCost,
+    leakCost:         +leakCost.toFixed(2),
+    fineCost:         +fineCost.toFixed(2),
+    totalCost12y:     +totalCost.toFixed(2),
+    monthlyCost,
+    qualitative: `En este escenario … ${monthlyCost} € al mes.`
+  });
 });
-
-// ── 8) Arranque del servidor ───────────────────────────────────────────
-const PORT = parseInt(process.env.PORT, 10) || 4000;
-app.listen(PORT, () => console.log(`API escuchando en puerto ${PORT}`));
