@@ -42,7 +42,6 @@ app.use((req, res, next) => {
 });
 app.use(express.static(path.join(__dirname, '../client')));
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
-app.listen(PORT, () => console.log('API escuchando en', PORT));
 app.use('/images', express.static(path.join(__dirname, '../client/images')));
 app.use('/fonts', express.static(path.join(__dirname, '../client/fonts')));
 app.use((err, req, res, next) => {
