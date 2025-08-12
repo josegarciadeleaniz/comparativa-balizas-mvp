@@ -1,40 +1,40 @@
 const express = require("express");
 const cors = require("cors");
-const path = require('path');
-const batteryData = require('./battery_types.json');
-const provincias = require('./provincias.json');
-const beacons = require('./beacons.json');
-const salesPoints = require('./sales_points.json');
-const nodemailer = require('nodemailer');
-const PDFDocument = require('pdfkit');
+const path = require("path");
+
+const batteryData  = require("./battery_types.json");
+const provincias   = require("./provincias.json");
+const beacons      = require("./beacons.json");
+const salesPoints  = require("./sales_points.json");
+const nodemailer   = require("nodemailer");
+const PDFDocument  = require("pdfkit");
 
 const app = express();
-const PORT = process.env.PORT || 3003; // <- añade process.env.PORT
-app.listen(PORT, () => console.log('Escuchando en', PORT));
+
+// === CORS: SOLO un bloque y con la lista correcta ===
 const ALLOWED_ORIGINS = [
-  'https://comparativabalizas.es',
-  'https://www.comparativabalizas.es',
-  'https://widget.comparativabalizas.es',
-  'https://app.comparativabalizas.es',                 // mismo host
-  'https://comparativa-balizas-mvp.onrender.com'
-  // añade los que vayan a embeber el iframe (mejorigual.org, etc.)
+  "https://comparativabalizas.es",
+  "https://www.comparativabalizas.es",
+  "https://widget.comparativabalizas.es",
+  "https://app.comparativabalizas.es",
+  "https://comparativa-balizas-mvp.onrender.com" // pruebas
 ];
 
-// Middlewares
-
-app.disable('x-powered-by');
+app.disable("x-powered-by");
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin) return cb(null, true);               // curl, health checks
+    if (!origin) return cb(null, true); // health checks, curl
     cb(null, ALLOWED_ORIGINS.includes(origin));
   },
-  methods: ['GET','POST']
+  methods: ["GET","POST","OPTIONS"]
 }));
-app.use(cors({ origin: ALLOWED, methods: ['GET','POST'] }));
+
 app.use(express.json());
+
+// CSP para permitir iframe desde tus dominios (ponlo antes de estáticos/rutas)
 app.use((req, res, next) => {
   res.setHeader(
-    'Content-Security-Policy',
+    "Content-Security-Policy",
     "frame-ancestors 'self' https://*.comparativabalizas.es https://*.mejorigual.org"
   );
   next();
@@ -829,4 +829,5 @@ app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
 app.post('/api/enviar-pdf', async (req, res) => { /* … */ });
 app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
-app.listen(PORT, () => console.log(`Servidor escuchando en http://localhost:${PORT}`));
+const PORT = process.env.PORT || 3003;
+app.listen(PORT, () => console.log("Escuchando en", PORT));
