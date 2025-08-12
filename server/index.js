@@ -11,7 +11,7 @@ const PDFDocument  = require("pdfkit");
 
 const app = express();
 
-// === CORS: SOLO un bloque y con la lista correcta ===
+// --- CORS ---
 const ALLOWED_ORIGINS = [
   "https://comparativabalizas.es",
   "https://www.comparativabalizas.es",
@@ -26,12 +26,13 @@ app.use(cors({
     if (!origin) return cb(null, true); // health checks, curl
     cb(null, ALLOWED_ORIGINS.includes(origin));
   },
-  methods: ["GET","POST","OPTIONS"]
+  methods: ["GET","POST","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"]
 }));
 
 app.use(express.json());
 
-// CSP para permitir iframe desde tus dominios (ponlo antes de estáticos/rutas)
+// --- CSP para iframes ---
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
@@ -39,7 +40,6 @@ app.use((req, res, next) => {
   );
   next();
 });
-
 app.use(express.static(path.join(__dirname, '../client')));
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
 app.listen(PORT, () => console.log('API escuchando en', PORT));
@@ -828,6 +828,19 @@ app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
 app.post('/api/enviar-pdf', async (req, res) => { /* … */ });
+
+// --- 404 ---
 app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
-const PORT = process.env.PORT || 3003;
+
+// --- Manejador de errores (al final) ---
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: "JSON malformado", message: "Verifica el formato" });
+  }
+  console.error('Error no controlado:', err);
+  res.status(500).json({ error: 'Error interno' });
+});
+
+// --- LISTEN: SOLO UNO, AL FINAL ---
+const PORT = Number(process.env.PORT) || 3003;
 app.listen(PORT, () => console.log("Escuchando en", PORT));
