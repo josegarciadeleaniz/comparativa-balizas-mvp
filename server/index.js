@@ -12,9 +12,11 @@ const app = express();
 const PORT = process.env.PORT || 3003; // <- añade process.env.PORT
 app.listen(PORT, () => console.log('Escuchando en', PORT));
 const ALLOWED_ORIGINS = [
-  'https://widget.comparativabalizas.es',
   'https://comparativabalizas.es',
   'https://www.comparativabalizas.es',
+  'https://widget.comparativabalizas.es',
+  'https://app.comparativabalizas.es',                 // mismo host
+  'https://comparativa-balizas-mvp.onrender.com'
   // añade los que vayan a embeber el iframe (mejorigual.org, etc.)
 ];
 
