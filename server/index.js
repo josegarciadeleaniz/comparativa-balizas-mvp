@@ -826,45 +826,74 @@ app.get('/api/beacons',      (req, res) => res.json(beacons));
 app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
-app.post('/api/enviar-pdf', express.json(), async (req, res) => {
-  const { name, email, datos } = req.body || {};
-  if (!email) return res.status(400).json({ ok:false, err:'email' });
-
+app.post('/api/enviar-pdf', async (req, res) => {
   try {
-    // Genera PDF simple con PDFKit
-    const doc = new PDFDocument();
+    const { email, title = 'Informe de baliza', resumenText = '', detalleText = '' } = req.body || {};
+    if (!email) {
+      return res.status(400).json({ ok: false, error: 'Falta el email' });
+    }
+
+    // 1) Generar PDF con pdfkit (texto simple)
+    const doc = new PDFDocument({ size: 'A4', margins: { top: 50, left: 50, right: 50, bottom: 50 } });
     const chunks = [];
-    doc.fontSize(16).text('Resultados comparativa', { underline:true });
-    doc.moveDown().fontSize(12).text(`Para: ${name || ''} <${email}>`);
-    doc.moveDown().fontSize(10).text(JSON.stringify(datos?.resumen || datos || {}, null, 2));
+    doc.on('data', d => chunks.push(d));
+
+    doc.fontSize(18).text(title, { align: 'center' }).moveDown();
+    doc.fontSize(12).text('Resumen', { underline: true }).moveDown(0.5);
+    doc.text(resumenText || '—', { lineGap: 2 }).moveDown();
+    doc.text('Detalle', { underline: true }).moveDown(0.5);
+    doc.text(detalleText || '—', { lineGap: 2 });
+
     doc.end();
-    doc.on('data', c => chunks.push(c));
+
+    // 2) Cuando acabe el PDF, enviar email
     doc.on('end', async () => {
-      const pdfBuffer = Buffer.concat(chunks);
+      try {
+        const pdfBuffer = Buffer.concat(chunks);
 
-      // Envía por email
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: +process.env.SMTP_PORT || 587,
-        secure: false,
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-      });
+        // Transport: usa SMTP real si pones variables de entorno,
+        // si no, cae a cuenta de prueba (Ethereal)
+        let transporter;
+        if (process.env.SMTP_HOST) {
+          transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT || '587', 10),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: (process.env.SMTP_USER && process.env.SMTP_PASS)
+              ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+              : undefined
+          });
+        } else {
+          const testAcc = await nodemailer.createTestAccount();
+          transporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false,
+            auth: { user: testAcc.user, pass: testAcc.pass }
+          });
+        }
 
-      await transporter.sendMail({
-        from: 'no-reply@comparativabalizas.es',
-        to: email,
-        subject: 'Resultados comparativa',
-        text: 'Adjuntamos su PDF',
-        attachments: [{ filename: 'resultados.pdf', content: pdfBuffer }]
-      });
+        const info = await transporter.sendMail({
+          from: process.env.MAIL_FROM || 'Baliza <no-reply@local>',
+          to: email,
+          subject: title,
+          text: `${resumenText}\n\n${detalleText}`,
+          attachments: [{ filename: `${title}.pdf`, content: pdfBuffer }]
+        });
 
-      res.json({ ok:true });
+        const previewUrl = nodemailer.getTestMessageUrl(info) || null;
+        return res.json({ ok: true, previewUrl });
+      } catch (e2) {
+        console.error('Fallo enviando email:', e2);
+        return res.status(500).json({ ok: false, error: 'Error al enviar el correo' });
+      }
     });
   } catch (e) {
-    console.error('enviar-pdf', e);
-    res.status(500).json({ ok:false });
+    console.error('Error en /api/enviar-pdf:', e);
+    return res.status(500).json({ ok: false, error: 'Error interno al generar/enviar PDF' });
   }
 });
+
 
 
 // --- 404 ---
