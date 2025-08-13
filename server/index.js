@@ -826,7 +826,46 @@ app.get('/api/beacons',      (req, res) => res.json(beacons));
 app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
-app.post('/api/enviar-pdf', async (req, res) => { /* … */ });
+app.post('/api/enviar-pdf', express.json(), async (req, res) => {
+  const { name, email, datos } = req.body || {};
+  if (!email) return res.status(400).json({ ok:false, err:'email' });
+
+  try {
+    // Genera PDF simple con PDFKit
+    const doc = new PDFDocument();
+    const chunks = [];
+    doc.fontSize(16).text('Resultados comparativa', { underline:true });
+    doc.moveDown().fontSize(12).text(`Para: ${name || ''} <${email}>`);
+    doc.moveDown().fontSize(10).text(JSON.stringify(datos?.resumen || datos || {}, null, 2));
+    doc.end();
+    doc.on('data', c => chunks.push(c));
+    doc.on('end', async () => {
+      const pdfBuffer = Buffer.concat(chunks);
+
+      // Envía por email
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: +process.env.SMTP_PORT || 587,
+        secure: false,
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+      });
+
+      await transporter.sendMail({
+        from: 'no-reply@comparativabalizas.es',
+        to: email,
+        subject: 'Resultados comparativa',
+        text: 'Adjuntamos su PDF',
+        attachments: [{ filename: 'resultados.pdf', content: pdfBuffer }]
+      });
+
+      res.json({ ok:true });
+    });
+  } catch (e) {
+    console.error('enviar-pdf', e);
+    res.status(500).json({ ok:false });
+  }
+});
+
 
 // --- 404 ---
 app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
