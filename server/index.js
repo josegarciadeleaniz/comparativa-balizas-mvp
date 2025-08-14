@@ -8,7 +8,19 @@ const beacons      = require("./beacons.json");
 const salesPoints  = require("./sales_points.json");
 const nodemailer   = require("nodemailer");
 const PDFDocument  = require("pdfkit");
+// Conexión MariaDB (mysql2/promise)
+const mysql = require('mysql2/promise');
 
+// ⚠️ Rellena con los datos que te da Plesk (DB name/user/pass)
+const pool = mysql.createPool({
+  host: 'localhost',      // en Plesk suele ser 'localhost'
+  user: 'USUARIO_DB',
+  password: 'PASSWORD_DB',
+  database: 'balizas',    // o el nombre de base de datos que creaste
+  port: 3306,
+  waitForConnections: true,
+  connectionLimit: 5
+});
 const app = express();
 
 // --- CORS ---
