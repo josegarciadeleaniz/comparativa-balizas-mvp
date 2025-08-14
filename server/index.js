@@ -14,8 +14,8 @@ const mysql = require('mysql2/promise');
 // ⚠️ Rellena con los datos que te da Plesk (DB name/user/pass)
 const pool = mysql.createPool({
   host: 'localhost',      // en Plesk suele ser 'localhost'
-  user: 'USUARIO_DB',
-  password: 'PASSWORD_DB',
+  user: 'balizas2_user',
+  password: 'Cambiame-1',
   database: 'balizas',    // o el nombre de base de datos que creaste
   port: 3306,
   waitForConnections: true,
@@ -647,7 +647,7 @@ const hasModeloCompra =
 }
 
 // Endpoints
-app.post('/api/calcula', (req, res) => {
+app.post('/api/calcula', async (req, res) => {
   try {
     // en la cabecera del handler:
 const {
@@ -821,6 +821,24 @@ const resumen = {
   coste_inicial: parseFloat(coste_inicial),
   edad_vehiculo: parseInt(edad_vehiculo)
 };
+try {
+  const { email = '', contexto = 'A' } = req.body;  // que te lo mande el cliente
+  const payload    = { entrada: req.body };         // lo que te envió el usuario
+  const resultados = { meta, pasos, resumen };      // lo que calculaste
+
+  await pool.query(
+    'INSERT INTO calculos (email, contexto, payload, resultados) VALUES (?,?,?,?)',
+    [
+      email,
+      contexto,
+      JSON.stringify(payload),      // serializar a texto
+      JSON.stringify(resultados)    // serializar a texto
+    ]
+  );
+} catch (dbErr) {
+  console.error('Error guardando en MariaDB:', dbErr);
+  // No bloqueamos la respuesta aunque fallase el guardado
+}
 
     return res.json({
       meta,
