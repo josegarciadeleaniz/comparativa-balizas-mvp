@@ -52,6 +52,12 @@ app.use((req, res, next) => {
   );
   next();
 });
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 app.use(express.static(path.join(__dirname, '../client')));
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
 app.use('/images', express.static(path.join(__dirname, '../client/images')));
