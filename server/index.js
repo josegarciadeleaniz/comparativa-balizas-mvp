@@ -827,24 +827,42 @@ const resumen = {
   coste_inicial: parseFloat(coste_inicial),
   edad_vehiculo: parseInt(edad_vehiculo)
 };
-try {
-  const { email = '', contexto = 'A' } = req.body;  // que te lo mande el cliente
-  const payload    = { entrada: req.body };         // lo que te envió el usuario
-  const resultados = { meta, pasos, resumen };      // lo que calculaste
-
-  await pool.query(
-    'INSERT INTO calculos (email, contexto, payload, resultados) VALUES (?,?,?,?)',
-    [
-      email,
-      contexto,
-      JSON.stringify(payload),      // serializar a texto
-      JSON.stringify(resultados)    // serializar a texto
-    ]
-  );
-} catch (dbErr) {
-  console.error('Error guardando en MariaDB:', dbErr);
-  // No bloqueamos la respuesta aunque fallase el guardado
-}
+    try {
+      const userEmail = req.body.email || ''; // El frontend debe enviar el email
+      const contexto = req.body.contexto || 'A'; // El frontend debe enviar el contexto (A, B, C)
+      
+      // Crear hash del usuario para tracking anónimo
+      const userHash = userEmail ? require('crypto').createHash('md5').update(userEmail).digest('hex') : 'anonimo';
+      
+      await pool.query(
+        `INSERT INTO calculos_usuarios 
+         (user_email, user_hash, contexto, marca_baliza, modelo_baliza, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          userEmail,
+          userHash,
+          contexto,
+          marca_baliza,
+          modelo,
+          provincia,
+          parseFloat(coste_inicial),
+          total12y, // Este es el coste total a 12 años que ya calculas
+          JSON.stringify(req.body), // Todos los datos de entrada
+          JSON.stringify({ // Los resultados del cálculo
+            meta,
+            pasos, 
+            resumen,
+            total_12_anios: total12y
+          })
+        ]
+      );
+      
+      console.log('✅ Cálculo guardado en BD para tracking');
+      
+    } catch (dbError) {
+      console.warn('⚠️ Error guardando cálculo en BD (continuando):', dbError);
+      // NO fallar la petición aunque falle el guardado del tracking
+    }
 
     return res.json({
       meta,
@@ -857,7 +875,57 @@ try {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
-
+// Endpoint para guardar/verificar leads
+app.post('/api/guardar-lead', async (req, res) => {
+  try {
+    const { name, company, email, selection } = req.body;
+    
+    if (!email || !name) {
+      return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+    
+    // Verificar si el email ya existe
+    const [existing] = await pool.query(
+      'SELECT id FROM leads WHERE email = ?',
+      [email]
+    );
+    
+    let userId;
+    if (existing.length > 0) {
+      // Actualizar lead existente
+      userId = existing[0].id;
+      await pool.query(
+        'UPDATE leads SET name = ?, company = ?, last_seen = NOW() WHERE id = ?',
+        [name, company, userId]
+      );
+    } else {
+      // Crear nuevo lead
+      const [result] = await pool.query(
+        'INSERT INTO leads (name, company, email, created_at, last_seen) VALUES (?, ?, ?, NOW(), NOW())',
+        [name, company, email]
+      );
+      userId = result.insertId;
+    }
+    
+    // Guardar también la selección inicial si se proporciona
+    if (selection) {
+      await pool.query(
+        'INSERT INTO lead_selections (lead_id, selection_data) VALUES (?, ?)',
+        [userId, JSON.stringify(selection)]
+      );
+    }
+    
+    res.json({ 
+      success: true, 
+      user_id: userId,
+      message: existing.length > 0 ? 'Lead actualizado' : 'Lead creado'
+    });
+    
+  } catch (error) {
+    console.error('Error en /api/guardar-lead:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
 app.get('/api/beacons',      (req, res) => res.json(beacons));
 app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
