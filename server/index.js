@@ -656,20 +656,23 @@ const hasModeloCompra =
 app.post('/api/calcula', async (req, res) => {
   try {
     // en la cabecera del handler:
-const {
-  id_baliza,
-  id_sales_point,
-  marca,
-  tipo = '3x AA',
-  desconectable = 'no',
-  funda = 'no',
-  provincia = 'Madrid',
-  coste_inicial = 0,
-  edad_vehiculo = 5,
-  marca_baliza = 'Desconocida',
-  modelo = 'Desconocido',
-  modelo_compra = ''          // <--- AÑADIR
-} = req.body;
+    const {
+      id_baliza,
+      id_sales_point,
+      marca,
+      tipo = '3x AA',
+      desconectable = 'no',
+      funda = 'no',
+      provincia = 'Madrid',
+      coste_inicial = 0,
+      edad_vehiculo = 5,
+      marca_baliza = 'Desconocida',
+      modelo = 'Desconocido',
+      modelo_compra = '',
+      email = '',          // ← AÑADIDO: email del frontend
+      contexto = 'A'       // ← AÑADIDO: contexto del frontend (A, B, C)
+    } = req.body;
+
     const marca_pilas = marca;
 
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
@@ -827,31 +830,30 @@ const resumen = {
   coste_inicial: parseFloat(coste_inicial),
   edad_vehiculo: parseInt(edad_vehiculo)
 };
+
+    // === NUEVO: GUARDAR EN BASE DE DATOS ===
     try {
-      const userEmail = req.body.email || ''; // El frontend debe enviar el email
-      const contexto = req.body.contexto || 'A'; // El frontend debe enviar el contexto (A, B, C)
+      // Crear hash simple para el email (sin necesidad de crypto)
+      const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
       
-      // Crear hash del usuario para tracking anónimo
-      const userHash = userEmail ? require('crypto').createHash('md5').update(userEmail).digest('hex') : 'anonimo';
-      
-      await pool.query(
+      await pool.execute(
         `INSERT INTO calculos_usuarios 
          (user_email, user_hash, contexto, marca_baliza, modelo_baliza, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          userEmail,
+          email,
           userHash,
           contexto,
           marca_baliza,
           modelo,
           provincia,
           parseFloat(coste_inicial),
-          total12y, // Este es el coste total a 12 años que ya calculas
+          total12y,
           JSON.stringify(req.body), // Todos los datos de entrada
-          JSON.stringify({ // Los resultados del cálculo
-            meta,
-            pasos, 
-            resumen,
+          JSON.stringify({          // Los resultados del cálculo
+            meta: meta,
+            pasos: pasos, 
+            resumen: resumen,
             total_12_anios: total12y
           })
         ]
@@ -860,7 +862,7 @@ const resumen = {
       console.log('✅ Cálculo guardado en BD para tracking');
       
     } catch (dbError) {
-      console.warn('⚠️ Error guardando cálculo en BD (continuando):', dbError);
+      console.warn('⚠️ Error guardando cálculo en BD (continuando):', dbError.message);
       // NO fallar la petición aunque falle el guardado del tracking
     }
 
@@ -870,6 +872,7 @@ const resumen = {
       resumen,
       htmlTable: generateTable({ pasos, resumen }, meta)
     });
+    
   } catch (err) {
     console.error('Error en /api/calcula:', err);
     return res.status(500).json({ error: 'Error interno del servidor' });
