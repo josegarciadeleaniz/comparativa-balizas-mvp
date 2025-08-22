@@ -23,7 +23,7 @@ const pool = mysql.createPool({
 });
 const app = express();
 
-// --- CORS ---
+// --- CORS (definitivo) ---
 const ALLOWED_ORIGINS = [
   "https://comparativabalizas.es",
   "https://www.comparativabalizas.es",
@@ -33,14 +33,28 @@ const ALLOWED_ORIGINS = [
 ];
 
 app.disable("x-powered-by");
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true); // health checks, curl
-    cb(null, ALLOWED_ORIGINS.includes(origin));
-  },
-  methods: ["GET","POST","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"]
-}));
+
+// Delegado para CORS con whitelist y preflight
+const corsOptionsDelegate = (req, cb) => {
+  const origin = req.header("Origin");
+  if (!origin) {
+    // curl/healthchecks/requests internas sin Origin
+    return cb(null, { origin: true });
+  }
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    return cb(null, {
+      origin: true,
+      methods: ["GET", "POST", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"]
+      // credentials: false  // (por defecto). Actívalo si algún día usas cookies.
+    });
+  }
+  return cb(new Error("Not allowed by CORS"));
+};
+
+app.use(cors(corsOptionsDelegate));
+// Preflight global (OPTIONS)
+app.options("*", cors(corsOptionsDelegate));
 
 app.use(express.json());
 
@@ -52,16 +66,21 @@ app.use((req, res, next) => {
   );
   next();
 });
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
+
+// ⛔️ ELIMINAR el bloque que ponía '*' en Access-Control-Allow-Origin
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Origin', '*');
+//   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+//   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//   next();
+// });
+
 app.use(express.static(path.join(__dirname, '../client')));
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
 app.use('/images', express.static(path.join(__dirname, '../client/images')));
 app.use('/fonts', express.static(path.join(__dirname, '../client/fonts')));
+
+// Manejo JSON mal formado
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ error: "JSON malformado", message: "Verifica el formato" });
