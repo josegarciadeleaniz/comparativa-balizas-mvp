@@ -898,6 +898,7 @@ const resumen = {
   }
 });
 // Endpoint para guardar/verificar leads
+
 // === Guardar lead (POST /api/guardar-lead) ===
 // Requiere: name, email (obligatorios); phone, company, selection, calculo (opcionales)
 app.post('/api/guardar-lead', async (req, res) => {
@@ -906,16 +907,6 @@ app.post('/api/guardar-lead', async (req, res) => {
     if (!name || !email) {
       return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios (name, email)' });
     }
-app.post('/guardar-lead', async (req, res) => {
-  req.url = '/api/guardar-lead';
-  return app._router.handle(req, res, () => {});
-});
-    // Asegúrate de tener "pool" configurado con tu MariaDB
-    // Tablas según tu nota: leads, lead_selections, calculos_usuarios
-    // Estructura mínima sugerida:
-    // leads(id INT PK AI, nombre VARCHAR, email VARCHAR, telefono VARCHAR NULL, empresa VARCHAR NULL, creado_en TIMESTAMP)
-    // lead_selections(id INT PK AI, lead_id INT, selection_json JSON, creado_en TIMESTAMP)
-    // calculos_usuarios(id INT PK AI, lead_id INT, calculo_json JSON, creado_en TIMESTAMP)
 
     // 1) Inserta el lead
     const [leadResult] = await pool.query(
@@ -950,6 +941,14 @@ app.post('/guardar-lead', async (req, res) => {
     return res.status(500).json({ ok: false, error: 'Error DB' });
   }
 });
+
+// === Alias sin prefijo (/guardar-lead) ===
+app.post('/guardar-lead', (req, res, next) => {
+  // Reusa la misma lógica que /api/guardar-lead
+  req.url = '/api/guardar-lead';
+  return app._router.handle(req, res, next);
+});
+
 
 app.get('/api/beacons',      (req, res) => res.json(beacons));
 app.get('/api/sales_points', (req, res) => res.json(salesPoints));
