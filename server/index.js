@@ -898,56 +898,59 @@ const resumen = {
   }
 });
 // Endpoint para guardar/verificar leads
+// === Guardar lead (POST /api/guardar-lead) ===
+// Requiere: name, email (obligatorios); phone, company, selection, calculo (opcionales)
 app.post('/api/guardar-lead', async (req, res) => {
   try {
-    const { name, company, email, selection } = req.body;
-    
-    if (!email || !name) {
-      return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    const { name, email, phone, company, selection, calculo } = req.body || {};
+    if (!name || !email) {
+      return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios (name, email)' });
     }
-    
-    // Verificar si el email ya existe
-    const [existing] = await pool.query(
-      'SELECT id FROM leads WHERE email = ?',
-      [email]
+app.post('/guardar-lead', async (req, res) => {
+  req.url = '/api/guardar-lead';
+  return app._router.handle(req, res, () => {});
+});
+    // Asegúrate de tener "pool" configurado con tu MariaDB
+    // Tablas según tu nota: leads, lead_selections, calculos_usuarios
+    // Estructura mínima sugerida:
+    // leads(id INT PK AI, nombre VARCHAR, email VARCHAR, telefono VARCHAR NULL, empresa VARCHAR NULL, creado_en TIMESTAMP)
+    // lead_selections(id INT PK AI, lead_id INT, selection_json JSON, creado_en TIMESTAMP)
+    // calculos_usuarios(id INT PK AI, lead_id INT, calculo_json JSON, creado_en TIMESTAMP)
+
+    // 1) Inserta el lead
+    const [leadResult] = await pool.query(
+      `INSERT INTO leads (nombre, email, telefono, empresa, creado_en)
+       VALUES (?, ?, ?, ?, NOW())`,
+      [name, email, phone || null, company || null]
     );
-    
-    let userId;
-    if (existing.length > 0) {
-      // Actualizar lead existente
-      userId = existing[0].id;
-      await pool.query(
-        'UPDATE leads SET name = ?, company = ?, last_seen = NOW() WHERE id = ?',
-        [name, company, userId]
-      );
-    } else {
-      // Crear nuevo lead
-      const [result] = await pool.query(
-        'INSERT INTO leads (name, company, email, created_at, last_seen) VALUES (?, ?, ?, NOW(), NOW())',
-        [name, company, email]
-      );
-      userId = result.insertId;
-    }
-    
-    // Guardar también la selección inicial si se proporciona
+
+    const leadId = leadResult.insertId;
+
+    // 2) Guarda selección (si llegó)
     if (selection) {
       await pool.query(
-        'INSERT INTO lead_selections (lead_id, selection_data) VALUES (?, ?)',
-        [userId, JSON.stringify(selection)]
+        `INSERT INTO lead_selections (lead_id, selection_json, creado_en)
+         VALUES (?, ?, NOW())`,
+        [leadId, JSON.stringify(selection)]
       );
     }
-    
-    res.json({ 
-      success: true, 
-      user_id: userId,
-      message: existing.length > 0 ? 'Lead actualizado' : 'Lead creado'
-    });
-    
-  } catch (error) {
-    console.error('Error en /api/guardar-lead:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+
+    // 3) Guarda cálculo (si llegó)
+    if (calculo) {
+      await pool.query(
+        `INSERT INTO calculos_usuarios (lead_id, calculo_json, creado_en)
+         VALUES (?, ?, NOW())`,
+        [leadId, JSON.stringify(calculo)]
+      );
+    }
+
+    return res.json({ ok: true, lead_id: leadId });
+  } catch (err) {
+    console.error('Error en /api/guardar-lead:', err);
+    return res.status(500).json({ ok: false, error: 'Error DB' });
   }
 });
+
 app.get('/api/beacons',      (req, res) => res.json(beacons));
 app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
