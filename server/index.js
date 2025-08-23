@@ -56,34 +56,100 @@ app.use(cors(corsOptionsDelegate));
 // Preflight global (OPTIONS)
 app.options("*", cors(corsOptionsDelegate));
 
+// === BODY PARSER ===
 app.use(express.json());
 
-// --- CSP para iframes ---
+// ====== DEBUG: listar rutas registradas ======
+app.get('/__routes', (req, res) => {
+  const routes = [];
+  app._router.stack.forEach((m) => {
+    if (m.route) {
+      const methods = Object.keys(m.route.methods).join(',').toUpperCase();
+      routes.push(`${methods} ${m.route.path}`);
+    } else if (m.name === 'router' && m.handle?.stack) {
+      m.handle.stack.forEach((h) => {
+        const r = h.route;
+        if (r) {
+          const methods = Object.keys(r.methods).join(',').toUpperCase();
+          routes.push(`${methods} ${r.path}`);
+        }
+      });
+    }
+  });
+  res.type('text/plain').send(routes.sort().join('\n'));
+});
+
+// Ping
+app.get('/api/ping', (req, res) => res.json({ ok: true }));
+
+// ====== ENDPOINT REAL: GUARDAR LEAD ======
+app.post('/api/guardar-lead', async (req, res) => {
+  try {
+    const { name, email, phone, company, selection, calculo } = req.body || {};
+    if (!name || !email) {
+      return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios (name, email)' });
+    }
+
+    // Asegúrate de tener arriba algo como:
+    // const pool = mariadb.createPool({ host, user, password, database: 'Balizas', connectionLimit: 5 });
+
+    // 1) lead
+    const [leadResult] = await pool.query(
+      `INSERT INTO leads (nombre, email, telefono, empresa, creado_en)
+       VALUES (?, ?, ?, ?, NOW())`,
+      [name, email, phone || null, company || null]
+    );
+    const leadId = leadResult.insertId;
+
+    // 2) selection (opcional)
+    if (selection) {
+      await pool.query(
+        `INSERT INTO lead_selections (lead_id, selection_json, creado_en)
+         VALUES (?, ?, NOW())`,
+        [leadId, JSON.stringify(selection)]
+      );
+    }
+
+    // 3) calculo (opcional)
+    if (calculo) {
+      await pool.query(
+        `INSERT INTO calculos_usuarios (lead_id, calculo_json, creado_en)
+         VALUES (?, ?, NOW())`,
+        [leadId, JSON.stringify(calculo)]
+      );
+    }
+
+    res.json({ ok: true, lead_id: leadId });
+  } catch (err) {
+    console.error('Error en /api/guardar-lead:', err);
+    res.status(500).json({ ok: false, error: 'Error DB' });
+  }
+});
+
+// Alias sin /api (reusa el handler anterior)
+app.post('/guardar-lead', (req, res, next) => {
+  req.url = '/api/guardar-lead';
+  app._router.handle(req, res, next);
+});
+
+// --- CSP para iframes (después de las rutas API y antes de estáticos) ---
 app.use((req, res, next) => {
   res.setHeader(
-    "Content-Security-Policy",
+    'Content-Security-Policy',
     "frame-ancestors 'self' https://*.comparativabalizas.es https://*.mejorigual.org"
   );
   next();
 });
 
-// ⛔️ ELIMINAR el bloque que ponía '*' en Access-Control-Allow-Origin
-// app.use((req, res, next) => {
-//   res.header('Access-Control-Allow-Origin', '*');
-//   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-//   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-//   next();
-// });
-
+// === ESTÁTICOS (al final) ===
 app.use(express.static(path.join(__dirname, '../client')));
-app.get('/api/ping', (req, res) => res.json({ ok: true }));
 app.use('/images', express.static(path.join(__dirname, '../client/images')));
-app.use('/fonts', express.static(path.join(__dirname, '../client/fonts')));
+app.use('/fonts',  express.static(path.join(__dirname, '../client/fonts')));
 
-// Manejo JSON mal formado
+// === MANEJADOR DE ERRORES JSON ===
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({ error: "JSON malformado", message: "Verifica el formato" });
+    return res.status(400).json({ error: 'JSON malformado', message: 'Verifica el formato' });
   }
   next();
 });
