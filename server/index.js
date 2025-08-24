@@ -1,97 +1,80 @@
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-
-const batteryData  = require("./battery_types.json");
-const provincias   = require("./provincias.json");
-const beacons      = require("./beacons.json");
-const salesPoints  = require("./sales_points.json");
-const nodemailer   = require("nodemailer");
-const PDFDocument  = require("pdfkit");
-// Conexión MariaDB (mysql2/promise)
+// index.js — Backend Express para Render
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
 const mysql = require('mysql2/promise');
 
-// ⚠️ Rellena con los datos que te da Plesk (DB name/user/pass)
+// JSON locales (si los usas para /api/calcula)
+const batteryData = require('./battery_types.json');
+const provincias  = require('./provincias.json');
+const beacons     = require('./beacons.json');
+const salesPoints = require('./sales_points.json');
+
+const app = express();
+
+// ===== MariaDB (rellena con tus datos de Render o del servidor de BD que uses) =====
 const pool = mysql.createPool({
-  host: 'localhost',      // en Plesk suele ser 'localhost'
-  user: 'balizas2_user',
-  password: 'Cambiame-1',
-  database: 'balizas',    // o el nombre de base de datos que creaste
-  port: 3306,
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'balizas_user',
+  password: process.env.DB_PASS || 'password',
+  database: process.env.DB_NAME || 'balizas',
+  port: +(process.env.DB_PORT || 3306),
   waitForConnections: true,
   connectionLimit: 5
 });
-const app = express();
 
-// --- CORS (definitivo) ---
+// ===== CORS =====
 const ALLOWED_ORIGINS = [
-  "https://comparativabalizas.es",
-  "https://www.comparativabalizas.es",
-  "https://widget.comparativabalizas.es",
-  "https://app.comparativabalizas.es",
-  "https://comparativa-balizas-mvp.onrender.com" // pruebas
+  'https://comparativabalizas.es',
+  'https://www.comparativabalizas.es',
+  'https://widget.comparativabalizas.es',
+  'https://app.comparativabalizas.es',
+  'https://comparativa-balizas-mvp.onrender.com' // backend en Render
 ];
-
-app.disable("x-powered-by");
-
-// Delegado para CORS con whitelist y preflight
 const corsOptionsDelegate = (req, cb) => {
-  const origin = req.header("Origin");
-  if (!origin) {
-    // curl/healthchecks/requests internas sin Origin
-    return cb(null, { origin: true });
-  }
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    return cb(null, {
-      origin: true,
-      methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"]
-      // credentials: false  // (por defecto). Actívalo si algún día usas cookies.
-    });
-  }
-  return cb(new Error("Not allowed by CORS"));
+  const origin = req.header('Origin');
+  if (!origin) return cb(null, { origin: true });
+  cb(null, {
+    origin: ALLOWED_ORIGINS.includes(origin),
+    methods: ['GET','POST','OPTIONS'],
+    allowedHeaders: ['Content-Type','Authorization']
+  });
 };
-
 app.use(cors(corsOptionsDelegate));
-// Preflight global (OPTIONS)
-app.options("*", cors(corsOptionsDelegate));
+app.options('*', cors(corsOptionsDelegate));
 
-// === BODY PARSER ===
+// ===== Body parser =====
 app.use(express.json());
 
-// ====== DEBUG: listar rutas registradas ======
+// ===== Rutas de debug =====
 app.get('/__routes', (req, res) => {
-  const routes = [];
+  const out = [];
   app._router.stack.forEach((m) => {
     if (m.route) {
       const methods = Object.keys(m.route.methods).join(',').toUpperCase();
-      routes.push(`${methods} ${m.route.path}`);
+      out.push(`${methods} ${m.route.path}`);
     } else if (m.name === 'router' && m.handle?.stack) {
-      m.handle.stack.forEach((h) => {
-        const r = h.route;
-        if (r) {
-          const methods = Object.keys(r.methods).join(',').toUpperCase();
-          routes.push(`${methods} ${r.path}`);
+      m.handle.stack.forEach(h => {
+        if (h.route) {
+          const methods = Object.keys(h.route.methods).join(',').toUpperCase();
+          out.push(`${methods} ${h.route.path}`);
         }
       });
     }
   });
-  res.type('text/plain').send(routes.sort().join('\n'));
+  res.type('text/plain').send(out.sort().join('\n'));
 });
 
-// Ping
+app.get('/', (req, res) => res.json({ ok: true, app: 'comparativa-balizas backend' }));
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
 
-// ====== ENDPOINT REAL: GUARDAR LEAD ======
+// ====== GUARDAR LEAD ======
 app.post('/api/guardar-lead', async (req, res) => {
   try {
     const { name, email, phone, company, selection, calculo } = req.body || {};
     if (!name || !email) {
       return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios (name, email)' });
     }
-
-    // Asegúrate de tener arriba algo como:
-    // const pool = mariadb.createPool({ host, user, password, database: 'Balizas', connectionLimit: 5 });
 
     // 1) lead
     const [leadResult] = await pool.query(
@@ -126,7 +109,7 @@ app.post('/api/guardar-lead', async (req, res) => {
   }
 });
 
-// Alias sin /api (reusa el handler anterior)
+// Alias sin /api por compatibilidad
 app.post('/guardar-lead', (req, res, next) => {
   req.url = '/api/guardar-lead';
   app._router.handle(req, res, next);
