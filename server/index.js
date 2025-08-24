@@ -998,7 +998,15 @@ const resumen = {
       console.warn('⚠️ Error guardando cálculo en BD (continuando):', dbError.message);
       // NO fallar la petición aunque falle el guardado del tracking
     }
-
+    if (DEBUG) {
+  console.log('— /api/calcula -> meta:', meta);
+  console.log('— /api/calcula -> resumen:', resumen);
+  console.log('— /api/calcula -> pasos.vida_ajustada / reposiciones / coste_pilas:', {
+    vida_ajustada: pasos.vida_ajustada,
+    reposiciones: pasos.reposiciones,
+    coste_pilas: pasos.coste_pilas
+     });
+    }
     return res.json({
       meta,
       pasos,
