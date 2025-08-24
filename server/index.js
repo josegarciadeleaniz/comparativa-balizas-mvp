@@ -59,28 +59,74 @@ app.options("*", cors(corsOptionsDelegate));
 // === BODY PARSER ===
 app.use(express.json());
 
-// ====== DEBUG: listar rutas registradas ======
-app.get('/__routes', (req, res) => {
-  const routes = [];
-  app._router.stack.forEach((m) => {
-    if (m.route) {
-      const methods = Object.keys(m.route.methods).join(',').toUpperCase();
-      routes.push(`${methods} ${m.route.path}`);
-    } else if (m.name === 'router' && m.handle?.stack) {
-      m.handle.stack.forEach((h) => {
-        const r = h.route;
-        if (r) {
-          const methods = Object.keys(r.methods).join(',').toUpperCase();
-          routes.push(`${methods} ${r.path}`);
-        }
-      });
-    }
+// ===== DEBUG SWITCH (actívalo con RENDER_DEBUG=1, por ejemplo) =====
+const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1';
+
+// ===== Logger de peticiones (solo si DEBUG) =====
+if (DEBUG) {
+  app.use((req, res, next) => {
+    const started = Date.now();
+    res.on('finish', () => {
+      const ms = Date.now() - started;
+      console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${ms}ms)`);
+    });
+    next();
   });
-  res.type('text/plain').send(routes.sort().join('\n'));
+}
+
+// ===== Listado de rutas registradas =====
+app.get('/__routes', (req, res) => {
+  try {
+    const routes = [];
+    app._router.stack.forEach((m) => {
+      if (m.route) {
+        const methods = Object.keys(m.route.methods).join(',').toUpperCase();
+        routes.push(`${methods} ${m.route.path}`);
+      } else if (m.name === 'router' && m.handle?.stack) {
+        m.handle.stack.forEach(h => {
+          if (h.route) {
+            const methods = Object.keys(h.route.methods).join(',').toUpperCase();
+            routes.push(`${methods} ${h.route.path}`);
+          }
+        });
+      }
+    });
+    res.type('text/plain').send(routes.sort().join('\n'));
+  } catch (e) {
+    res.status(500).json({ error: 'No se pudieron listar rutas', details: String(e) });
+  }
 });
 
-// Ping
-app.get('/api/ping', (req, res) => res.json({ ok: true }));
+// ===== Ping básico =====
+app.get('/__ping', (req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
+
+// ===== Ver CORS vigente (solo lectura) =====
+app.get('/__cors', (req, res) => {
+  res.json({
+    ALLOWED_ORIGINS,
+    note: 'Esta es la whitelist que usa el delegate de CORS'
+  });
+});
+
+// ===== Comprobar conexión DB =====
+app.get('/__db', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT 1 AS ok');
+    res.json({ ok: true, rows });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e) });
+  }
+});
+
+// ===== Echo de cuerpo para probar POST desde fuera =====
+app.post('/__echo', (req, res) => {
+  res.json({
+    method: req.method,
+    path: req.originalUrl,
+    headers: req.headers,
+    body: req.body
+  });
+});
 
 // ====== ENDPOINT REAL: GUARDAR LEAD ======
 // === Guardar lead (POST /api/guardar-lead) ===
@@ -92,11 +138,10 @@ app.post('/api/guardar-lead', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios (name, email)' });
     }
 
-    // ⚠️ Debes tener creado "pool" con mysql2/promise arriba
-    // Ejemplo:
-    // const pool = mysql.createPool({ host, user, password, database: 'Balizas', connectionLimit: 5 });
+    // ⚠️ Debes tener definido arriba:
+    // const pool = mysql.createPool({ host, user, password, database: 'Balizas', ... });
 
-    // 1) Inserta el lead
+    // 1) Inserta lead
     const [leadResult] = await pool.query(
       `INSERT INTO leads (nombre, email, telefono, empresa, creado_en)
        VALUES (?, ?, ?, ?, NOW())`,
@@ -104,7 +149,7 @@ app.post('/api/guardar-lead', async (req, res) => {
     );
     const leadId = leadResult.insertId;
 
-    // 2) Guarda selección (si llegó)
+    // 2) selection (opcional)
     if (selection) {
       await pool.query(
         `INSERT INTO lead_selections (lead_id, selection_json, creado_en)
@@ -113,7 +158,7 @@ app.post('/api/guardar-lead', async (req, res) => {
       );
     }
 
-    // 3) Guarda cálculo (si llegó)
+    // 3) calculo (opcional)
     if (calculo) {
       await pool.query(
         `INSERT INTO calculos_usuarios (lead_id, calculo_json, creado_en)
@@ -129,12 +174,11 @@ app.post('/api/guardar-lead', async (req, res) => {
   }
 });
 
-// (Opcional) Alias sin /api por compatibilidad
+// (alias sin /api por compatibilidad con el front)
 app.post('/guardar-lead', (req, res, next) => {
   req.url = '/api/guardar-lead';
   app._router.handle(req, res, next);
 });
-
 
 // --- CSP para iframes (después de las rutas API y antes de estáticos) ---
 app.use((req, res, next) => {
