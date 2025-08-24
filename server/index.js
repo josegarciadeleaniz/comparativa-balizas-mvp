@@ -83,6 +83,8 @@ app.get('/__routes', (req, res) => {
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
 
 // ====== ENDPOINT REAL: GUARDAR LEAD ======
+// === Guardar lead (POST /api/guardar-lead) ===
+// Requiere: name, email (obligatorios); phone, company, selection, calculo (opcionales)
 app.post('/api/guardar-lead', async (req, res) => {
   try {
     const { name, email, phone, company, selection, calculo } = req.body || {};
@@ -90,10 +92,11 @@ app.post('/api/guardar-lead', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios (name, email)' });
     }
 
-    // Asegúrate de tener arriba algo como:
-    // const pool = mariadb.createPool({ host, user, password, database: 'Balizas', connectionLimit: 5 });
+    // ⚠️ Debes tener creado "pool" con mysql2/promise arriba
+    // Ejemplo:
+    // const pool = mysql.createPool({ host, user, password, database: 'Balizas', connectionLimit: 5 });
 
-    // 1) lead
+    // 1) Inserta el lead
     const [leadResult] = await pool.query(
       `INSERT INTO leads (nombre, email, telefono, empresa, creado_en)
        VALUES (?, ?, ?, ?, NOW())`,
@@ -101,7 +104,7 @@ app.post('/api/guardar-lead', async (req, res) => {
     );
     const leadId = leadResult.insertId;
 
-    // 2) selection (opcional)
+    // 2) Guarda selección (si llegó)
     if (selection) {
       await pool.query(
         `INSERT INTO lead_selections (lead_id, selection_json, creado_en)
@@ -110,7 +113,7 @@ app.post('/api/guardar-lead', async (req, res) => {
       );
     }
 
-    // 3) calculo (opcional)
+    // 3) Guarda cálculo (si llegó)
     if (calculo) {
       await pool.query(
         `INSERT INTO calculos_usuarios (lead_id, calculo_json, creado_en)
@@ -119,18 +122,19 @@ app.post('/api/guardar-lead', async (req, res) => {
       );
     }
 
-    res.json({ ok: true, lead_id: leadId });
+    return res.json({ ok: true, lead_id: leadId });
   } catch (err) {
     console.error('Error en /api/guardar-lead:', err);
-    res.status(500).json({ ok: false, error: 'Error DB' });
+    return res.status(500).json({ ok: false, error: 'Error DB' });
   }
 });
 
-// Alias sin /api (reusa el handler anterior)
+// (Opcional) Alias sin /api por compatibilidad
 app.post('/guardar-lead', (req, res, next) => {
   req.url = '/api/guardar-lead';
   app._router.handle(req, res, next);
 });
+
 
 // --- CSP para iframes (después de las rutas API y antes de estáticos) ---
 app.use((req, res, next) => {
