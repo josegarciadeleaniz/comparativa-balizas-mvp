@@ -17,7 +17,7 @@ const mysql = require('mysql2/promise');
 let pool = null;
 try {
   pool = mysql.createPool({
-    host:     process.env.DB_HOST || '127.0.0.1',   // <- pon aquí el host de Plesk vía env
+    host:     process.env.DB_HOST || '82.223.102.93',  
     user:     process.env.DB_USER || 'balizas2_user',
     password: process.env.DB_PASS || 'Cambiame-1',
     database: process.env.DB_NAME || 'balizas',
