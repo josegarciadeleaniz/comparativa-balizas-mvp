@@ -1131,44 +1131,68 @@ app.post('/api/enviar-pdf', async (req, res) => {
   }
 });
 // ===== Proxy de imágenes (solución CORS para html2canvas) =====
+// En index.js, mejora el endpoint /api/proxy-image:
 app.get('/api/proxy-image', async (req, res) => {
   try {
     const url = req.query.url;
     if (!url) return res.status(400).send('Missing url');
 
-    // Seguros básicos: solo permitimos tirar de comparativabalizas.es
-    const u = new URL(url);
-    const allowedHost = 'comparativabalizas.es';
-    if (u.hostname !== allowedHost) {
-      return res.status(400).send('Bad origin');
+    // Verificar que la URL sea válida y permitida
+    const allowedHosts = ['comparativabalizas.es', 'www.comparativabalizas.es'];
+    const parsedUrl = new URL(url);
+    
+    if (!allowedHosts.includes(parsedUrl.hostname)) {
+      return res.status(400).send('Origin not allowed');
     }
 
-    // Configurar opciones de fetch para seguir redirecciones
-    const fetchOptions = {
+    // Verificar que sea una ruta de imágenes permitida
+    const allowedPaths = [
+      '/comparativa-balizas-mvp/client/images/',
+      '/comparativa-balizas-mvp/client/images/beacons/'
+    ];
+    
+    if (!allowedPaths.some(path => parsedUrl.pathname.startsWith(path))) {
+      return res.status(400).send('Path not allowed');
+    }
+
+    // Configurar opciones de fetch
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+    
+    const response = await fetch(url, {
+      signal: controller.signal,
       redirect: 'follow',
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; BalizaPDF/1.0)'
       }
-    };
+    });
+    
+    clearTimeout(timeoutId);
 
-    const response = await fetch(u.href, fetchOptions);
     if (!response.ok) {
       return res.status(response.status).send('Upstream error: ' + response.statusText);
     }
 
-    const contentType = response.headers.get('content-type') || 'image/png';
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.startsWith('image/')) {
+      return res.status(400).send('Not an image');
+    }
+
     const imageBuffer = Buffer.from(await response.arrayBuffer());
 
     // Headers CORS
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.set('Content-Type', contentType);
-    res.set('Cache-Control', 'public, max-age=86400'); // Cache de 1 día
+    res.set('Cache-Control', 'public, max-age=86400');
 
     return res.send(imageBuffer);
-  } catch (e) {
-    console.error('proxy-image error:', e);
-    return res.status(500).send('Proxy fail: ' + e.message);
+  } catch (error) {
+    console.error('proxy-image error:', error);
+    if (error.name === 'AbortError') {
+      return res.status(504).send('Request timeout');
+    }
+    return res.status(500).send('Proxy error: ' + error.message);
   }
 });
 // --- 404 ---
