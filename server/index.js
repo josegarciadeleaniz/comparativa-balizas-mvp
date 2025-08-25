@@ -1038,12 +1038,60 @@ app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
 app.post('/api/enviar-pdf', async (req, res) => {
   try {
-    const { email, title = 'Informe de baliza', resumenText = '', detalleText = '' } = req.body || {};
+    const {
+      email,
+      title = 'Informe de baliza',
+      resumenText = '',
+      detalleText = '',
+      pdfBase64, // <-- si viene, usamos el PDF del navegador
+      filename   // <-- opcional; si no viene, se pone uno por defecto
+    } = req.body || {};
+
     if (!email) {
       return res.status(400).json({ ok: false, error: 'Falta el email' });
     }
 
-    // 1) Generar PDF con pdfkit (texto simple)
+    // Helper: crea transporter SMTP real (si hay vars) o Ethereal (pruebas)
+    async function getTransporter() {
+      if (process.env.SMTP_HOST) {
+        return nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: parseInt(process.env.SMTP_PORT || '587', 10),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: (process.env.SMTP_USER && process.env.SMTP_PASS)
+            ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+            : undefined
+        });
+      } else {
+        const testAcc = await nodemailer.createTestAccount();
+        return nodemailer.createTransport({
+          host: 'smtp.ethereal.email',
+          port: 587,
+          secure: false,
+          auth: { user: testAcc.user, pass: testAcc.pass }
+        });
+      }
+    }
+
+    // === Ruta 1: viene PDF del front (base64) -> adjuntar y enviar ===
+    if (pdfBase64) {
+      const pdfBuffer = Buffer.from(pdfBase64, 'base64');
+      const name = filename || `${title}.pdf`;
+
+      const transporter = await getTransporter();
+      const info = await transporter.sendMail({
+        from: process.env.MAIL_FROM || 'Baliza <no-reply@local>',
+        to: email,
+        subject: title,
+        html: `<p>Adjuntamos el PDF con el detalle de tu cálculo.</p>`,
+        attachments: [{ filename: name, content: pdfBuffer, contentType: 'application/pdf' }]
+      });
+
+      const previewUrl = nodemailer.getTestMessageUrl?.(info) || null;
+      return res.json({ ok: true, previewUrl });
+    }
+
+    // === Ruta 2: NO viene PDF -> generarlo con pdfkit como hacías ===
     const doc = new PDFDocument({ size: 'A4', margins: { top: 50, left: 50, right: 50, bottom: 50 } });
     const chunks = [];
     doc.on('data', d => chunks.push(d));
@@ -1056,42 +1104,21 @@ app.post('/api/enviar-pdf', async (req, res) => {
 
     doc.end();
 
-    // 2) Cuando acabe el PDF, enviar email
     doc.on('end', async () => {
       try {
         const pdfBuffer = Buffer.concat(chunks);
+        const name = filename || `${title}.pdf`;
 
-        // Transport: usa SMTP real si pones variables de entorno,
-        // si no, cae a cuenta de prueba (Ethereal)
-        let transporter;
-        if (process.env.SMTP_HOST) {
-          transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: parseInt(process.env.SMTP_PORT || '587', 10),
-            secure: process.env.SMTP_SECURE === 'true',
-            auth: (process.env.SMTP_USER && process.env.SMTP_PASS)
-              ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-              : undefined
-          });
-        } else {
-          const testAcc = await nodemailer.createTestAccount();
-          transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
-            secure: false,
-            auth: { user: testAcc.user, pass: testAcc.pass }
-          });
-        }
-
+        const transporter = await getTransporter();
         const info = await transporter.sendMail({
           from: process.env.MAIL_FROM || 'Baliza <no-reply@local>',
           to: email,
           subject: title,
           text: `${resumenText}\n\n${detalleText}`,
-          attachments: [{ filename: `${title}.pdf`, content: pdfBuffer }]
+          attachments: [{ filename: name, content: pdfBuffer, contentType: 'application/pdf' }]
         });
 
-        const previewUrl = nodemailer.getTestMessageUrl(info) || null;
+        const previewUrl = nodemailer.getTestMessageUrl?.(info) || null;
         return res.json({ ok: true, previewUrl });
       } catch (e2) {
         console.error('Fallo enviando email:', e2);
@@ -1103,9 +1130,6 @@ app.post('/api/enviar-pdf', async (req, res) => {
     return res.status(500).json({ ok: false, error: 'Error interno al generar/enviar PDF' });
   }
 });
-
-
-
 // --- 404 ---
 app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
 
