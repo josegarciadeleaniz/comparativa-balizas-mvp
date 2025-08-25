@@ -11,16 +11,21 @@ const PDFDocument  = require("pdfkit");
 // Conexión MariaDB (mysql2/promise)
 const mysql = require('mysql2/promise');
 
-// ⚠️ Rellena con los datos que te da Plesk (DB name/user/pass)
-const pool = mysql.createPool({
-  host: 'localhost',      // en Plesk suele ser 'localhost'
-  user: 'balizas2_user',
-  password: 'Cambiame-1',
-  database: 'balizas',    // o el nombre de base de datos que creaste
-  port: 3306,
-  waitForConnections: true,
-  connectionLimit: 5
-});
+// ⚠️ Si estás en Render y no tienes DB configurada allí, dejaremos el pool en null para que no rompa.
+let pool = null;
+try {
+  pool = mysql.createPool({
+    host: process.env.MYSQL_HOST || 'localhost',
+    user: process.env.MYSQL_USER || 'balizas2_user',
+    password: process.env.MYSQL_PASSWORD || 'Cambiame-1',
+    database: process.env.MYSQL_DATABASE || 'balizas',
+    port: Number(process.env.MYSQL_PORT || 3306),
+    waitForConnections: true,
+    connectionLimit: 5
+  });
+} catch (e) {
+  console.warn('DB no inicializada (pool=null). Solo funcionarán endpoints sin DB.');
+}
 const app = express();
 
 // --- CORS (definitivo) ---
@@ -133,13 +138,15 @@ app.post('/__echo', (req, res) => {
 // Requiere: name, email (obligatorios); phone, company, selection, calculo (opcionales)
 app.post('/api/guardar-lead', async (req, res) => {
   try {
+    // Si el pool aún no está listo, no tumbar el proceso:
+    if (!pool) {
+      return res.status(503).json({ ok: false, error: 'DB no inicializada en servidor' });
+    }
+
     const { name, email, phone, company, selection, calculo } = req.body || {};
     if (!name || !email) {
       return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios (name, email)' });
     }
-
-    // ⚠️ Debes tener definido arriba:
-    // const pool = mysql.createPool({ host, user, password, database: 'Balizas', ... });
 
     // 1) Inserta lead
     const [leadResult] = await pool.query(
@@ -149,7 +156,7 @@ app.post('/api/guardar-lead', async (req, res) => {
     );
     const leadId = leadResult.insertId;
 
-    // 2) selection (opcional)
+    // 2) Guarda selección (si llegó)
     if (selection) {
       await pool.query(
         `INSERT INTO lead_selections (lead_id, selection_json, creado_en)
@@ -158,7 +165,7 @@ app.post('/api/guardar-lead', async (req, res) => {
       );
     }
 
-    // 3) calculo (opcional)
+    // 3) Guarda cálculo (si llegó)
     if (calculo) {
       await pool.query(
         `INSERT INTO calculos_usuarios (lead_id, calculo_json, creado_en)
@@ -174,19 +181,10 @@ app.post('/api/guardar-lead', async (req, res) => {
   }
 });
 
-// (alias sin /api por compatibilidad con el front)
+// Alias sin /api por compatibilidad (redirige a la ruta anterior)
 app.post('/guardar-lead', (req, res, next) => {
   req.url = '/api/guardar-lead';
   app._router.handle(req, res, next);
-});
-
-// --- CSP para iframes (después de las rutas API y antes de estáticos) ---
-app.use((req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    "frame-ancestors 'self' https://*.comparativabalizas.es https://*.mejorigual.org"
-  );
-  next();
 });
 
 // === ESTÁTICOS (al final) ===
@@ -1019,59 +1017,6 @@ const resumen = {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
-// Endpoint para guardar/verificar leads
-
-// === Guardar lead (POST /api/guardar-lead) ===
-// Requiere: name, email (obligatorios); phone, company, selection, calculo (opcionales)
-app.post('/api/guardar-lead', async (req, res) => {
-  try {
-    const { name, email, phone, company, selection, calculo } = req.body || {};
-    if (!name || !email) {
-      return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios (name, email)' });
-    }
-
-    // 1) Inserta el lead
-    const [leadResult] = await pool.query(
-      `INSERT INTO leads (nombre, email, telefono, empresa, creado_en)
-       VALUES (?, ?, ?, ?, NOW())`,
-      [name, email, phone || null, company || null]
-    );
-
-    const leadId = leadResult.insertId;
-
-    // 2) Guarda selección (si llegó)
-    if (selection) {
-      await pool.query(
-        `INSERT INTO lead_selections (lead_id, selection_json, creado_en)
-         VALUES (?, ?, NOW())`,
-        [leadId, JSON.stringify(selection)]
-      );
-    }
-
-    // 3) Guarda cálculo (si llegó)
-    if (calculo) {
-      await pool.query(
-        `INSERT INTO calculos_usuarios (lead_id, calculo_json, creado_en)
-         VALUES (?, ?, NOW())`,
-        [leadId, JSON.stringify(calculo)]
-      );
-    }
-
-    return res.json({ ok: true, lead_id: leadId });
-  } catch (err) {
-    console.error('Error en /api/guardar-lead:', err);
-    return res.status(500).json({ ok: false, error: 'Error DB' });
-  }
-});
-
-// === Alias sin prefijo (/guardar-lead) ===
-app.post('/guardar-lead', (req, res, next) => {
-  // Reusa la misma lógica que /api/guardar-lead
-  req.url = '/api/guardar-lead';
-  return app._router.handle(req, res, next);
-});
-
-
 app.get('/api/beacons',      (req, res) => res.json(beacons));
 app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
