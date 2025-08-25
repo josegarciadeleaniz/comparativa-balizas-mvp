@@ -1136,31 +1136,39 @@ app.get('/api/proxy-image', async (req, res) => {
     const url = req.query.url;
     if (!url) return res.status(400).send('Missing url');
 
-    // Seguros básicos: solo permitimos tirar de comparativabalizas.es y solo de /comparativa-balizas-mvp/client/images/
+    // Seguros básicos: solo permitimos tirar de comparativabalizas.es
     const u = new URL(url);
     const allowedHost = 'comparativabalizas.es';
-    if (u.hostname !== allowedHost || !u.pathname.startsWith('/comparativa-balizas-mvp/client/images/')) {
+    if (u.hostname !== allowedHost) {
       return res.status(400).send('Bad origin');
     }
 
-    // Node 18+ trae fetch; si no, usa node-fetch
-    const r = await fetch(u.href, { redirect: 'follow' });
-    if (!r.ok) return res.status(r.status).send('Upstream error');
+    // Configurar opciones de fetch para seguir redirecciones
+    const fetchOptions = {
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; BalizaPDF/1.0)'
+      }
+    };
 
-    const ct = r.headers.get('content-type') || 'image/png';
-    const buf = Buffer.from(await r.arrayBuffer());
+    const response = await fetch(u.href, fetchOptions);
+    if (!response.ok) {
+      return res.status(response.status).send('Upstream error: ' + response.statusText);
+    }
 
-    // CORS abierto para el widget
+    const contentType = response.headers.get('content-type') || 'image/png';
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
+
+    // Headers CORS
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.set('Content-Type', ct);
-    // Cachea 1 día (opcional)
-    res.set('Cache-Control', 'public, max-age=86400');
+    res.set('Content-Type', contentType);
+    res.set('Cache-Control', 'public, max-age=86400'); // Cache de 1 día
 
-    return res.send(buf);
+    return res.send(imageBuffer);
   } catch (e) {
     console.error('proxy-image error:', e);
-    return res.status(500).send('Proxy fail');
+    return res.status(500).send('Proxy fail: ' + e.message);
   }
 });
 // --- 404 ---
