@@ -66,7 +66,7 @@ app.use(cors(corsOptionsDelegate));
 app.options("*", cors(corsOptionsDelegate));
 
 // === BODY PARSER ===
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 
 // ===== DEBUG SWITCH (actívalo con RENDER_DEBUG=1, por ejemplo) =====
 const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1';
