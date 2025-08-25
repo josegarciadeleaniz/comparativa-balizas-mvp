@@ -652,7 +652,7 @@ const hasModeloCompra =
 
             <!-- 10) Mitigación de Riesgo -->
             <tr>
-              <td>Mitigación de Riesgo</td>
+              <td>Mitigación de Riesgo de fugas</td>
               <td>
                 El riesgo de fugas se puede mitigar si la baliza dispone de la posibilidad de desconexión de los polos, <strong>(${esDesconectable ? 'sí' : 'no'})</strong>, con un <strong>${(mitDescPct*100).toFixed(0)}%</strong> de reducción. Si además lleva funda térmica de silicona/ EVA Foam  el factor funda genera un <strong>(<strong>${(mitFundaPct*100).toFixed(0)}%</strong> extra.)</strong>. La Degradación de las baterías de una baliza no sigue un criterio lineal, y estudios científicos demuestran que dicha degradación aumenta el riesgo de fuga en 15% por cada 5ºC por encima de 30ºC. En su Baliza <strong>${meta.marca_baliza} ${meta.modelo} </strong> este factor mitigación es por tanto de:<br> <strong><li>Factor de Mitigación = ${(mitDescPct*100).toFixed(0)}% + ${(mitFundaPct*100).toFixed(0)}% = ${(mitigacionPct*100).toFixed(0)}%</strong><br>. Fuente: Estudio MIT sobre fugas.
               </td>
@@ -661,7 +661,7 @@ const hasModeloCompra =
 
             <!-- 11) Riesgo final de fuga -->
 <tr style="background-color:#fff7cc;">
-  <td>Riesgo final de fuga. <strong><em>P<sub>fuga_final</sub><em></strong></td></td>
+  <td>Riesgo final de fuga anual. <strong><em>P<sub>fuga_final</sub><em></strong></td></td>
  <td>
     El riesgo final de fuga o sulfatación de las baterías de su baliza. <strong>${meta.marca_baliza} ${meta.modelo}</strong> es el resultado de aplicar el riesgo de fuga anual y la mitigación de dicho riesgo. Esta cifra que se presenta como porcentaje indica que de cada 100 balizas exactamente iguales con las mismas pilas (asumiendo que se realiza el número de reposiciones calculado anteriormente), este porcentaje de balizas sufrirán fugas, y por tanto, sulfatación y rotura, teniendo en cuenta el histórico de temperaturas de su provincia, y los datos reportados por fuentes solventes respecto al riesgo de fugas por marca y modelo de pilas: <br> <li><strong>Riesgo final de fuga = ${(prob_fuga*100).toFixed(2)}% × ${(mitigacionMult*100).toFixed(0)}% = <strong>${(riesgoFinalCalc*100).toFixed(2)}%</strong>%</strong></li>
   </td>
@@ -670,7 +670,7 @@ const hasModeloCompra =
 
 <!-- 12) Coste de fugas -->
 <tr>
-  <td>Coste de fugas</td>
+  <td>Coste de fugas a a 12 años</td>
   <td>
     Teniendo en cuenta el coste inicial de su baliza <strong>${meta.marca_baliza} ${meta.modelo} (${meta.coste_inicial.toFixed(2).replace('.', ',')} €)</strong> 
     y el riesgo final de fuga calculado <strong>${(riesgoFinalCalc * 100).toFixed(2).replace('.', ',')}%</strong>, 
@@ -688,7 +688,7 @@ const hasModeloCompra =
 
             <!-- 13) Probabilidad de Avería -->
             <tr>
-              <td>Probabilidad de Avería. <strong><br><em>P<sub>averia</sub><em></strong></td>
+              <td>Probabilidad anual de Avería. <strong><br><em>P<sub>averia</sub><em></strong></td>
               <td>  Estimamos la probabilidad de incidencia (avería/accidente que exige señalización) con un modelo lineal por antigüedad del vehículo:<br>
   <li><strong>Probabilidad de avería = 1,5% + ((25,8% − 1,5%) × ${meta.edad_vehiculo} / 15) = ${(probAveria * 100).toFixed(1).replace('.', ',')}%</strong></li>
   La horquilla 1,5%→25,8% es una <em>calibración</em> coherente que indica una probabilidad de 1,5% en un coche nuevo y del 25,8% en un coche de más de 15 años, con la evidencia de que los vehículos más antiguos presentan más fallos técnicos y mayor siniestralidad. En este caso se referencia esta fórmula a la antigüedad de su coche actual que es de <strong>${meta.edad_vehiculo} años</strong><br>
@@ -698,7 +698,7 @@ const hasModeloCompra =
             </tr>
 <!-- 13.2) Probabilidad de que la batería sea insuficiente -->
 <tr>
-  <td>Probabilidad de que la batería sea insuficiente. <strong><em>P<sub>batería_insuf.</sub><em></strong></td>
+  <td>Probabilidad de que la baliza no funcione cuando se necesita por descarga de las pilas. <strong><em>P<sub>batería_insuf.</sub><em></strong></td>
   <td>
   Calculamos la probabilidad de que al haber un incidente, una avería, control o ITV, la baliza no funcione por descarga de las pilas. Para ellos vamos a usar estas variables:<br>
   • <strong> Retardo = ${RETARDO_MESES_DEF} meses.</strong> Se estima que se produce cuando el propietario descubre en una comprobación rutinaria, que su baliza no funciona por las pilas. Este retardo suele coincidir con vacaciones  o con revisiones rutinarias en el taller o en la ITV.<br>
@@ -711,7 +711,7 @@ const hasModeloCompra =
 
             <!-- 14) Probabilidad de que la Baliza no funcione -->
             <tr style="background-color:#fff7cc;">
-              <td>Probabilidad de que la baliza no funcione. <strong><em>P<sub>no_funcione</sub><em></strong></td>
+              <td>Probabilidad de que la baliza no funcione por fugas o sulfatación de las pilas. <strong><em>P<sub>no_funcione</sub><em></strong></td>
 <td>
   <strong>Probabilidad de que la Baliza no funcione por sulfatación o descarga de las pilas</strong><br>
   La probabilidad de que la baliza <strong>${meta.marca_baliza} ${meta.modelo}</strong> no funcione se calcula a partir de la probabilidad de fuga o sulfatación de la misma y de que las pilas se hayan descargado y no se hayan repuesto.<br> <em><strong>P (no funciona) = 1 − (1 − P<sub>fuga_final</sub>) × (1 − P<sub>batería_insuf.</sub>)</em> = 1 - (1- ${(pFugaFinal*100).toFixed(2)}%) x (1- ${(pBateriaInsuf*100).toFixed(2)}%) = ${(pNoFunciona*100).toFixed(2)}%</strong> <br>
@@ -1128,6 +1128,39 @@ app.post('/api/enviar-pdf', async (req, res) => {
   } catch (e) {
     console.error('Error en /api/enviar-pdf:', e);
     return res.status(500).json({ ok: false, error: 'Error interno al generar/enviar PDF' });
+  }
+});
+// ===== Proxy de imágenes (solución CORS para html2canvas) =====
+app.get('/api/proxy-image', async (req, res) => {
+  try {
+    const url = req.query.url;
+    if (!url) return res.status(400).send('Missing url');
+
+    // Seguros básicos: solo permitimos tirar de comparativabalizas.es y solo de /comparativa-balizas-mvp/client/images/
+    const u = new URL(url);
+    const allowedHost = 'comparativabalizas.es';
+    if (u.hostname !== allowedHost || !u.pathname.startsWith('/comparativa-balizas-mvp/client/images/')) {
+      return res.status(400).send('Bad origin');
+    }
+
+    // Node 18+ trae fetch; si no, usa node-fetch
+    const r = await fetch(u.href, { redirect: 'follow' });
+    if (!r.ok) return res.status(r.status).send('Upstream error');
+
+    const ct = r.headers.get('content-type') || 'image/png';
+    const buf = Buffer.from(await r.arrayBuffer());
+
+    // CORS abierto para el widget
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.set('Content-Type', ct);
+    // Cachea 1 día (opcional)
+    res.set('Cache-Control', 'public, max-age=86400');
+
+    return res.send(buf);
+  } catch (e) {
+    console.error('proxy-image error:', e);
+    return res.status(500).send('Proxy fail');
   }
 });
 // --- 404 ---
