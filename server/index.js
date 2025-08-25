@@ -11,21 +11,25 @@ const PDFDocument  = require("pdfkit");
 // Conexión MariaDB (mysql2/promise)
 const mysql = require('mysql2/promise');
 
-// ⚠️ Si estás en Render y no tienes DB configurada allí, dejaremos el pool en null para que no rompa.
+// --- DB (MariaDB) opcional: usa variables de entorno si existen ---
+// En Render NO tienes MariaDB local, así que o apuntas al host de Plesk con env vars,
+// o si no hay DB, seguimos funcionando sin tumbar el endpoint.
 let pool = null;
 try {
   pool = mysql.createPool({
-    host: process.env.MYSQL_HOST || 'localhost',
-    user: process.env.MYSQL_USER || 'balizas2_user',
-    password: process.env.MYSQL_PASSWORD || 'Cambiame-1',
-    database: process.env.MYSQL_DATABASE || 'balizas',
-    port: Number(process.env.MYSQL_PORT || 3306),
+    host:     process.env.DB_HOST || '127.0.0.1',   // <- pon aquí el host de Plesk vía env
+    user:     process.env.DB_USER || 'balizas2_user',
+    password: process.env.DB_PASS || 'Cambiame-1',
+    database: process.env.DB_NAME || 'balizas',
+    port:     parseInt(process.env.DB_PORT || '3306', 10),
     waitForConnections: true,
     connectionLimit: 5
   });
 } catch (e) {
-  console.warn('DB no inicializada (pool=null). Solo funcionarán endpoints sin DB.');
+  console.warn('⚠️ pool no inicializado:', e.message);
+  pool = null;
 }
+
 const app = express();
 
 // --- CORS (definitivo) ---
@@ -115,6 +119,7 @@ app.get('/__cors', (req, res) => {
 
 // ===== Comprobar conexión DB =====
 app.get('/__db', async (req, res) => {
+  if (!pool) return res.json({ ok: false, note: 'Sin pool (DB no configurada en este entorno)' });
   try {
     const [rows] = await pool.query('SELECT 1 AS ok');
     res.json({ ok: true, rows });
@@ -122,7 +127,6 @@ app.get('/__db', async (req, res) => {
     res.status(500).json({ ok: false, error: String(e) });
   }
 });
-
 // ===== Echo de cuerpo para probar POST desde fuera =====
 app.post('/__echo', (req, res) => {
   res.json({
@@ -138,49 +142,60 @@ app.post('/__echo', (req, res) => {
 // Requiere: name, email (obligatorios); phone, company, selection, calculo (opcionales)
 app.post('/api/guardar-lead', async (req, res) => {
   try {
-    // Si el pool aún no está listo, no tumbar el proceso:
-    if (!pool) {
-      return res.status(503).json({ ok: false, error: 'DB no inicializada en servidor' });
-    }
-
     const { name, email, phone, company, selection, calculo } = req.body || {};
     if (!name || !email) {
       return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios (name, email)' });
     }
 
-    // 1) Inserta lead
-    const [leadResult] = await pool.query(
-      `INSERT INTO leads (nombre, email, telefono, empresa, creado_en)
-       VALUES (?, ?, ?, ?, NOW())`,
-      [name, email, phone || null, company || null]
-    );
-    const leadId = leadResult.insertId;
-
-    // 2) Guarda selección (si llegó)
-    if (selection) {
-      await pool.query(
-        `INSERT INTO lead_selections (lead_id, selection_json, creado_en)
-         VALUES (?, ?, NOW())`,
-        [leadId, JSON.stringify(selection)]
-      );
+    // Si no hay pool (Render sin DB) -> responder ok igualmente (no bloquea UI)
+    if (!pool) {
+      console.warn('⚠️ Sin DB (pool=null). Lead NO persistido; devolviendo ok:true.');
+      return res.json({ ok: true, persisted: false });
     }
 
-    // 3) Guarda cálculo (si llegó)
-    if (calculo) {
-      await pool.query(
-        `INSERT INTO calculos_usuarios (lead_id, calculo_json, creado_en)
-         VALUES (?, ?, NOW())`,
-        [leadId, JSON.stringify(calculo)]
+    let leadId = null;
+    let persisted = false;
+
+    try {
+      // 1) Inserta lead
+      const [leadResult] = await pool.query(
+        `INSERT INTO leads (nombre, email, telefono, empresa, creado_en)
+         VALUES (?, ?, ?, ?, NOW())`,
+        [name, email, phone || null, company || null]
       );
+      leadId = leadResult.insertId;
+      persisted = true;
+
+      // 2) Guarda selección (si llegó)
+      if (selection) {
+        await pool.query(
+          `INSERT INTO lead_selections (lead_id, selection_json, creado_en)
+           VALUES (?, ?, NOW())`,
+          [leadId, JSON.stringify(selection)]
+        );
+      }
+
+      // 3) Guarda cálculo (si llegó)
+      if (calculo) {
+        await pool.query(
+          `INSERT INTO calculos_usuarios (lead_id, calculo_json, creado_en)
+           VALUES (?, ?, NOW())`,
+          [leadId, JSON.stringify(calculo)]
+        );
+      }
+    } catch (dbErr) {
+      console.warn('⚠️ Error DB en /api/guardar-lead (continuo sin tumbar):', dbErr.message);
+      // No tiramos 500: devolvemos ok:true pero marcamos persisted=false
+      return res.json({ ok: true, persisted: false, error: 'db-failed' });
     }
 
-    return res.json({ ok: true, lead_id: leadId });
+    return res.json({ ok: true, persisted, lead_id: leadId });
   } catch (err) {
-    console.error('Error en /api/guardar-lead:', err);
-    return res.status(500).json({ ok: false, error: 'Error DB' });
+    console.error('Error inesperado en /api/guardar-lead:', err);
+    // Solo aquí, si algo no esperado (no DB), mandamos 500
+    return res.status(500).json({ ok: false, error: 'Error inesperado' });
   }
 });
-
 // Alias sin /api por compatibilidad (redirige a la ruta anterior)
 app.post('/guardar-lead', (req, res, next) => {
   req.url = '/api/guardar-lead';
