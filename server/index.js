@@ -603,6 +603,7 @@ const hasModeloCompra =
 
 <!-- 15.2) Coste de multas a 12 años -->
 <tr>
+  <tr style="background-color:#eaf4ff;">
   <td>Coste de multas (12 años)</td>
   <td>
   <em><strong>Coste 12 años = Σ [ Multa estándar × P<sub>denuncia</sub> × P<sub>incidente</sub>(año i) × P<sub>no_funciona</sub> ]</strong></em><br>
