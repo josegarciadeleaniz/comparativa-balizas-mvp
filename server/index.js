@@ -1141,65 +1141,43 @@ app.post('/api/enviar-pdf', async (req, res) => {
 // En index.js, mejora el endpoint /api/proxy-image:
 app.get('/api/proxy-image', async (req, res) => {
   try {
-    const url = req.query.url;
+    const url = decodeURIComponent(req.query.url);
     if (!url) return res.status(400).send('Missing url');
 
-    // Verificar que la URL sea válida y permitida
-    const allowedHosts = ['comparativabalizas.es', 'www.comparativabalizas.es'];
-    const parsedUrl = new URL(url);
-    
-    if (!allowedHosts.includes(parsedUrl.hostname)) {
-      return res.status(400).send('Origin not allowed');
-    }
-
-    // Verificar que sea una ruta de imágenes permitida
-    const allowedPaths = [
-      '/comparativa-balizas-mvp/client/images/',
-      '/comparativa-balizas-mvp/client/images/beacons/'
-    ];
-    
-    if (!allowedPaths.some(path => parsedUrl.pathname.startsWith(path))) {
-      return res.status(400).send('Path not allowed');
-    }
-
-    // Configurar opciones de fetch
+    // Configurar timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     
     const response = await fetch(url, {
       signal: controller.signal,
-      redirect: 'follow',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; BalizaPDF/1.0)'
+        'User-Agent': 'Mozilla/5.0 (compatible; BalizaPDF/1.0)',
+        'Referer': 'https://comparativabalizas.es/'
       }
     });
     
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      return res.status(response.status).send('Upstream error: ' + response.statusText);
+      return res.status(200).send(''); // Devolver vacío en lugar de error
     }
 
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.startsWith('image/')) {
-      return res.status(400).send('Not an image');
-    }
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    const imageBuffer = await response.buffer();
 
-    const imageBuffer = Buffer.from(await response.arrayBuffer());
-
-    // Headers CORS
+    // Headers
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.set('Content-Type', contentType);
-    res.set('Cache-Control', 'public, max-age=86400');
+    res.set('Cache-Control', 'public, max-age=3600');
 
     return res.send(imageBuffer);
+    
   } catch (error) {
-    console.error('proxy-image error:', error);
-    if (error.name === 'AbortError') {
-      return res.status(504).send('Request timeout');
-    }
-    return res.status(500).send('Proxy error: ' + error.message);
+    console.error('Proxy image error (non-critical):', error.message);
+    // En caso de error, devolver imagen placeholder en base64
+    const placeholder = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHgAL/2cYF8wAAAABJRU5ErkJggg==';
+    return res.type('image/png').send(Buffer.from(placeholder, 'base64'));
   }
 });
 // --- 404 ---
