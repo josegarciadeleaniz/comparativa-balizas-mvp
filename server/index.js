@@ -1,3 +1,4 @@
+// ======================== index.js (LIMPIO Y ORDENADO) ========================
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -6,14 +7,17 @@ const batteryData  = require("./battery_types.json");
 const provincias   = require("./provincias.json");
 const beacons      = require("./beacons.json");
 const salesPoints  = require("./sales_points.json");
-const nodemailer   = require("nodemailer");
+
+// Dejamos PDFDocument aunque no se usa, para no “cambiar contenido”
 const PDFDocument  = require("pdfkit");
+
 // Conexión MariaDB (mysql2/promise)
 const mysql = require('mysql2/promise');
 
-// --- DB (MariaDB) opcional: usa variables de entorno si existen ---
-// En Render NO tienes MariaDB local, así que o apuntas al host de Plesk con env vars,
-// o si no hay DB, seguimos funcionando sin tumbar el endpoint.
+// Email
+const nodemailer   = require("nodemailer");
+
+// --- DB (MariaDB) opcional ---
 let pool = null;
 try {
   pool = mysql.createPool({
@@ -31,8 +35,12 @@ try {
 }
 
 const app = express();
+app.disable("x-powered-by");
 
-// --- CORS (definitivo) ---
+// ===== DEBUG SWITCH =====
+const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1';
+
+// ===== CORS (definitivo) =====
 const ALLOWED_ORIGINS = [
   "https://comparativabalizas.es",
   "https://www.comparativabalizas.es",
@@ -41,9 +49,6 @@ const ALLOWED_ORIGINS = [
   "https://comparativa-balizas-mvp.onrender.com" // pruebas
 ];
 
-app.disable("x-powered-by");
-
-// Delegado para CORS con whitelist y preflight
 const corsOptionsDelegate = (req, cb) => {
   const origin = req.header("Origin");
   if (!origin) {
@@ -55,21 +60,17 @@ const corsOptionsDelegate = (req, cb) => {
       origin: true,
       methods: ["GET", "POST", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"]
-      // credentials: false  // (por defecto). Actívalo si algún día usas cookies.
+      // credentials: false
     });
   }
   return cb(new Error("Not allowed by CORS"));
 };
 
 app.use(cors(corsOptionsDelegate));
-// Preflight global (OPTIONS)
 app.options("*", cors(corsOptionsDelegate));
 
 // === BODY PARSER ===
 app.use(express.json({ limit: '20mb' }));
-
-// ===== DEBUG SWITCH (actívalo con RENDER_DEBUG=1, por ejemplo) =====
-const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1';
 
 // ===== Logger de peticiones (solo si DEBUG) =====
 if (DEBUG) {
@@ -83,7 +84,7 @@ if (DEBUG) {
   });
 }
 
-// ===== Listado de rutas registradas =====
+// ===== Utilidades / estado =====
 app.get('/__routes', (req, res) => {
   try {
     const routes = [];
@@ -106,10 +107,7 @@ app.get('/__routes', (req, res) => {
   }
 });
 
-// ===== Ping básico =====
 app.get('/__ping', (req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
-
-// ===== Ver CORS vigente (solo lectura) =====
 app.get('/__cors', (req, res) => {
   res.json({
     ALLOWED_ORIGINS,
@@ -117,7 +115,6 @@ app.get('/__cors', (req, res) => {
   });
 });
 
-// ===== Comprobar conexión DB =====
 app.get('/__db', async (req, res) => {
   if (!pool) return res.json({ ok: false, note: 'Sin pool (DB no configurada en este entorno)' });
   try {
@@ -127,7 +124,7 @@ app.get('/__db', async (req, res) => {
     res.status(500).json({ ok: false, error: String(e) });
   }
 });
-// ===== Echo de cuerpo para probar POST desde fuera =====
+
 app.post('/__echo', (req, res) => {
   res.json({
     method: req.method,
@@ -137,118 +134,22 @@ app.post('/__echo', (req, res) => {
   });
 });
 
-// ====== ENDPOINT REAL: GUARDAR LEAD ======
-// === Guardar lead (POST /api/guardar-lead) ===
-// Requiere: name, email (obligatorios); phone, company, selection, calculo (opcionales)
-app.post('/api/guardar-lead', async (req, res) => {
-  try {
-    const { name, email, phone, company, selection, calculo } = req.body || {};
-    if (!name || !email) {
-      return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios (name, email)' });
-    }
-
-    // Si no hay pool (Render sin DB) -> responder ok igualmente (no bloquea UI)
-    if (!pool) {
-      console.warn('⚠️ Sin DB (pool=null). Lead NO persistido; devolviendo ok:true.');
-      return res.json({ ok: true, persisted: false });
-    }
-
-    let leadId = null;
-    let persisted = false;
-
-    try {
-      // 1) Inserta lead
-      const [leadResult] = await pool.query(
-        `INSERT INTO leads (nombre, email, telefono, empresa, creado_en)
-         VALUES (?, ?, ?, ?, NOW())`,
-        [name, email, phone || null, company || null]
-      );
-      leadId = leadResult.insertId;
-      persisted = true;
-
-      // 2) Guarda selección (si llegó)
-      if (selection) {
-        await pool.query(
-          `INSERT INTO lead_selections (lead_id, selection_json, creado_en)
-           VALUES (?, ?, NOW())`,
-          [leadId, JSON.stringify(selection)]
-        );
-      }
-
-      // 3) Guarda cálculo (si llegó)
-      if (calculo) {
-        await pool.query(
-          `INSERT INTO calculos_usuarios (lead_id, calculo_json, creado_en)
-           VALUES (?, ?, NOW())`,
-          [leadId, JSON.stringify(calculo)]
-        );
-      }
-    } catch (dbErr) {
-      console.warn('⚠️ Error DB en /api/guardar-lead (continuo sin tumbar):', dbErr.message);
-      // No tiramos 500: devolvemos ok:true pero marcamos persisted=false
-      return res.json({ ok: true, persisted: false, error: 'db-failed' });
-    }
-
-    return res.json({ ok: true, persisted, lead_id: leadId });
-  } catch (err) {
-    console.error('Error inesperado en /api/guardar-lead:', err);
-    // Solo aquí, si algo no esperado (no DB), mandamos 500
-    return res.status(500).json({ ok: false, error: 'Error inesperado' });
-  }
-});
-// Alias sin /api por compatibilidad (redirige a la ruta anterior)
-app.post('/guardar-lead', (req, res, next) => {
-  req.url = '/api/guardar-lead';
-  app._router.handle(req, res, next);
-});
-
-// === ESTÁTICOS (al final) ===
-app.use(express.static(path.join(__dirname, '../client')));
-app.use('/images', express.static(path.join(__dirname, '../client/images')));
-app.use('/fonts',  express.static(path.join(__dirname, '../client/fonts')));
-
-// === MANEJADOR DE ERRORES JSON ===
-app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({ error: 'JSON malformado', message: 'Verifica el formato' });
-  }
-  next();
-});
-
-// Verificar carga JSON
-try {
-  if (!batteryData || !provincias || !beacons || !salesPoints) {
-    throw new Error("Error cargando JSON");
-  }
-  console.log('Datos cargados correctamente');
-} catch (e) {
-  console.error('Error crítico cargando JSON:', e);
-  process.exit(1);
-}
-
-// Quita acentos usando NFD + rango de diacríticos
+// ===== Utilidades varias =====
 function stripAccents(str) {
   return str
-    .normalize("NFD")            // descompone caracteres acentuados
-    .replace(/[\u0300-\u036f]/g, "")  // elimina marcas de acento
-    .normalize("NFC");           // (opcional) recomponer
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFC");
 }
-
 function normalizarTexto(texto) {
   return stripAccents(texto + "").toLowerCase().trim();
 }
-
 function normalizarBooleano(valor) {
   const v = stripAccents(String(valor)).toLowerCase().trim();
   return ["si", "yes", "true"].includes(v);
 }
 
 // — Aquí insertas getFundaFactor —
-/**
- * Devuelve el factor de vida útil según el tipo de funda.
- * @param {string} tipoFunda  "Tela", "Neopreno", "EVA Foam" o "No"
- * @returns {number} Factor numérico a multiplicar sobre la vida base
- */
 function getFundaFactor(tipoFunda) {
   const map = {
     tela:     1.02,
@@ -259,44 +160,28 @@ function getFundaFactor(tipoFunda) {
   return map[key] || 1.00;
 }
 
-// Obtiene datos de vida base
 function getVidaBase(tipo, marca_pilas) {
   const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
   const marcaNorm = batteryData.vida_base[tipoSimple][marca_pilas] ? marca_pilas : 'Sin marca';
   return batteryData.vida_base[tipoSimple][marcaNorm];
 }
 
-// Calcula vida ajustada
 function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
-  // Obtenemos vida base en uso y en reposo
   const { uso, shelf } = getVidaBase(tipo, marca_pilas);
-
-  // El "factor desconexión" en años: shelf si desconectable, uso si no
-  const valorDesconexion = normalizarBooleano(desconectable)
-    ? shelf
-    : uso;
-
-  // Resto de factores
+  const valorDesconexion = normalizarBooleano(desconectable) ? shelf : uso;
   const factorTemp  = getTempFactor(provincia);
   const factorFunda = getFundaFactor(funda);
-
-  // Fórmula final: años de desconexión × factor temperatura × factor funda
   const vidaAjustada = valorDesconexion * factorTemp * factorFunda;
   return +vidaAjustada.toFixed(2);
 }
 
-// Antes: function getBatteryPackPrice(tipo, marca_pilas) { ... }
 function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
-  // 1) Si viene precio directo en la baliza/punto de venta, lo usamos:
   if (sourceData?.precio_por_pila) {
     const unit = sourceData.precio_por_pila.precio;
-    // asumimos cantidad = número de pilas que ya sabes de sourceData.tipo_pila
     const cantidad = sourceData.numero_pilas || 
                      (tipo.includes('9V') ? 1 : parseInt(tipo,10) || (tipo.includes('AAA') ? 3 : 4));
     return parseFloat((unit * cantidad).toFixed(2));
   }
-
-  // 2) Si no existe, cae al fallback clásico:
   const precios = batteryData.precios_pilas;
   const marcaNorm = marca_pilas === 'Marca Blanca'
     ? 'Marca blanca'
@@ -316,7 +201,6 @@ function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
   return parseFloat((unit * cantidad).toFixed(2));
 }
 
-// Factor temperatura
 function getTempFactor(provincia) {
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
   if (!p) return 1;
@@ -330,7 +214,6 @@ function getTempFactor(provincia) {
   return 1;
 }
 
-// Riesgos
 function getLeakRisk(tipo, marca_pilas) {
   const map = { "Duracell": 0.4, "Energizer": 0.4, "Varta": 0.45, "Marca Blanca": 0.55, "No": 0.6 };
   return map[marca_pilas] || 0.55;
@@ -347,12 +230,10 @@ function getFineProb(edad) {
 }
 
 function generateTable({ pasos, resumen }, meta) {
-  // 1) Vida base
   const { shelf, uso, fuente } = getVidaBase(meta.tipo, meta.marca_pilas);
 
-  // 2) Valores de pasos (incluye fugas)
   const esDesconectable = normalizarBooleano(meta.desconectable);
-    const {
+  const {
     valor_desconexion = 0,
     factor_temp       = 1,
     factor_funda: factorFunda = 1, 
@@ -365,7 +246,6 @@ function generateTable({ pasos, resumen }, meta) {
     riesgo_final      = 0,
     coste_fugas       = 0,
     coste_multas: costeMultasPasos = 0,
-    // —— NUEVA LÓGICA DE FUGAS ——
     tasa_anual        = 0,
     fuente_sulfat     = '',
     dias_calidos      = 0,
@@ -375,101 +255,86 @@ function generateTable({ pasos, resumen }, meta) {
     prob_fuga         = 0
   } = pasos;
 
-    // 3) Cálculos auxiliares
   const numeroPilas    = parseInt(meta.tipo.match(/^(\d+)/)?.[1] || '1', 10);
   const precioUnitario = precio_pack / numeroPilas;
 
-  // 4) Estadísticas de temperatura (sólo para mostrar, no afectan a fugas)
   const provinciaData  = provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(meta.provincia)) || {};
   const tempMax        = provinciaData.temp_max_anual        ?? 'N/A';
   const tempMin        = provinciaData.temp_min_anual        ?? 'N/A';
   const tempMedia      = provinciaData.temp_media_anual      ?? 'N/A';
   const tempExt        = provinciaData.temp_extrema_guantera ?? 'N/A';
 
-// ——— Bloque ÚNICO para mostrar datos de la baliza seleccionada (sin pisar lo que metió el usuario) ———
-const beaconView = meta?.modelo_compra
-  ? (beacons.find(b => String(b.id_baliza) === String(meta.modelo_compra)) || null)
-  : null;
+  const beaconView = meta?.modelo_compra
+    ? (beacons.find(b => String(b.id_baliza) === String(meta.modelo_compra)) || null)
+    : null;
 
-const disp = {
-  baliza: beaconView
-    ? `${beaconView.marca_baliza || ''} ${beaconView.modelo || ''}`.trim()
-    : `${meta.marca_baliza || ''} ${meta.modelo || ''}`.trim(),
-  fabricante: beaconView?.fabricante ?? meta.fabricante ?? '—',
-  origen: beaconView?.origen ?? beaconView?.pais_origen ?? meta.origen ?? '—',
-  actuacion: beaconView?.actuacion_espana ?? beaconView?.actuacion_en_espana ?? meta.actuacion_espana ?? '—',
-  img: (meta.imagen_url && meta.imagen_url.trim())
-      ? meta.imagen_url
-      : (beaconView?.imagen ? `/images/${beaconView.imagen}` : '')
-};
+  const disp = {
+    baliza: beaconView
+      ? `${beaconView.marca_baliza || ''} ${beaconView.modelo || ''}`.trim()
+      : `${meta.marca_baliza || ''} ${meta.modelo || ''}`.trim(),
+    fabricante: beaconView?.fabricante ?? meta.fabricante ?? '—',
+    origen: beaconView?.origen ?? beaconView?.pais_origen ?? meta.origen ?? '—',
+    actuacion: beaconView?.actuacion_espana ?? beaconView?.actuacion_en_espana ?? meta.actuacion_espana ?? '—',
+    img: (meta.imagen_url && meta.imagen_url.trim())
+        ? meta.imagen_url
+        : (beaconView?.imagen ? `/images/${beaconView.imagen}` : '')
+  };
 
-  // 5) Probabilidad de avería y coste de multa (igual que antes)
   const pNuevo      = 0.015;
   const p15años     = 0.258;
   const edadRatio   = Math.min(meta.edad_vehiculo, 15) / 15;
   const probAveria  = pNuevo + (p15años - pNuevo) * edadRatio;
 
-  const TASA_DENUNCIA_DEF   = 0.32;  // editable
-  const IMPORTE_MULTA_DEF   = 200;   // o 80 según escenario, también editable
-  const RETARDO_MESES_DEF   = 6;     // retraso medio en cambio de pilas
-  const ADHERENCIA_DEF      = 0.80;  // cumplimiento estimado de cambios
-  
+  const TASA_DENUNCIA_DEF   = 0.32;
+  const IMPORTE_MULTA_DEF   = 200;
+  const RETARDO_MESES_DEF   = 6;
+  const ADHERENCIA_DEF      = 0.80;
 
-// === CÁLCULOS ORDENADOS: mitigación, fugas, no-funciona, multas y sumatorios ===
+  const mesesVida = Math.max(1, (vida_ajustada || 0) * 12);
 
-// (1) Vida útil en meses para el modelo de batería insuficiente
-const mesesVida = Math.max(1, (vida_ajustada || 0) * 12);
+  const factorDescon   = esDesconectable ? 0.3 : 1;
+  const fundaTipoL     = (meta.funda || '').toLowerCase();
+  const mitDescPct  = esDesconectable ? 0.30 : 0.00;
+  const mitFundaPct = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.40 : 0.00;
+  const factorFundaMit = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.4 : 1;
+  const mitigacionCalc = factorDescon * factorFundaMit;
+  const mitigacionPct   = Math.min(1, mitDescPct + mitFundaPct);
+  const mitigacionMult  = 1 - mitigacionPct;
+  const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
 
-// (2) Mitigación (desconexión + funda), y riesgo final de fuga (clamp 0..1)
-const factorDescon   = esDesconectable ? 0.3 : 1;
-const fundaTipoL     = (meta.funda || '').toLowerCase();
-const mitDescPct  = esDesconectable ? 0.30 : 0.00; // 30% de reducción si desconectable
-const mitFundaPct = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.40 : 0.00; // 40% si silicona/EVA
-const factorFundaMit = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.4 : 1;
-const mitigacionCalc = factorDescon * factorFundaMit;
-const mitigacionPct   = Math.min(1, mitDescPct + mitFundaPct); // p.ej. 0.30 + 0.40 = 0.70 (capado al 100%)
-const mitigacionMult  = 1 - mitigacionPct;                     // multiplicador aplicado al riesgo: 0.30
-const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
+  const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
+  const mitigacion01    = Math.max(0, Math.min(1, mitigacionCalc));
+  const pFugaFinal      = riesgoFinalCalc;
 
-const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
-const mitigacion01    = Math.max(0, Math.min(1, mitigacionCalc));
-const pFugaFinal      = riesgoFinalCalc; // alias para tabla
+  const costeFugaAnual  = +((meta.coste_inicial || 0) * riesgoFinalCalc).toFixed(2);
+  const costeFuga12     = +(costeFugaAnual * 12).toFixed(2);
 
-// (3) Coste de fugas (anual y 12 años)
-const costeFugaAnual  = +((meta.coste_inicial || 0) * riesgoFinalCalc).toFixed(2);
-const costeFuga12     = +(costeFugaAnual * 12).toFixed(2);
+  const retardoMeses    = RETARDO_MESES_DEF;
+  const adherencia      = ADHERENCIA_DEF;
+  const fraccionRetraso = Math.max(0, Math.min(1, (retardoMeses * (1 - adherencia)) / mesesVida));
+  const pBateriaInsuf   = Math.min(0.5, fraccionRetraso);
+  const pNoFunciona     = 1 - (1 - pFugaFinal) * (1 - pBateriaInsuf);
 
-// (4) P(batería insuficiente) y P(no funciona)
-const retardoMeses    = RETARDO_MESES_DEF;  // p.ej. 6
-const adherencia      = ADHERENCIA_DEF;     // p.ej. 0.80
-const fraccionRetraso = Math.max(0, Math.min(1, (retardoMeses * (1 - adherencia)) / mesesVida));
-const pBateriaInsuf   = Math.min(0.5, fraccionRetraso);
-const pNoFunciona     = 1 - (1 - pFugaFinal) * (1 - pBateriaInsuf);
+  const tasaDenuncia     = TASA_DENUNCIA_DEF;
+  const importeMulta     = IMPORTE_MULTA_DEF;
+  const pMultaAnual      = probAveria * pNoFunciona * tasaDenuncia;
+  const costeMultasAnual = +(importeMulta * pMultaAnual).toFixed(2);
 
-// (5) Multas: anual (año 1 con la probAveria ya calculada) y parámetros
-const tasaDenuncia     = TASA_DENUNCIA_DEF; // p.ej. 0.32
-const importeMulta     = IMPORTE_MULTA_DEF; // p.ej. 200
-const pMultaAnual      = probAveria * pNoFunciona * tasaDenuncia;
-const costeMultasAnual = +(importeMulta * pMultaAnual).toFixed(2);
+  const probAveria12 = Array.from({ length: 12 }, (_, k) => {
+    const edad = Math.min((meta.edad_vehiculo || 0) + k, 15);
+    return pNuevo + (p15años - pNuevo) * (edad / 15);
+  });
+  const costeMultasPorAno = probAveria12.map(pInc => importeMulta * tasaDenuncia * pInc * pNoFunciona);
+  const costeMultas12     = +costeMultasPorAno.reduce((a, b) => a + b, 0).toFixed(2);
 
-// (6) Multas: progresión 12 años (Pincidente crece con la edad y satura en 25,8%)
-const probAveria12 = Array.from({ length: 12 }, (_, k) => {
-  const edad = Math.min((meta.edad_vehiculo || 0) + k, 15);
-  return pNuevo + (p15años - pNuevo) * (edad / 15);
-});
-const costeMultasPorAno = probAveria12.map(pInc => importeMulta * tasaDenuncia * pInc * pNoFunciona);
-const costeMultas12     = +costeMultasPorAno.reduce((a, b) => a + b, 0).toFixed(2);
-
-// (7) Punto de venta y desglose de cobertura 3/9
-const puntoVenta            = meta.punto_venta || meta.nombre_punto_venta || meta.sales_point || meta.tienda || '';
-const sufijoPV              = puntoVenta ? ` por <strong>${puntoVenta}</strong>` : '';
-const textoPV               = puntoVenta ? `el punto de venta <strong>${puntoVenta}</strong>` : 'el punto de venta donde compró la baliza';
-const costeFugaCubierto3    = +(costeFugaAnual * 3).toFixed(2);
-const costeFugaNoCubierto9  = +(costeFugaAnual * 9).toFixed(2);
-
-// (8) Total 12 años (para mostrar en la tabla)
-const pilas12UI  = Number(resumen?.coste_pilas ?? 0); // ya viene a 12 años
-const total12UI  = +((pilas12UI + costeFuga12 + costeMultas12)).toFixed(2);
+  const pilas12UI  = Number(resumen?.coste_pilas ?? 0);
+  const total12UI  = +((pilas12UI + costeFuga12 + costeMultas12)).toFixed(2);
+	
+  const puntoVenta            = meta.punto_venta || meta.nombre_punto_venta || meta.sales_point || meta.tienda || '';
+  const sufijoPV              = puntoVenta ? ` por <strong>${puntoVenta}</strong>` : '';
+  const textoPV               = puntoVenta ? `el punto de venta <strong>${puntoVenta}</strong>` : 'el punto de venta donde compró la baliza';
+  const costeFugaCubierto3    = +(costeFugaAnual * 3).toFixed(2);
+  const costeFugaNoCubierto9  = +(costeFugaAnual * 9).toFixed(2);
 
 
 // 5) Descripción de la funda
@@ -798,10 +663,9 @@ const hasModeloCompra =
   `;
 }
 
-// Endpoints
+// ====== ENDPOINT REAL: CALCULA ======
 app.post('/api/calcula', async (req, res) => {
   try {
-    // en la cabecera del handler:
     const {
       id_baliza,
       id_sales_point,
@@ -815,8 +679,8 @@ app.post('/api/calcula', async (req, res) => {
       marca_baliza = 'Desconocida',
       modelo = 'Desconocido',
       modelo_compra = '',
-      email = '',          // ← AÑADIDO: email del frontend
-      contexto = 'A'       // ← AÑADIDO: contexto del frontend (A, B, C)
+      email = '',
+      contexto = 'A'
     } = req.body;
 
     const marca_pilas = marca;
@@ -825,61 +689,38 @@ app.post('/api/calcula', async (req, res) => {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
 
-    // 0) Datos de la baliza o punto de venta
     const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
     const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point)
     const sourceData     = beaconInfo || salesPointInfo || {};
 
-    // Vida base
     const baseData = getVidaBase(tipo, marca_pilas);
     const uso  = baseData.uso;
     const shelf = baseData.shelf;
 
-    // 1) Valor de desconexión en años
-    const valor_desconexion = normalizarBooleano(desconectable)
-      ? shelf
-      : uso;
-
-    // 2) Temperatura y funda
+    const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
     const factor_temp  = getTempFactor(provincia);
     const factor_funda = getFundaFactor(funda);
 
-    // 3) Vida ajustada
     const vida_ajustada = +(
-      valor_desconexion *
-      factor_temp *
-      factor_funda
+      valor_desconexion * factor_temp * factor_funda
     ).toFixed(2);
 
-    // 4) Reposiciones, precio y demás
     const reposiciones = Math.ceil(12 / vida_ajustada);
     const precio_pack = getBatteryPackPrice(tipo, marca_pilas, sourceData);
-    let precio_fuente;
-    if (sourceData.precio_por_pila) {
-      precio_fuente = sourceData.precio_por_pila.fuente;
-    } else {
-      precio_fuente = 'battery_types.json';
-    }
+    let precio_fuente = sourceData.precio_por_pila ? sourceData.precio_por_pila.fuente : 'battery_types.json';
     const coste_pilas  = parseFloat((reposiciones * precio_pack).toFixed(2));
 
     console.log('--- Sulfatación: datos de entrada ---', {
-    id_baliza,
-    id_sales_point,
-    tipo,
-    marca_pilas
+      id_baliza, id_sales_point, tipo, marca_pilas
     });
 
- // —— NUEVA LÓGICA DE FUGAS —— 
-
-  // 5a) Sulfatación anual
     const fuenteData = beacons.find(b => b.id_baliza === id_baliza)
                        || salesPoints.find(s => s.id_punto === id_sales_point)
                        || {};
     console.log('fuenteData.factor_sulfatacion:', fuenteData.factor_sulfatacion);
-    const tasa_anual     = fuenteData.factor_sulfatacion?.tasa_anual     ?? getLeakRisk(tipo, marca_pilas);
-    const fuente_sulfat  = fuenteData.factor_sulfatacion?.fuente         ?? 'battery_types.json';
+    const tasa_anual     = fuenteData.factor_sulfatacion?.tasa_anual ?? getLeakRisk(tipo, marca_pilas);
+    const fuente_sulfat  = fuenteData.factor_sulfatacion?.fuente     ?? 'battery_types.json';
 
-    // 5b) Clima de la provincia
     const pData          = provincias.find(p=>normalizarTexto(p.provincia)===normalizarTexto(provincia))||{};
     console.log('pData.dias_anuales_30grados, factor_provincia:', pData.dias_anuales_30grados, pData.factor_provincia);
     const dias_calidos   = pData.dias_anuales_30grados ?? 0;
@@ -887,139 +728,125 @@ app.post('/api/calcula', async (req, res) => {
     const fuente_temp    = pData.fuente_temp_extrema     ?? 'provincias.json';
     const fuente_dias    = pData.fuente_dias_calidos     ?? 'provincias.json';
 
-    // 5c) Probabilidad de fuga anual
     const prob_fuga      = +((dias_calidos/365) * tasa_anual * factor_prov).toFixed(4);
 
-    // —— FIN LÓGICA DE FUGAS —— 
+    const factorDescon   = normalizarBooleano(desconectable) ? 0.3 : 1;
+    const fundaLower     = String(funda || '').toLowerCase();
+    const factorFundaMit = (fundaLower.includes('silicona') || fundaLower.includes('eva')) ? 0.4 : 1;
+    const mitigacionCalc = factorDescon * factorFundaMit;
 
-// 6) Riesgo final y coste de fugas (calcular aquí, no usar variables de generateTable)
-const factorDescon   = normalizarBooleano(desconectable) ? 0.3 : 1;
-const fundaLower     = String(funda || '').toLowerCase();
-const factorFundaMit = (fundaLower.includes('silicona') || fundaLower.includes('eva')) ? 0.4 : 1;
-const mitigacionCalc = factorDescon * factorFundaMit;
+    const riesgo_final   = +(Math.max(0, Math.min(1, prob_fuga)) * mitigacionCalc).toFixed(4);
+    const coste_fugas    = +((parseFloat(coste_inicial) || 0) * riesgo_final).toFixed(2);
+    const coste_fugas_12 = +(coste_fugas * 12).toFixed(2); 
 
-const riesgo_final   = +(Math.max(0, Math.min(1, prob_fuga)) * mitigacionCalc).toFixed(4); // 0..1
-const coste_fugas    = +((parseFloat(coste_inicial) || 0) * riesgo_final).toFixed(2);       // €/año
-const coste_fugas_12 = +(coste_fugas * 12).toFixed(2); 
+    const importeMulta  = 200;
+    const tasaDenuncia  = 0.32;
+    const retardoMeses  = 6;
+    const adherencia    = 0.80;
 
-// 6b) Coste de MULTAS: anual y 12 años (fórmula nueva)
-const importeMulta  = 200;   // parametrizable
-const tasaDenuncia  = 0.32;  // parametrizable
-const retardoMeses  = 6;     // parametrizable
-const adherencia    = 0.80;  // parametrizable
+    const mesesVida       = Math.max(1, (vida_ajustada || 0) * 12);
+    const pBateriaInsuf   = Math.min(0.5, (retardoMeses * (1 - adherencia)) / mesesVida);
+    const pNoFunciona     = 1 - (1 - riesgo_final) * (1 - pBateriaInsuf);
 
-// Necesario para P(batería insuficiente) y P(no_funciona)
-const mesesVida       = Math.max(1, (vida_ajustada || 0) * 12);
-const pBateriaInsuf   = Math.min(0.5, (retardoMeses * (1 - adherencia)) / mesesVida);
-const pNoFunciona     = 1 - (1 - riesgo_final) * (1 - pBateriaInsuf);
+    const pIncHoy = getFineProb(edad_vehiculo);
+    const coste_multas = +(importeMulta * tasaDenuncia * pIncHoy * pNoFunciona).toFixed(2);
 
-// *** Aquí está la clave: en el endpoint NO hay probAveria; usa getFineProb ***
-const pIncHoy = getFineProb(edad_vehiculo); // 0..1 (capado a 25,8% a ≥15 años)
-const coste_multas = +(importeMulta * tasaDenuncia * pIncHoy * pNoFunciona).toFixed(2);
+    const probAveria12 = Array.from({ length: 12 }, (_, k) =>
+      getFineProb((parseInt(edad_vehiculo) || 0) + k)
+    );
+    const coste_multas_12 = +probAveria12
+      .map(pInc => importeMulta * tasaDenuncia * pInc * pNoFunciona)
+      .reduce((a, b) => a + b, 0)
+      .toFixed(2);
 
-// Progresión 12 años con getFineProb
-const probAveria12 = Array.from({ length: 12 }, (_, k) =>
-  getFineProb((parseInt(edad_vehiculo) || 0) + k)
-);
-const coste_multas_12 = +probAveria12
-  .map(pInc => importeMulta * tasaDenuncia * pInc * pNoFunciona)
-  .reduce((a, b) => a + b, 0)
-  .toFixed(2);
+    const total12y = Number((coste_pilas + coste_fugas_12 + coste_multas_12).toFixed(2));
 
-// (Opcional) debug
-// console.log('multas NUEVO:', { coste_multas, coste_multas_12, pNoFunciona, probAveria });
-
-const total12y = Number((coste_pilas + coste_fugas_12 + coste_multas_12).toFixed(2));
-
-const resumen = {
-  reposiciones,
-  coste_pilas,
-  coste_fugas,        // anual
-  coste_fugas_12,     // 12 años
-  coste_multas,       // anual  ✅
-  coste_multas_12,    // 12 años ✅
-  total12y,
-  medioAnual: Number((total12y / 12).toFixed(2))
-};
+    const resumen = {
+      reposiciones,
+      coste_pilas,
+      coste_fugas,
+      coste_fugas_12,
+      coste_multas,
+      coste_multas_12,
+      total12y,
+      medioAnual: Number((total12y / 12).toFixed(2))
+    };
 
     const pasos = {
-  vida_base:         uso,
-  valor_desconexion,
-  factor_temp,
-  factor_funda,
-  vida_ajustada,
-  precio_pack,
-  precio_fuente,
-  reposiciones,
-  coste_pilas,
-  tasa_anual,
-  fuente_sulfat,
-  dias_calidos,
-  factor_provincia: factor_prov,
-  fuente_temp,
-  fuente_dias,
-  prob_fuga,
-  riesgo_final,      // 0..1
-  coste_fugas,       // €/año
-  coste_multas       // €/año (NUEVO)
-};
+      vida_base:         uso,
+      valor_desconexion,
+      factor_temp,
+      factor_funda,
+      vida_ajustada,
+      precio_pack,
+      precio_fuente,
+      reposiciones,
+      coste_pilas,
+      tasa_anual,
+      fuente_sulfat,
+      dias_calidos,
+      factor_provincia: factor_prov,
+      fuente_temp,
+      fuente_dias,
+      prob_fuga,
+      riesgo_final,
+      coste_fugas,
+      coste_multas
+    };
 
     const meta = {
-  marca_baliza,
-  modelo,
-  modelo_compra,              // <--- AÑADIR
-  tipo,
-  marca_pilas,
-  desconectable,
-  funda,
-  provincia,
-  coste_inicial: parseFloat(coste_inicial),
-  edad_vehiculo: parseInt(edad_vehiculo)
-};
+      marca_baliza,
+      modelo,
+      modelo_compra,
+      tipo,
+      marca_pilas,
+      desconectable,
+      funda,
+      provincia,
+      coste_inicial: parseFloat(coste_inicial),
+      edad_vehiculo: parseInt(edad_vehiculo)
+    };
 
-    // === NUEVO: GUARDAR EN BASE DE DATOS ===
+    // === GUARDAR EN BD (opcional) ===
     try {
-      // Crear hash simple para el email (sin necesidad de crypto)
       const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
       
-      await pool.execute(
-        `INSERT INTO calculos_usuarios 
-         (user_email, user_hash, contexto, marca_baliza, modelo_baliza, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          email,
-          userHash,
-          contexto,
-          marca_baliza,
-          modelo,
-          provincia,
-          parseFloat(coste_inicial),
-          total12y,
-          JSON.stringify(req.body), // Todos los datos de entrada
-          JSON.stringify({          // Los resultados del cálculo
-            meta: meta,
-            pasos: pasos, 
-            resumen: resumen,
-            total_12_anios: total12y
-          })
-        ]
-      );
-      
-      console.log('✅ Cálculo guardado en BD para tracking');
-      
+      if (pool) {
+        await pool.execute(
+          `INSERT INTO calculos_usuarios 
+           (user_email, user_hash, contexto, marca_baliza, modelo_baliza, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            email,
+            userHash,
+            contexto,
+            marca_baliza,
+            modelo,
+            provincia,
+            parseFloat(coste_inicial),
+            total12y,
+            JSON.stringify(req.body),
+            JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })
+          ]
+        );
+        console.log('✅ Cálculo guardado en BD para tracking');
+      } else {
+        console.warn('⚠️ Sin DB (pool=null). Lead NO persistido; devolviendo ok:true.');
+      }
     } catch (dbError) {
       console.warn('⚠️ Error guardando cálculo en BD (continuando):', dbError.message);
-      // NO fallar la petición aunque falle el guardado del tracking
     }
+
     if (DEBUG) {
-  console.log('— /api/calcula -> meta:', meta);
-  console.log('— /api/calcula -> resumen:', resumen);
-  console.log('— /api/calcula -> pasos.vida_ajustada / reposiciones / coste_pilas:', {
-    vida_ajustada: pasos.vida_ajustada,
-    reposiciones: pasos.reposiciones,
-    coste_pilas: pasos.coste_pilas
-     });
+      console.log('— /api/calcula -> meta:', meta);
+      console.log('— /api/calcula -> resumen:', resumen);
+      console.log('— /api/calcula -> pasos.vida_ajustada / reposiciones / coste_pilas:', {
+        vida_ajustada: pasos.vida_ajustada,
+        reposiciones: pasos.reposiciones,
+        coste_pilas: pasos.coste_pilas
+      });
     }
+
     return res.json({
       meta,
       pasos,
@@ -1032,62 +859,14 @@ const resumen = {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+
+// ===== Datos públicos =====
 app.get('/api/beacons',      (req, res) => res.json(beacons));
 app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
-app.post('/api/enviar-pdf', async (req, res) => {
-  try {
-    const transporter = await getTransporter();
-	const {
-      email,
-      title = 'Informe de baliza',
-      resumenText = '',
-      detalleText = '',
-      pdfBase64, // <-- ya viene SIN el prefijo, tras el paso 3 en el front
-      filename   // <-- opcional
-    } = req.body || {};
 
-    if (!email) {
-      return res.status(400).json({ ok: false, error: 'Falta el email' });
-    }
-
-    // 👉 AQUÍ añadimos la conversión a Buffer
-    let attachments = [];
-    if (pdfBase64) {
-      const pdfBuffer = Buffer.from(pdfBase64, 'base64'); // 🔑 lo convierte a binario real
-      attachments.push({
-        filename: filename || 'Informe.pdf',
-        content: pdfBuffer,
-        contentType: 'application/pdf'
-      });
-    }
-
-    // 👉 Aquí llamas a tu sistema de envío de emails (ejemplo con nodemailer):
-    await transporter.sendMail({
-      from: 'no-reply@comparativabalizas.es',
-      to: email,
-      subject: title,
-      text: resumenText || 'Adjuntamos su informe',
-      html: `<p>${detalleText || 'Adjunto PDF con el cálculo de su baliza.'}</p>`,
-      attachments
-    });
-
-    return res.json({ ok: true });
-  } catch (e) {
-    console.error('Error enviando PDF:', e);
-    return res.status(500).json({ ok: false, error: e.message });
-  }
-});
-    // Helper: crea transporter SMTP real (si hay vars) o Ethereal (pruebas)
-// Asegúrate antes de esto:
-// const express = require('express');
-// const app = express();
-// app.use(express.json({ limit: '20mb' })); // 👈 importante
-// const nodemailer = require('nodemailer');
-
-const nodemailer = require('nodemailer');
-
+// ===== Envío de PDF (ÚNICA RUTA, sin duplicados) =====
 function getTransporter() {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -1103,16 +882,11 @@ app.post('/api/enviar-pdf', async (req, res) => {
     if (!email)    return res.status(400).json({ ok:false, error:'Falta el email' });
     if (!pdfBase64) return res.status(400).json({ ok:false, error:'Falta el PDF (base64)' });
 
-    // DEBUG: longitud del base64 que llega
     console.log('[MAIL] Dest:', email, 'base64 chars:', pdfBase64.length);
 
-    // 1) Decodifica SIEMPRE a Buffer binario
+    // --- Opción A (recomendada): adjuntar como Buffer binario ---
     const pdfBuffer = Buffer.from(pdfBase64, 'base64');
-
-    // 2) Transporter local (sin await fuera de async)
     const transporter = getTransporter();
-
-    // 3) Envío (OJO: SIN "encoding" si usas Buffer)
     const info = await transporter.sendMail({
       from: process.env.MAIL_FROM || 'no-reply@comparativabalizas.es',
       to: email,
@@ -1120,10 +894,25 @@ app.post('/api/enviar-pdf', async (req, res) => {
       text: 'Adjuntamos su informe en PDF.',
       html: '<p>Adjuntamos su informe en PDF.</p>',
       attachments: [{
-  		filename,
-  		path: `data:application/pdf;base64,${pdfBase64}` // usa el base64 que te llega del front, sin Buffer
-		}]
+        filename,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      }]
     });
+
+    // --- Opción B (alternativa “a prueba de SMTP raros”): usar path data: ---
+    // const transporter = getTransporter();
+    // const info = await transporter.sendMail({
+    //   from: process.env.MAIL_FROM || 'no-reply@comparativabalizas.es',
+    //   to: email,
+    //   subject: title,
+    //   text: 'Adjuntamos su informe en PDF.',
+    //   html: '<p>Adjuntamos su informe en PDF.</p>',
+    //   attachments: [{
+    //     filename,
+    //     path: `data:application/pdf;base64,${pdfBase64}`
+    //   }]
+    // });
 
     console.log('[MAIL] OK messageId:', info.messageId);
     return res.json({ ok:true, messageId: info.messageId });
@@ -1134,9 +923,7 @@ app.post('/api/enviar-pdf', async (req, res) => {
   }
 });
 
-
-// ===== Proxy de imágenes (solución CORS para html2canvas) =====
-// En index.js, mejora el endpoint /api/proxy-image:
+// ===== Proxy de imágenes (único, limpio) =====
 app.get('/api/proxy-image', async (req, res) => {
   try {
     const u = req.query.url;
@@ -1150,35 +937,16 @@ app.get('/api/proxy-image', async (req, res) => {
     return res.send(buf);
   } catch (e) {
     console.warn('Proxy image error (non-critical):', e.message);
-    // devolvemos 200 con vacío para no romper html2canvas
+    // Devolvemos 200 con vacío para no romper html2canvas
     return res.status(200).send(Buffer.alloc(0));
   }
 });
-    
-    clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      return res.status(200).send(''); // Devolver vacío en lugar de error
-    }
+// === ESTÁTICOS (al final) ===
+app.use(express.static(path.join(__dirname, '../client')));
+app.use('/images', express.static(path.join(__dirname, '../client/images')));
+app.use('/fonts',  express.static(path.join(__dirname, '../client/fonts')));
 
-    const contentType = response.headers.get('content-type') || 'image/jpeg';
-    const imageBuffer = await response.buffer();
-
-    // Headers
-    res.set('Access-Control-Allow-Origin', '*');
-    res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.set('Content-Type', contentType);
-    res.set('Cache-Control', 'public, max-age=3600');
-
-    return res.send(imageBuffer);
-    
-  } catch (error) {
-    console.error('Proxy image error (non-critical):', error.message);
-    // En caso de error, devolver imagen placeholder en base64
-    const placeholder = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHgAL/2cYF8wAAAABJRU5ErkJggg==';
-    return res.type('image/png').send(Buffer.from(placeholder, 'base64'));
-  }
-});
 // --- 404 ---
 app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
 
@@ -1191,6 +959,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Error interno' });
 });
 
-// --- LISTEN: SOLO UNO, AL FINAL ---
+// --- Verificar carga JSON (igual que antes) ---
+try {
+  if (!batteryData || !provincias || !beacons || !salesPoints) {
+    throw new Error("Error cargando JSON");
+  }
+  console.log('Datos cargados correctamente');
+} catch (e) {
+  console.error('Error crítico cargando JSON:', e);
+  process.exit(1);
+}
+
+// --- LISTEN: usar PORT de Render + 0.0.0.0 ---
 const PORT = Number(process.env.PORT) || 3003;
-app.listen(PORT, () => console.log("Escuchando en", PORT));
+app.listen(PORT, '0.0.0.0', () => console.log("Escuchando en", PORT));
+// ============================================================================
