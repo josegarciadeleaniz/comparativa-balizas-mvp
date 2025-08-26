@@ -1043,14 +1043,41 @@ app.post('/api/enviar-pdf', async (req, res) => {
       title = 'Informe de baliza',
       resumenText = '',
       detalleText = '',
-      pdfBase64, // <-- si viene, usamos el PDF del navegador
-      filename   // <-- opcional; si no viene, se pone uno por defecto
+      pdfBase64, // <-- ya viene SIN el prefijo, tras el paso 3 en el front
+      filename   // <-- opcional
     } = req.body || {};
 
     if (!email) {
       return res.status(400).json({ ok: false, error: 'Falta el email' });
     }
 
+    // 👉 AQUÍ añadimos la conversión a Buffer
+    let attachments = [];
+    if (pdfBase64) {
+      const pdfBuffer = Buffer.from(pdfBase64, 'base64'); // 🔑 lo convierte a binario real
+      attachments.push({
+        filename: filename || 'Informe.pdf',
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      });
+    }
+
+    // 👉 Aquí llamas a tu sistema de envío de emails (ejemplo con nodemailer):
+    await transporter.sendMail({
+      from: 'no-reply@comparativabalizas.es',
+      to: email,
+      subject: title,
+      text: resumenText || 'Adjuntamos su informe',
+      html: `<p>${detalleText || 'Adjunto PDF con el cálculo de su baliza.'}</p>`,
+      attachments
+    });
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error('Error enviando PDF:', e);
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
     // Helper: crea transporter SMTP real (si hay vars) o Ethereal (pruebas)
     async function getTransporter() {
   // Si hay configuración SMTP, usarla
