@@ -1086,8 +1086,9 @@ app.post('/api/enviar-pdf', async (req, res) => {
 // app.use(express.json({ limit: '20mb' })); // 👈 importante
 // const nodemailer = require('nodemailer');
 
+const nodemailer = require('nodemailer');
+
 function getTransporter() {
-  // Crea tu transporter una vez (usa tus credenciales reales)
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),
@@ -1098,25 +1099,20 @@ function getTransporter() {
 
 app.post('/api/enviar-pdf', async (req, res) => {
   try {
-    const {
-      email,
-      title = 'Informe de baliza',
-      pdfBase64,            // payload base64 SIN el prefijo data:
-      filename = 'Informe.pdf'
-    } = req.body || {};
-
-    if (!email) return res.status(400).json({ ok:false, error:'Falta el email' });
+    const { email, title = 'Informe de baliza', pdfBase64, filename = 'Informe.pdf' } = req.body || {};
+    if (!email)    return res.status(400).json({ ok:false, error:'Falta el email' });
     if (!pdfBase64) return res.status(400).json({ ok:false, error:'Falta el PDF (base64)' });
 
-    // DEBUG server: mide longitud del base64
+    // DEBUG: longitud del base64 que llega
     console.log('[MAIL] Dest:', email, 'base64 chars:', pdfBase64.length);
 
-    // Decodifica SIEMPRE como buffer binario
+    // 1) Decodifica SIEMPRE a Buffer binario
     const pdfBuffer = Buffer.from(pdfBase64, 'base64');
 
-    // Crea transporter (o usa uno global que inicialices al arrancar)
+    // 2) Transporter local (sin await fuera de async)
     const transporter = getTransporter();
 
+    // 3) Envío (OJO: SIN "encoding" si usas Buffer)
     const info = await transporter.sendMail({
       from: process.env.MAIL_FROM || 'no-reply@comparativabalizas.es',
       to: email,
@@ -1124,21 +1120,20 @@ app.post('/api/enviar-pdf', async (req, res) => {
       text: 'Adjuntamos su informe en PDF.',
       html: '<p>Adjuntamos su informe en PDF.</p>',
       attachments: [{
-        filename,
-        content: pdfBuffer,
-        contentType: 'application/pdf',
-        // NO pongas encoding: 'base64' cuando usas Buffer; sólo cuando usas 'content' como string
-      }]
+  		filename,
+  		path: `data:application/pdf;base64,${pdfBase64}` // usa el base64 que te llega del front, sin Buffer
+		}]
     });
 
     console.log('[MAIL] OK messageId:', info.messageId);
-    return res.json({ ok: true, messageId: info.messageId });
+    return res.json({ ok:true, messageId: info.messageId });
 
   } catch (e) {
     console.error('[MAIL] ERROR', e);
     return res.status(500).json({ ok:false, error: e.message });
   }
 });
+
 
 // ===== Proxy de imágenes (solución CORS para html2canvas) =====
 // En index.js, mejora el endpoint /api/proxy-image:
