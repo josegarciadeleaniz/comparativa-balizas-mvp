@@ -1053,25 +1053,32 @@ app.post('/api/enviar-pdf', async (req, res) => {
 
     // Helper: crea transporter SMTP real (si hay vars) o Ethereal (pruebas)
     async function getTransporter() {
-      if (process.env.SMTP_HOST) {
-        return nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: parseInt(process.env.SMTP_PORT || '587', 10),
-          secure: process.env.SMTP_SECURE === 'true',
-          auth: (process.env.SMTP_USER && process.env.SMTP_PASS)
-            ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-            : undefined
-        });
-      } else {
-        const testAcc = await nodemailer.createTestAccount();
-        return nodemailer.createTransport({
-          host: 'smtp.ethereal.email',
-          port: 587,
-          secure: false,
-          auth: { user: testAcc.user, pass: testAcc.pass }
-        });
+  // Si hay configuración SMTP, usarla
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
       }
-    }
+    });
+  } else {
+    // Si no hay configuración, usar Ethereal Email (testing)
+    console.log('⚠️  Usando Ethereal Email para testing - Los emails son ficticios');
+    const testAccount = await nodemailer.createTestAccount();
+    return nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass
+      }
+    });
+  }
+}
 
     // === Ruta 1: viene PDF del front (base64) -> adjuntar y enviar ===
     if (pdfBase64) {
