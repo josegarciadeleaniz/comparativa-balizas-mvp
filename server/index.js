@@ -1080,91 +1080,66 @@ app.post('/api/enviar-pdf', async (req, res) => {
   }
 });
     // Helper: crea transporter SMTP real (si hay vars) o Ethereal (pruebas)
-    async function getTransporter() {
-  // Si hay configuración SMTP, usarla
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587', 10),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    });
-  } else {
-    // Si no hay configuración, usar Ethereal Email (testing)
-    console.log('⚠️  Usando Ethereal Email para testing - Los emails son ficticios');
-    const testAccount = await nodemailer.createTestAccount();
-    return nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass
-      }
-    });
-  }
+// Asegúrate antes de esto:
+// const express = require('express');
+// const app = express();
+// app.use(express.json({ limit: '20mb' })); // 👈 importante
+// const nodemailer = require('nodemailer');
+
+function getTransporter() {
+  // Crea tu transporter una vez (usa tus credenciales reales)
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: false,
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+  });
 }
 
-    // === Ruta 1: viene PDF del front (base64) -> adjuntar y enviar ===
-    if (pdfBase64) {
-      const pdfBuffer = Buffer.from(pdfBase64, 'base64');
-      const name = filename || `${title}.pdf`;
+app.post('/api/enviar-pdf', async (req, res) => {
+  try {
+    const {
+      email,
+      title = 'Informe de baliza',
+      pdfBase64,            // payload base64 SIN el prefijo data:
+      filename = 'Informe.pdf'
+    } = req.body || {};
 
-      const transporter = await getTransporter();
-      const info = await transporter.sendMail({
-        from: process.env.MAIL_FROM || 'Baliza <no-reply@local>',
-        to: email,
-        subject: title,
-        html: `<p>Adjuntamos el PDF con el detalle de tu cálculo.</p>`,
-        attachments: [{ filename: name, content: pdfBuffer, contentType: 'application/pdf' }]
-      });
+    if (!email) return res.status(400).json({ ok:false, error:'Falta el email' });
+    if (!pdfBase64) return res.status(400).json({ ok:false, error:'Falta el PDF (base64)' });
 
-      const previewUrl = nodemailer.getTestMessageUrl?.(info) || null;
-      return res.json({ ok: true, previewUrl });
-    }
+    // DEBUG server: mide longitud del base64
+    console.log('[MAIL] Dest:', email, 'base64 chars:', pdfBase64.length);
 
-    // === Ruta 2: NO viene PDF -> generarlo con pdfkit como hacías ===
-    const doc = new PDFDocument({ size: 'A4', margins: { top: 50, left: 50, right: 50, bottom: 50 } });
-    const chunks = [];
-    doc.on('data', d => chunks.push(d));
+    // Decodifica SIEMPRE como buffer binario
+    const pdfBuffer = Buffer.from(pdfBase64, 'base64');
 
-    doc.fontSize(18).text(title, { align: 'center' }).moveDown();
-    doc.fontSize(12).text('Resumen', { underline: true }).moveDown(0.5);
-    doc.text(resumenText || '—', { lineGap: 2 }).moveDown();
-    doc.text('Detalle', { underline: true }).moveDown(0.5);
-    doc.text(detalleText || '—', { lineGap: 2 });
+    // Crea transporter (o usa uno global que inicialices al arrancar)
+    const transporter = getTransporter();
 
-    doc.end();
-
-    doc.on('end', async () => {
-      try {
-        const pdfBuffer = Buffer.concat(chunks);
-        const name = filename || `${title}.pdf`;
-
-        const transporter = await getTransporter();
-        const info = await transporter.sendMail({
-          from: process.env.MAIL_FROM || 'Baliza <no-reply@local>',
-          to: email,
-          subject: title,
-          text: `${resumenText}\n\n${detalleText}`,
-          attachments: [{ filename: name, content: pdfBuffer, contentType: 'application/pdf' }]
-        });
-
-        const previewUrl = nodemailer.getTestMessageUrl?.(info) || null;
-        return res.json({ ok: true, previewUrl });
-      } catch (e2) {
-        console.error('Fallo enviando email:', e2);
-        return res.status(500).json({ ok: false, error: 'Error al enviar el correo' });
-      }
+    const info = await transporter.sendMail({
+      from: process.env.MAIL_FROM || 'no-reply@comparativabalizas.es',
+      to: email,
+      subject: title,
+      text: 'Adjuntamos su informe en PDF.',
+      html: '<p>Adjuntamos su informe en PDF.</p>',
+      attachments: [{
+        filename,
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+        // NO pongas encoding: 'base64' cuando usas Buffer; sólo cuando usas 'content' como string
+      }]
     });
+
+    console.log('[MAIL] OK messageId:', info.messageId);
+    return res.json({ ok: true, messageId: info.messageId });
+
   } catch (e) {
-    console.error('Error en /api/enviar-pdf:', e);
-    return res.status(500).json({ ok: false, error: 'Error interno al generar/enviar PDF' });
+    console.error('[MAIL] ERROR', e);
+    return res.status(500).json({ ok:false, error: e.message });
   }
 });
+
 // ===== Proxy de imágenes (solución CORS para html2canvas) =====
 // En index.js, mejora el endpoint /api/proxy-image:
 app.get('/api/proxy-image', async (req, res) => {
