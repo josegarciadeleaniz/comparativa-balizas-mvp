@@ -1038,7 +1038,8 @@ app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
 app.post('/api/enviar-pdf', async (req, res) => {
   try {
-    const {
+    const transporter = await getTransporter();
+	const {
       email,
       title = 'Informe de baliza',
       resumenText = '',
@@ -1168,20 +1169,21 @@ app.post('/api/enviar-pdf', async (req, res) => {
 // En index.js, mejora el endpoint /api/proxy-image:
 app.get('/api/proxy-image', async (req, res) => {
   try {
-    const url = decodeURIComponent(req.query.url);
-    if (!url) return res.status(400).send('Missing url');
-
-    // Configurar timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-    
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; BalizaPDF/1.0)',
-        'Referer': 'https://comparativabalizas.es/'
-      }
-    });
+    const u = req.query.url;
+    if (!u) return res.status(400).send('missing url');
+    const r = await fetch(u, { redirect: 'follow' });
+    if (!r.ok) throw new Error('Bad status ' + r.status);
+    const ab = await r.arrayBuffer();
+    const buf = Buffer.from(ab);
+    res.set('Content-Type', r.headers.get('content-type') || 'image/png');
+    res.set('Cache-Control', 'public, max-age=86400');
+    return res.send(buf);
+  } catch (e) {
+    console.warn('Proxy image error (non-critical):', e.message);
+    // devolvemos 200 con vacío para no romper html2canvas
+    return res.status(200).send(Buffer.alloc(0));
+  }
+});
     
     clearTimeout(timeoutId);
 
