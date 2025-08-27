@@ -206,10 +206,15 @@ function getTempFactor(provincia) {
   if (!p) return 1;
   const t = p.temp_extrema_guantera;
   if (t >= 60) return 0.5;
+  if (t >= 57.5) return 0.525;	
   if (t >= 55) return 0.55;
+  if (t >= 52.5) return 0.575;	
   if (t >= 50) return 0.6;
+  if (t >= 47.5) return 0.65;	
   if (t >= 45) return 0.7;
+  if (t >= 42.5) return 0.75;	
   if (t >= 40) return 0.8;
+  if (t >= 37.5) return 0.85;	
   if (t >= 35) return 0.9;
   return 1;
 }
