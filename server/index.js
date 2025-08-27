@@ -585,7 +585,7 @@ const hasModeloCompra =
               <td><strong>${(pNoFunciona*100).toFixed(2).replace('.', ',')}%</strong></td>
             </tr>
 <!-- 15.1) Coste de multas (anual) -->
-<tr style="background-color:#fff;">
+<tr>
   <td>Coste de multas (anual)</td>
   <td>
     <em><strong>Coste anual = Multa estándar × P<sub>denuncia</sub> × P<sub>averia</sub> × P<sub>no_funcione</sub></em>
