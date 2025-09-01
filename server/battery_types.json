@@ -315,6 +315,10 @@
         "tasa_anual": 0.07,
         "fuente": "Varta Longevity Studies"
       },
+      "Maxell": {
+        "tasa_anual": 0.11,
+        "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
+      },
       "Generalista": {
         "tasa_anual": 0.09,
         "fuente": "EU Battery Performance Database"
