@@ -16,7 +16,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -36,7 +36,7 @@
     "marca_pilas": "Sin Marca",
     "tipo_pila": "AAA",
     "precio_por_pila": {
-      "precio": 0.20,
+      "precio": 0.0080,
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
@@ -64,7 +64,7 @@
       "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.12,
+      "tasa_anual": 0.0030,
       "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
     },
     "desconectable": "Si",
@@ -88,7 +88,7 @@
       "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.12,
+      "tasa_anual": 0.0030,
       "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
     },
     "desconectable": "No",
@@ -112,7 +112,7 @@
       "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.12,
+      "tasa_anual": 0.0030,
       "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
     },
     "desconectable": "No",
@@ -136,7 +136,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "Si",
@@ -160,7 +160,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.25,
+      "tasa_anual": 0.0080,
       "fuente": "User-Reported Failure Rates"
     },
     "desconectable": "No",
@@ -184,7 +184,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -208,7 +208,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -232,7 +232,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -256,7 +256,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.18,
+      "tasa_anual": 0.0050,
       "fuente": "OEM Leakage Tests"
     },
     "desconectable": "No",
@@ -280,7 +280,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0060,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
@@ -304,7 +304,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.35,
+      "tasa_anual": 0.0080,
       "fuente": "Empirical Data from Repair Shops"
     },
     "desconectable": "No",
@@ -328,7 +328,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.18,
+      "tasa_anual": 0.0050,
       "fuente": "OEM Leakage Tests"
     },
     "desconectable": "No",
@@ -352,7 +352,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -376,7 +376,7 @@
       "fuente": "Varta oficial y minoristas europeos"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.12,
+      "tasa_anual": 0.0030,
       "fuente": "Varta Long-Term Storage Study (2019)"
     },
     "desconectable": "No",
@@ -400,7 +400,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.25,
+      "tasa_anual": 0.0080,
       "fuente": "User-Reported Failure Rates"
     },
     "desconectable": "No",
@@ -424,7 +424,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0060,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
@@ -448,7 +448,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.35,
+      "tasa_anual": 0.0080,
       "fuente": "Empirical Data from Repair Shops"
     },
     "desconectable": "No",
@@ -472,7 +472,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0060,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
@@ -496,7 +496,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0060,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
@@ -520,7 +520,7 @@
       "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.08,
+      "tasa_anual": 0.0015,
       "fuente": "Battery University, Duracell Technical Bulletin #45"
     },
     "desconectable": "Si",
@@ -544,7 +544,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0060,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "Si",
@@ -568,7 +568,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.35,
+      "tasa_anual": 0.0080,
       "fuente": "Empirical Data from Repair Shops"
     },
     "desconectable": "No",
@@ -592,7 +592,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.35,
+      "tasa_anual": 0.0080,
       "fuente": "Empirical Data from Repair Shops"
     },
     "desconectable": "No",
@@ -616,7 +616,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.25,
+      "tasa_anual": 0.0080,
       "fuente": "User-Reported Failure Rates"
     },
     "desconectable": "No",
@@ -640,7 +640,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.25,
+      "tasa_anual": 0.0080,
       "fuente": "User-Reported Failure Rates"
     },
     "desconectable": "No",
@@ -664,7 +664,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -688,7 +688,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0060,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
