@@ -205,7 +205,7 @@ function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
   return +vidaAjustada.toFixed(2);
 }
 
-// ===== Arrhenius helpers =====
+// ===== Arrhenius (común vida y fugas) =====
 function K(c){ return c + 273.15; }
 function arrheniusMult(TC, Ea_kJ, TrefC=21){
   const R = 8.314; // J/mol·K
@@ -213,7 +213,7 @@ function arrheniusMult(TC, Ea_kJ, TrefC=21){
   const T  = K(TC), Tr = K(TrefC);
   return Math.exp((Ea/R)*(1/Tr - 1/T));
 }
-// Escalonamiento conservador para guantera (si no tienes bins por T)
+// Estimación conservadora del “hot bin” por factor_provincia
 function estimateHotBinTemp(factor_provincia){
   if (factor_provincia >= 1.9) return 55;
   if (factor_provincia >= 1.7) return 52.5;
