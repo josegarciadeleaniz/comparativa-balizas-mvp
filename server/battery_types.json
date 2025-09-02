@@ -1,3 +1,10 @@
+"arrhenius": {
+  "TrefC": 21,
+  "Ea_kJ": {
+    "self_discharge": 40,
+    "leak": 50
+  }
+}
 {
   "precio_por_pila": {
     "9V": {
