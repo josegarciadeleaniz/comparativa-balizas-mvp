@@ -69,7 +69,7 @@ app.use((req, res, next) => {
 });
 
 // ===== DEBUG SWITCH =====
-const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1');
+const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1';
 
 
 // === BODY PARSER ===
@@ -185,10 +185,11 @@ function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
   const { uso, shelf } = getVidaBase(tipo, marca_pilas);
   const baseYears = normalizarBooleano(desconectable) ? shelf : uso;
 
-  // Provincia -> días calientes y factor_provincia (para estimar T_hot)
+    // Provincia -> días calientes y factor_provincia (para estimar T_hot)
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
-  const dias = p?.dias_calidos ?? 0;
+  const dias = p?.dias_anuales_30grados ?? 0; // <<< mismo nombre que en /api/calcula
   const fp   = p?.factor_provincia ?? 1;
+
 
   // Arrhenius autodescarga
   const TrefC = batteryData?.arrhenius?.TrefC ?? 21;
