@@ -75,34 +75,34 @@
 
   "factor_sulfatacion": {
     "9V": {
-      "Energizer": { "tasa_anual": 0.0015, "fuente": "Battery University, Duracell Technical Bulletin #45" },
-      "Duracell":  { "tasa_anual": 0.0015, "fuente": "Duracell White Paper on Alkaline Degradation" },
-      "Varta":     { "tasa_anual": 0.0030, "fuente": "Varta Long-Term Storage Study (2019)" },
-      "Maxell":    { "tasa_anual": 0.0040, "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
-      "Generalista": { "tasa_anual": 0.0050, "fuente": "Panasonic Battery Aging Reports" },
-      "Marca Blanca": { "tasa_anual": 0.0060, "fuente": "Independent Lab Tests (2023)" },
-      "Sin marca": { "tasa_anual": 0.0080, "fuente": "Empirical Data from Repair Shops" },
-      "China":     { "tasa_anual": 0.0080, "fuente": "Tear Down Analysis (YouTube Tech Channels)" }
+      "Energizer": { "tasa_anual": 0.0055, "fuente": "Battery University, Duracell Technical Bulletin #45" },
+      "Duracell":  { "tasa_anual": 0.0055, "fuente": "Duracell White Paper on Alkaline Degradation" },
+      "Varta":     { "tasa_anual": 0.0085, "fuente": "Varta Long-Term Storage Study (2019)" },
+      "Maxell":    { "tasa_anual": 0.0095, "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
+      "Generalista": { "tasa_anual": 0.0105, "fuente": "Panasonic Battery Aging Reports" },
+      "Marca Blanca": { "tasa_anual": 0.0115, "fuente": "Independent Lab Tests (2023)" },
+      "Sin marca": { "tasa_anual": 0.0125, "fuente": "Empirical Data from Repair Shops" },
+      "China":     { "tasa_anual": 0.0125, "fuente": "Tear Down Analysis (YouTube Tech Channels)" }
     },
     "AAA": {
-      "Energizer": { "tasa_anual": 0.0010, "fuente": "Energizer Datasheet E-912" },
-      "Duracell":  { "tasa_anual": 0.0010, "fuente": "Duracell Stability Metrics" },
-      "Varta":     { "tasa_anual": 0.0020, "fuente": "Varta Consumer Division Reports" },
-      "Maxell":    { "tasa_anual": 0.0030, "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
-      "Generalista": { "tasa_anual": 0.0030, "fuente": "Battery Industry Benchmarks" },
-      "Marca Blanca": { "tasa_anual": 0.0050, "fuente": "OEM Leakage Tests" },
-      "Sin marca": { "tasa_anual": 0.0080, "fuente": "User-Reported Failure Rates" },
-      "China":     { "tasa_anual": 0.0080, "fuente": "Import Quality Control Samples" }
+      "Energizer": { "tasa_anual": 0.0050, "fuente": "Energizer Datasheet E-912" },
+      "Duracell":  { "tasa_anual": 0.0050, "fuente": "Duracell Stability Metrics" },
+      "Varta":     { "tasa_anual": 0.0080, "fuente": "Varta Consumer Division Reports" },
+      "Maxell":    { "tasa_anual": 0.0095, "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
+      "Generalista": { "tasa_anual": 0.0105, "fuente": "Battery Industry Benchmarks" },
+      "Marca Blanca": { "tasa_anual": 0.0115, "fuente": "OEM Leakage Tests" },
+      "Sin marca": { "tasa_anual": 0.0125, "fuente": "User-Reported Failure Rates" },
+      "China":     { "tasa_anual": 0.0125, "fuente": "Import Quality Control Samples" }
     },
     "AA": {
-      "Energizer": { "tasa_anual": 0.0010, "fuente": "Energizer Technical Documentation" },
-      "Duracell":  { "tasa_anual": 0.0010, "fuente": "Duracell Internal Testing Data" },
-      "Varta":     { "tasa_anual": 0.0020, "fuente": "Varta Longevity Studies" },
-      "Maxell":    { "tasa_anual": 0.0030, "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
-      "Generalista": { "tasa_anual": 0.0040, "fuente": "EU Battery Performance Database" },
-      "Marca Blanca": { "tasa_anual": 0.0040, "fuente": "Retailer Quality Audits" },
-      "Sin marca": { "tasa_anual": 0.0060, "fuente": "Crowdsourced Device Damage Reports" },
-      "China":     { "tasa_anual": 0.0060, "fuente": "Bulk Import Testing" }
+      "Energizer": { "tasa_anual": 0.0055, "fuente": "Energizer Technical Documentation" },
+      "Duracell":  { "tasa_anual": 0.0055, "fuente": "Duracell Internal Testing Data" },
+      "Varta":     { "tasa_anual": 0.0085, "fuente": "Varta Longevity Studies" },
+      "Maxell":    { "tasa_anual": 0.0095, "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
+      "Generalista": { "tasa_anual": 0.0105, "fuente": "EU Battery Performance Database" },
+      "Marca Blanca": { "tasa_anual": 0.0115, "fuente": "Retailer Quality Audits" },
+      "Sin marca": { "tasa_anual": 0.0125, "fuente": "Crowdsourced Device Damage Reports" },
+      "China":     { "tasa_anual": 0.0125, "fuente": "Bulk Import Testing" }
     }
   },
 
