@@ -37,67 +37,40 @@ try {
 const app = express();
 app.disable("x-powered-by");
 
-// ===== CORS para el widget =====
-const CORS_ORIGINS = [
+// ===== CORS UNIVERSAL (para widget/app/*.comparativabalizas.es) =====
+const ALLOWED_ORIGINS = new Set([
   'https://widget.comparativabalizas.es',
   'https://comparativabalizas.es',
-  'https://www.comparativabalizas.es'
-];
+  'https://www.comparativabalizas.es',
+  'https://app.comparativabalizas.es',
+  'https://comparativa-balizas-mvp.onrender.com' // pruebas
+]);
 
-app.use(cors({
-  origin: CORS_ORIGINS,
-  methods: ['GET','POST','OPTIONS'],
-  allowedHeaders: ['Content-Type','X-Requested-With'],
-  maxAge: 600
-}));
-
-app.options('*', cors({
-  origin: CORS_ORIGINS,
-  methods: ['GET','POST','OPTIONS'],
-  allowedHeaders: ['Content-Type','X-Requested-With'],
-  maxAge: 600
-}));
-
-// Anti-cache (evita respuestas “viejas” del navegador/CDN)
 app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
+  const origin = req.headers.origin || '';
+  if (ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  // Para proxies/CDN
+  res.setHeader('Vary', 'Origin');
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
+  // No usamos credenciales/cookies: NO enviar Allow-Credentials.
+
+  // Anti-cache
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  // Responder preflight
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
-
 
 // ===== DEBUG SWITCH =====
 const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1';
 
-// ===== CORS (definitivo) =====
-const ALLOWED_ORIGINS = [
-  "https://comparativabalizas.es",
-  "https://www.comparativabalizas.es",
-  "https://widget.comparativabalizas.es",
-  "https://app.comparativabalizas.es",
-  "https://comparativa-balizas-mvp.onrender.com" // pruebas
-];
-
-const corsOptionsDelegate = (req, cb) => {
-  const origin = req.header("Origin");
-  if (!origin) {
-    // curl/healthchecks/requests internas sin Origin
-    return cb(null, { origin: true });
-  }
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    return cb(null, {
-      origin: true,
-      methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"]
-      // credentials: false
-    });
-  }
-  return cb(new Error("Not allowed by CORS"));
-};
-
-app.use(cors(corsOptionsDelegate));
-app.options("*", cors(corsOptionsDelegate));
 
 // === BODY PARSER ===
 app.use(express.json({ limit: '20mb' }));
@@ -194,9 +167,9 @@ function canonicalBrand(s){
 // — Aquí insertas getFundaFactor —
 function getFundaFactor(tipoFunda) {
   const map = {
-    tela:      1.00,
-    neopreno:  1.05,
-    'eva foam': 1.10
+    tela:      1.01,
+    neopreno:  1.10,
+    'eva foam': 1.15
   };
   const key = String(tipoFunda || '').toLowerCase().trim();
   return map[key] || 1.00;
@@ -212,10 +185,11 @@ function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
   const { uso, shelf } = getVidaBase(tipo, marca_pilas);
   const baseYears = normalizarBooleano(desconectable) ? shelf : uso;
 
-  // Provincia -> días calientes y factor_provincia (para estimar T_hot)
+    // Provincia -> días calientes y factor_provincia (para estimar T_hot)
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
-  const dias = p?.dias_calidos ?? 0;
+  const dias = p?.dias_anuales_30grados ?? 0; // <<< mismo nombre que en /api/calcula
   const fp   = p?.factor_provincia ?? 1;
+
 
   // Arrhenius autodescarga
   const TrefC = batteryData?.arrhenius?.TrefC ?? 21;
@@ -289,16 +263,16 @@ function getTempFactor(provincia) {
 
 function getLeakRisk(tipo, marca_pilas) {
   const map = {
-    "Duracell": 0.0015,
-    "Energizer": 0.0015,
-    "Varta": 0.0020,
-    "Maxell": 0.0030,
-    "Generalista": 0.0030,
-    "Marca Blanca": 0.0050,
-    "Sin marca": 0.0080,
-    "China": 0.0080
+    "Duracell": 0.0055,
+    "Energizer": 0.0055,
+    "Varta": 0.0085,
+    "Maxell": 0.0095,
+    "Generalista": 0.0105,
+    "Marca Blanca": 0.0115,
+    "Sin marca": 0.0125,
+    "China": 0.0125
   };
-  return map[marca_pilas] ?? 0.0040;
+  return map[marca_pilas] ?? 0.0055;
 }
 
 // DEPRECATED: mantener solo si aún es invocada por código antiguo.
@@ -908,18 +882,25 @@ let prob_fuga = +(tasa_anual * multAvgClamped * factor_prov).toFixed(4);
       coste_multas
     };
 
-    const meta = {
-      marca_baliza,
-      modelo,
-      modelo_compra,
-      tipo,
-      marca_pilas,
-      desconectable,
-      funda,
-      provincia,
-      coste_inicial: parseFloat(coste_inicial),
-      edad_vehiculo: parseInt(edad_vehiculo)
-    };
+    // Fallback de marca/modelo desde la baliza seleccionada (por si no vienen en el body)
+const marca_baliza_eff = (marca_baliza && String(marca_baliza).trim()) 
+  || beaconInfo?.marca_baliza || beaconInfo?.marca || 'Desconocida';
+const modelo_eff = (modelo && String(modelo).trim()) 
+  || beaconInfo?.modelo || beaconInfo?.model || beaconInfo?.modelo_baliza || 'Desconocido';
+
+const meta = {
+  marca_baliza: String(marca_baliza_eff),
+  modelo: String(modelo_eff),
+  modelo_compra,
+  tipo,
+  marca_pilas,
+  desconectable,
+  funda,
+  provincia,
+  coste_inicial: parseFloat(coste_inicial),
+  edad_vehiculo: parseInt(edad_vehiculo)
+};
+
 
     // === GUARDAR EN BD (opcional) ===
     try {
@@ -974,8 +955,28 @@ let prob_fuga = +(tasa_anual * multAvgClamped * factor_prov).toFixed(4);
   }
 });
 
-// ===== Datos públicos =====
-app.get('/api/beacons',      (req, res) => res.json(beacons));
+// ===== Datos públicos (BEACONS saneado) =====
+app.get('/api/beacons', (req, res) => {
+  try {
+    const list = Array.isArray(beacons) ? beacons : [];
+    const out = list.map((b, i) => {
+      const marca  = b.marca_baliza ?? b.marca ?? b.brand ?? 'Desconocida';
+      const modelo = b.modelo ?? b.model ?? b.modelo_baliza ?? `Modelo ${i+1}`;
+      return {
+        id_baliza: b.id_baliza ?? b.id ?? (i + 1),
+        marca_baliza: String(marca),
+        modelo: String(modelo),
+        // deja el resto de campos tal cual, por si los usas
+        ...b
+      };
+    });
+    res.set('Cache-Control','no-store');
+    res.json(out);
+  } catch (e) {
+    res.status(500).json({ error: 'beacons_sanitize_fail', details: String(e) });
+  }
+});
+
 app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
