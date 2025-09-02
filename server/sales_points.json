@@ -17,7 +17,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -42,8 +42,8 @@
       "precio": 0.28,
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+ "factor_sulfatacion": {
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -95,7 +95,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -133,7 +133,7 @@
     "id_punto": 3,
     "nombre_punto": "Amazon",
     "marca_baliza": "Light Mup beacon",
-    "modelo": "Help Flash IoT",
+    "modelo": "Beacon Light IoT",
     "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
     "Origen": "China",
     "Actuación_realizada_en_España": "Distribución",
@@ -189,17 +189,17 @@
     "Fabricante": "Kepar Electrónica S. L.",
     "Origen": "España",
     "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
+    "precio_venta": 49.95,
+    "alimentacion": "4x AA",
+    "numero_pilas": 4,
     "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
+    "tipo_pila": "AA",
     "precio_por_pila": {
-      "precio": 1.30,
+      "precio": 0.38,
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0040,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
@@ -241,17 +241,17 @@
     "Fabricante": "Kepar Electrónica S. L.",
     "Origen": "España",
     "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 57.49,
-    "alimentacion": "3x AAA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AAA",
+    "precio_venta": 49.95,
+    "alimentacion": "4x AA",
+    "numero_pilas": 4,
+    "marca_pilas": "Marca Blanca",
+    "tipo_pila": "AA",
     "precio_por_pila": {
-      "precio": 0.20,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
+      "precio": 0.38,
+      "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.25,
+      "tasa_anual": 0.0040,
       "fuente": "User-Reported Failure Rates"
     },
     "desconectable": "No",
@@ -302,8 +302,8 @@
       "precio": 0.28,
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+"factor_sulfatacion": {
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -328,8 +328,8 @@
       "precio": 0.28,
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+   "factor_sulfatacion": {
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -449,17 +449,17 @@
     "Fabricante": "Kepar Electrónica S. L.",
     "Origen": "España",
     "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 52,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
+    "precio_venta": 49.95,
+    "alimentacion": "4x AA",
+    "numero_pilas": 4,
     "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
+    "tipo_pila": "AA",
     "precio_por_pila": {
-      "precio": 1.30,
+      "precio": 0.38,
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0040,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
@@ -537,7 +537,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -588,9 +588,9 @@
       "precio": 0.28,
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.20,
-      "fuente": "Empirical Data from Repair Shops"
+   "factor_sulfatacion": {
+      "tasa_anual": 0.0060,
+      "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
     "funda_termica": "No",
@@ -615,7 +615,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -641,7 +641,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -657,17 +657,17 @@
     "Fabricante": "Kepar Electrónica S. L.",
     "Origen": "España",
     "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
+    "precio_venta": 49.95,
+    "alimentacion": "4x AA",
+    "numero_pilas": 4,
     "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
+    "tipo_pila": "AA",
     "precio_por_pila": {
-      "precio": 1.30,
+      "precio": 0.38,
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0040,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
@@ -692,8 +692,8 @@
       "precio": 0.28,
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+   "factor_sulfatacion": {
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "Si",
@@ -719,7 +719,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -771,7 +771,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -797,7 +797,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -849,7 +849,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -901,7 +901,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -953,7 +953,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -979,7 +979,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -1005,7 +1005,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -1057,7 +1057,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -1083,7 +1083,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -1161,7 +1161,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
@@ -1187,7 +1187,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -1213,7 +1213,7 @@
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.20,
+      "tasa_anual": 0.0060,
       "fuente": "Crowdsourced Device Damage Reports"
     },
     "desconectable": "No",
@@ -1224,22 +1224,22 @@
   {
     "id_punto": 28,
     "nombre_punto": "Renault",
-    "marca_baliza": "Help Flash IoT",
+"marca_baliza": "Help Flash IoT",
     "modelo": "Help Flash IoT",
     "Fabricante": "Kepar Electrónica S. L.",
     "Origen": "España",
     "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
+    "precio_venta": 49.95,
+    "alimentacion": "4x AA",
+    "numero_pilas": 4,
     "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
+    "tipo_pila": "AA",
     "precio_por_pila": {
-      "precio": 1.30,
+      "precio": 0.38,
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0040,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
@@ -1255,17 +1255,17 @@
     "Fabricante": "Kepar Electrónica S. L.",
     "Origen": "España",
     "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
+    "precio_venta": 49.95,
+    "alimentacion": "4x AA",
+    "numero_pilas": 4,
     "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
+    "tipo_pila": "AA",
     "precio_por_pila": {
-      "precio": 1.30,
+      "precio": 0.38,
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0040,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
@@ -1307,17 +1307,17 @@
     "Fabricante": "Kepar Electrónica S. L.",
     "Origen": "España",
     "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
+    "precio_venta": 49.95,
+    "alimentacion": "4x AA",
+    "numero_pilas": 4,
     "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
+    "tipo_pila": "AA",
     "precio_por_pila": {
-      "precio": 1.30,
+      "precio": 0.38,
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.22,
+      "tasa_anual": 0.0040,
       "fuente": "Independent Lab Tests (2023)"
     },
     "desconectable": "No",
@@ -1395,7 +1395,7 @@
       "fuente": "Distribuidores OEM y marketplaces nacionales"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.15,
+      "tasa_anual": 0.0040,
       "fuente": "Retailer Quality Audits"
     },
     "desconectable": "No",
