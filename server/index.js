@@ -160,6 +160,7 @@ function canonicalBrand(s){
   if (v === 'maxell') return 'Maxell';
   return s;
 }
+
 // — Aquí insertas getFundaFactor —
 function getFundaFactor(tipoFunda) {
   const map = {
@@ -169,6 +170,7 @@ function getFundaFactor(tipoFunda) {
   };
   const key = String(tipoFunda || '').toLowerCase().trim();
   return map[key] || 1.00;
+} // <-- ESTA LLAVE FALTABA
 
 function getVidaBase(tipo, marca_pilas) {
   const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
