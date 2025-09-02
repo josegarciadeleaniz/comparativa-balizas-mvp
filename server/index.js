@@ -152,9 +152,9 @@ function normalizarBooleano(valor) {
 // — Aquí insertas getFundaFactor —
 function getFundaFactor(tipoFunda) {
   const map = {
-    tela:     1.02,
-    neopreno: 1.10,
-    'eva foam': 1.25
+    tela:     1.00,
+    neopreno: 1.05,
+    'eva foam': 1.10
   };
   const key = String(tipoFunda || '').toLowerCase().trim();
   return map[key] || 1.00;
@@ -220,8 +220,8 @@ function getTempFactor(provincia) {
 }
 
 function getLeakRisk(tipo, marca_pilas) {
-  const map = { "Duracell": 0.4, "Energizer": 0.4, "Varta": 0.45, "Marca Blanca": 0.55, "No": 0.6 };
-  return map[marca_pilas] || 0.55;
+  const map = { "Duracell": 0.0010, "Energizer": 0.0010, "Varta": 0.0020, "Maxell": 0.0030, "Generalista": 0.0030, "Marca Blanca": 0.0040, "No": 0.0060 };
+  return map[marca_pilas] || 0.0040;
 }
 function getLeakFinalRisk(tipo, marca_pilas, desconectable, funda) {
   const base = getLeakRisk(tipo, marca_pilas);
@@ -524,7 +524,7 @@ const hasModeloCompra =
             <tr>
               <td>Mitigación de Riesgo de fugas</td>
               <td>
-                El riesgo de fugas se puede mitigar si la baliza dispone de la posibilidad de desconexión de los polos, <strong>(${esDesconectable ? 'sí' : 'no'})</strong>, con un <strong>${(mitDescPct*100).toFixed(0)}%</strong> de reducción. Si además lleva funda térmica de silicona/ EVA Foam  el factor funda genera un <strong>(<strong>${(mitFundaPct*100).toFixed(0)}%</strong> extra.)</strong>. La Degradación de las baterías de una baliza no sigue un criterio lineal, y estudios científicos demuestran que dicha degradación aumenta el riesgo de fuga en 15% por cada 5ºC por encima de 30ºC. En su Baliza <strong>${meta.marca_baliza} ${meta.modelo} </strong> este factor mitigación es por tanto de:<br> <strong><li>Factor de Mitigación = ${(mitDescPct*100).toFixed(0)}% + ${(mitFundaPct*100).toFixed(0)}% = ${(mitigacionPct*100).toFixed(0)}%</strong><br>. Fuente: Estudio MIT sobre fugas.
+                El riesgo de fugas se puede mitigar si la baliza dispone de la posibilidad de desconexión de los polos, <strong>(${esDesconectable ? 'sí' : 'no'})</strong>, con un <strong>${(mitDescPct*100).toFixed(0)}%</strong> de reducción. Si además lleva funda térmica de silicona/ EVA Foam  el factor funda genera un <strong>(<strong>${(mitFundaPct*100).toFixed(0)}%</strong> extra.)</strong>. La degradación y el riesgo de fuga aumentan con la temperatura y con descargas profundas. La funda térmica (silicona/EVA) reduce picos térmicos y la desconexión de polos evita consumo parásito, disminuyendo el riesgo. Fuentes: Energizer Technical Info / Battery University; estudios de temperatura en habitáculo (NHTSA/SAE). En su Baliza <strong>${meta.marca_baliza} ${meta.modelo} </strong> este factor mitigación es por tanto de:<br> <strong><li>Factor de Mitigación = ${(mitDescPct*100).toFixed(0)}% + ${(mitFundaPct*100).toFixed(0)}% = ${(mitigacionPct*100).toFixed(0)}%</strong><br>. Fuente: Estudio MIT sobre fugas.
               </td>
               <td><strong>${(mitigacionPct*100).toFixed(0)}%</strong></td>
             </tr>
