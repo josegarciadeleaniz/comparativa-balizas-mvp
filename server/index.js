@@ -148,58 +148,94 @@ function normalizarBooleano(valor) {
   const v = stripAccents(String(valor)).toLowerCase().trim();
   return ["si", "yes", "true"].includes(v);
 }
-
+function canonicalBrand(s){
+  const v = String(s || '').trim().toLowerCase();
+  if (v === 'marca blanca') return 'Marca Blanca';
+  if (v === 'sin marca' || v === 'no') return 'Sin marca';
+  if (v === 'china') return 'China';
+  if (v === 'generalista' || v === 'marca generalista') return 'Generalista';
+  if (v === 'duracell') return 'Duracell';
+  if (v === 'energizer') return 'Energizer';
+  if (v === 'varta') return 'Varta';
+  if (v === 'maxell') return 'Maxell';
+  return s;
+}
 // — Aquí insertas getFundaFactor —
 function getFundaFactor(tipoFunda) {
   const map = {
-    tela:     1.00,
-    neopreno: 1.05,
+    tela:      1.00,
+    neopreno:  1.05,
     'eva foam': 1.10
   };
   const key = String(tipoFunda || '').toLowerCase().trim();
   return map[key] || 1.00;
-}
 
 function getVidaBase(tipo, marca_pilas) {
   const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
-  const marcaNorm = batteryData.vida_base[tipoSimple][marca_pilas] ? marca_pilas : 'Sin marca';
-  return batteryData.vida_base[tipoSimple][marcaNorm];
+  const m = canonicalBrand(marca_pilas);
+  return batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin marca'];
 }
 
 function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
   const { uso, shelf } = getVidaBase(tipo, marca_pilas);
-  const valorDesconexion = normalizarBooleano(desconectable) ? shelf : uso;
-  const factorTemp  = getTempFactor(provincia);
+  const baseYears = normalizarBooleano(desconectable) ? shelf : uso;
+
+  // Provincia -> días calientes y factor_provincia (para estimar T_hot)
+  const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
+  const dias = p?.dias_calidos ?? 0;
+  const fp   = p?.factor_provincia ?? 1;
+
+  // Arrhenius autodescarga
+  const TrefC = batteryData?.arrhenius?.TrefC ?? 21;
+  const EaSD  = batteryData?.arrhenius?.Ea_kJ?.self_discharge ?? 40;
+  const wHot  = (dias/365);
+  const Thot  = estimateHotBinTemp(fp);
+  const multHot = arrheniusMult(Thot, EaSD, TrefC);
+  const multAvg = (1 - wHot) + wHot * multHot;
+  const multAvgClamped = Math.min(multAvg, 5); // cap prudente
+
+  // Vida efectiva ~ años_base / multiplicador térmico
   const factorFunda = getFundaFactor(funda);
-  const vidaAjustada = valorDesconexion * factorTemp * factorFunda;
+  const vidaAjustada = (baseYears / multAvgClamped) * factorFunda;
+
   return +vidaAjustada.toFixed(2);
+}
+
+// ===== Arrhenius helpers =====
+function K(c){ return c + 273.15; }
+function arrheniusMult(TC, Ea_kJ, TrefC=21){
+  const R = 8.314; // J/mol·K
+  const Ea = Ea_kJ * 1000;
+  const T  = K(TC), Tr = K(TrefC);
+  return Math.exp((Ea/R)*(1/Tr - 1/T));
+}
+// Escalonamiento conservador para guantera (si no tienes bins por T)
+function estimateHotBinTemp(factor_provincia){
+  if (factor_provincia >= 1.9) return 55;
+  if (factor_provincia >= 1.7) return 52.5;
+  if (factor_provincia >= 1.5) return 50;
+  if (factor_provincia >= 1.3) return 47.5;
+  if (factor_provincia >= 1.2) return 45;
+  return 42.5;
 }
 
 function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
   if (sourceData?.precio_por_pila) {
     const unit = sourceData.precio_por_pila.precio;
-    const cantidad = sourceData.numero_pilas || 
-                     (tipo.includes('9V') ? 1 : parseInt(tipo,10) || (tipo.includes('AAA') ? 3 : 4));
+    const cantidad = sourceData.numero_pilas ||
+      (tipo.includes('9V') ? 1 : (parseInt(tipo.match(/^(\d+)/)?.[1]) || (tipo.includes('AAA') ? 3 : 4)));
     return parseFloat((unit * cantidad).toFixed(2));
   }
   const precios = batteryData.precios_pilas;
-  const marcaNorm = marca_pilas === 'Marca Blanca'
-    ? 'Marca blanca'
-    : (marca_pilas === 'No' ? 'Sin marca' : marca_pilas);
-
-  let tipoBase, cantidad;
-  if (tipo.includes('9V')) {
-    tipoBase = '9V'; cantidad = 1;
-  } else {
-    tipoBase = tipo.includes('AAA') ? 'AAA' : 'AA';
-    cantidad = parseInt(tipo.match(/^(\d+)/)?.[1]) || (tipoBase === 'AAA' ? 3 : 4);
-  }
+  const marcaNorm = canonicalBrand(marca_pilas);
+  const tipoBase  = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
+  const cantidad  = tipo.includes('9V') ? 1 : (parseInt(tipo.match(/^(\d+)/)?.[1]) || (tipoBase === 'AAA' ? 3 : 4));
   const unit = precios[marcaNorm]?.[tipoBase]
     ?? precios['Sin marca']?.[tipoBase]
     ?? (tipoBase === 'AAA' ? 0.8 : 1.0);
-
   return parseFloat((unit * cantidad).toFixed(2));
 }
+
 
 function getTempFactor(provincia) {
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
@@ -220,9 +256,19 @@ function getTempFactor(provincia) {
 }
 
 function getLeakRisk(tipo, marca_pilas) {
-  const map = { "Duracell": 0.0015, "Energizer": 0.0015, "Varta": 0.0020, "Maxell": 0.0030, "Generalista": 0.0030, "Marca Blanca": 0.0060, "No": 0.0080};
-  return map[marca_pilas] || 0.0040;
+  const map = {
+    "Duracell": 0.0015,
+    "Energizer": 0.0015,
+    "Varta": 0.0020,
+    "Maxell": 0.0030,
+    "Generalista": 0.0030,
+    "Marca Blanca": 0.0050,
+    "Sin marca": 0.0080,
+    "China": 0.0080
+  };
+  return map[marca_pilas] ?? 0.0040;
 }
+
 function getLeakFinalRisk(tipo, marca_pilas, desconectable, funda) {
   const base = getLeakRisk(tipo, marca_pilas);
   const mit = (normalizarBooleano(desconectable) ? 0.6 : 1) * (normalizarBooleano(funda) ? 0.6 : 1);
@@ -734,7 +780,22 @@ app.post('/api/calcula', async (req, res) => {
     const fuente_temp    = pData.fuente_temp_extrema     ?? 'provincias.json';
     const fuente_dias    = pData.fuente_dias_calidos     ?? 'provincias.json';
 
-    const prob_fuga      = +((dias_calidos/365) * tasa_anual * factor_prov).toFixed(4);
+    // === Arrhenius para fuga ===
+const TrefC   = batteryData?.arrhenius?.TrefC ?? 21;
+const EaLeak  = batteryData?.arrhenius?.Ea_kJ?.leak ?? 50;
+const wHot    = dias_calidos/365;
+const Thot    = estimateHotBinTemp(factor_prov);
+const multHot = arrheniusMult(Thot, EaLeak, TrefC);
+
+// promedio anual ponderado: días templados (1x) + días calientes (multHot)
+const multAvg = (1 - wHot) + wHot * multHot;
+
+// clamp razonable para no desbocar por errores de datos
+const multAvgClamped = Math.min(multAvg, 8);
+
+// riesgo anual base con Arrhenius
+let prob_fuga = +(tasa_anual * multAvgClamped * factor_prov).toFixed(4);
+
 
     const factorDescon   = normalizarBooleano(desconectable) ? 0.3 : 1;
     const fundaLower     = String(funda || '').toLowerCase();
