@@ -194,9 +194,9 @@ function canonicalBrand(s){
 // — Aquí insertas getFundaFactor —
 function getFundaFactor(tipoFunda) {
   const map = {
-    tela:      1.00,
-    neopreno:  1.05,
-    'eva foam': 1.10
+    tela:      1.01,
+    neopreno:  1.10,
+    'eva foam': 1.15
   };
   const key = String(tipoFunda || '').toLowerCase().trim();
   return map[key] || 1.00;
@@ -289,16 +289,16 @@ function getTempFactor(provincia) {
 
 function getLeakRisk(tipo, marca_pilas) {
   const map = {
-    "Duracell": 0.0015,
-    "Energizer": 0.0015,
-    "Varta": 0.0020,
-    "Maxell": 0.0030,
-    "Generalista": 0.0030,
-    "Marca Blanca": 0.0050,
-    "Sin marca": 0.0080,
-    "China": 0.0080
+    "Duracell": 0.0055,
+    "Energizer": 0.0055,
+    "Varta": 0.0085,
+    "Maxell": 0.0095,
+    "Generalista": 0.0105,
+    "Marca Blanca": 0.0115,
+    "Sin marca": 0.0125,
+    "China": 0.0125
   };
-  return map[marca_pilas] ?? 0.0040;
+  return map[marca_pilas] ?? 0.0055;
 }
 
 // DEPRECATED: mantener solo si aún es invocada por código antiguo.
