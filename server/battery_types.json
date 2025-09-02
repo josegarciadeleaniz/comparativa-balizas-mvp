@@ -398,12 +398,13 @@
   }
 },
   "precios_pilas": {
-  "Energizer": { "AAA": 0.80, "AA": 0.95, "9V": 3.00 },
-  "Duracell":  { "AAA": 0.80, "AA": 0.95, "9V": 3.00 },
-  "Varta":     { "AAA": 0.60, "AA": 0.70, "9V": 2.10 },
-  "Maxell":    { "AAA": 0.50, "AA": 0.60, "9V": 2.00 },
-  "Marca Blanca": { "AAA": 0.38, "AA": 0.45, "9V": 1.30 },
-  "Sin marca": { "AAA": 0.20, "AA": 0.28, "9V": 0.80 }
-  }
+  "Energizer":   { "AAA": 0.80, "AA": 0.95, "9V": 3.00 },
+  "Duracell":    { "AAA": 0.80, "AA": 0.95, "9V": 3.00 },
+  "Varta":       { "AAA": 0.60, "AA": 0.70, "9V": 2.10 },
+  "Maxell":      { "AAA": 0.50, "AA": 0.60, "9V": 2.00 },
+  "Generalista": { "AAA": 0.50, "AA": 0.60, "9V": 2.00 },
+  "Marca Blanca":{ "AAA": 0.38, "AA": 0.45, "9V": 1.30 },
+  "Sin marca":   { "AAA": 0.20, "AA": 0.28, "9V": 0.80 },
+  "China":       { "AAA": 0.20, "AA": 0.28, "9V": 0.80 }
  }
 }
