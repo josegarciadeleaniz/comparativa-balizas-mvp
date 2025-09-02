@@ -36,11 +36,11 @@
     "marca_pilas": "Sin Marca",
     "tipo_pila": "AAA",
     "precio_por_pila": {
-      "precio": 0.0080,
+      "precio": 0.20,
       "fuente": "AliExpress, Shein, bazares multiprecio"
     },
     "factor_sulfatacion": {
-      "tasa_anual": 0.25,
+      "tasa_anual": 0.0060,
       "fuente": "User-Reported Failure Rates"
     },
     "desconectable": "No",
