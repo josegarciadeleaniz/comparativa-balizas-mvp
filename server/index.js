@@ -37,67 +37,40 @@ try {
 const app = express();
 app.disable("x-powered-by");
 
-// ===== CORS para el widget =====
-const CORS_ORIGINS = [
+// ===== CORS UNIVERSAL (para widget/app/*.comparativabalizas.es) =====
+const ALLOWED_ORIGINS = new Set([
   'https://widget.comparativabalizas.es',
   'https://comparativabalizas.es',
-  'https://www.comparativabalizas.es'
-];
+  'https://www.comparativabalizas.es',
+  'https://app.comparativabalizas.es',
+  'https://comparativa-balizas-mvp.onrender.com' // pruebas
+]);
 
-app.use(cors({
-  origin: CORS_ORIGINS,
-  methods: ['GET','POST','OPTIONS'],
-  allowedHeaders: ['Content-Type','X-Requested-With'],
-  maxAge: 600
-}));
-
-app.options('*', cors({
-  origin: CORS_ORIGINS,
-  methods: ['GET','POST','OPTIONS'],
-  allowedHeaders: ['Content-Type','X-Requested-With'],
-  maxAge: 600
-}));
-
-// Anti-cache (evita respuestas “viejas” del navegador/CDN)
 app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
+  const origin = req.headers.origin || '';
+  if (ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  // Para proxies/CDN
+  res.setHeader('Vary', 'Origin');
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
+  // No usamos credenciales/cookies: NO enviar Allow-Credentials.
+
+  // Anti-cache
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
+  // Responder preflight
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
 
-
 // ===== DEBUG SWITCH =====
-const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1';
+const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1');
 
-// ===== CORS (definitivo) =====
-const ALLOWED_ORIGINS = [
-  "https://comparativabalizas.es",
-  "https://www.comparativabalizas.es",
-  "https://widget.comparativabalizas.es",
-  "https://app.comparativabalizas.es",
-  "https://comparativa-balizas-mvp.onrender.com" // pruebas
-];
-
-const corsOptionsDelegate = (req, cb) => {
-  const origin = req.header("Origin");
-  if (!origin) {
-    // curl/healthchecks/requests internas sin Origin
-    return cb(null, { origin: true });
-  }
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    return cb(null, {
-      origin: true,
-      methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"]
-      // credentials: false
-    });
-  }
-  return cb(new Error("Not allowed by CORS"));
-};
-
-app.use(cors(corsOptionsDelegate));
-app.options("*", cors(corsOptionsDelegate));
 
 // === BODY PARSER ===
 app.use(express.json({ limit: '20mb' }));
