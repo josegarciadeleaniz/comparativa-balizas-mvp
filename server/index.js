@@ -493,16 +493,16 @@ const hasModeloCompra =
                 <strong>${typeof tempExt === 'number' ? tempExt.toFixed(1) : tempExt}°C</strong>
               </td>
               <td>
-                En ${meta.provincia} las temperaturas anuales oscilan entre
-                <strong>${typeof tempMax === 'number' ? tempMax.toFixed(1) : tempMax}°C</strong> (máxima) y
-                <strong>${typeof tempMin === 'number' ? tempMin.toFixed(1) : tempMin}°C</strong> (mínima),
-                con media anual de
-                <strong>${typeof tempMedia === 'number' ? tempMedia.toFixed(1) : tempMedia}°C</strong>.<br>
-                Picos en guantera de
-                <strong>${typeof tempExt === 'number' ? tempExt.toFixed(1) : tempExt}°C</strong>,  
-                provocando una pérdida de carga de
-                <strong>${(pasos.factor_temp * 100).toFixed(1).replace('.', ',')}%</strong>.<br>Fuente: AEMET
-              </td>
+  			En ${meta.provincia} las temperaturas anuales oscilan entre
+  			<strong>${typeof tempMax === 'number' ? tempMax.toFixed(1) : tempMax}°C</strong> (máxima) y
+  			<strong>${typeof tempMin === 'number' ? tempMin.toFixed(1) : tempMin}°C</strong> (mínima),
+  			con media anual de <strong>${typeof tempMedia === 'number' ? tempMedia.toFixed(1) : tempMedia}°C</strong>.<br>
+  			Aplicamos un modelo de <strong>Arrhenius</strong> para ponderar los <strong>${dias_calidos}</strong> días/año de guantera caliente.
+  			El multiplicador térmico anual es:	<em><strong>mult<sub>avg</sub> = (1 − d/365) × 1 + (d/365) × mult(T<sub>hot</sub>)</strong></em>,
+  			donde <em>mult(T)</em> crece exponencialmente con la temperatura respecto a 21&nbsp;°C.
+  			Esto acelera la autodescarga y el riesgo de fuga en los días calurosos.<br>
+  			Fuente: AEMET (series térmicas); documentación técnica de fabricantes; cinética de Arrhenius.
+			</td>
               <td><strong>${((1 - pasos.factor_temp) * 100).toFixed(1).replace('.', ',')}%</strong> descarga</td>
             </tr>
 
@@ -560,7 +560,10 @@ const hasModeloCompra =
               <td>Riesgo de fuga anual</td>
               <td>
                 La Probabilidad de Fuga en una Baliza depende las pilas y de la temperatura a las que la baliza se ve sometida. Estudios científicos muestran que las temperaturas en el interior de un coche pueden alcanzar 1.5-2x.<br>Si tenemos en cuenta los días al año en <strong>${meta.provincia}</strong> con temperaturas por encima de 30ºC  <strong>(${dias_calidos} días)</strong>  , la tasa de sulfatación de las pilas de la baliza  <strong>( ${meta.tipo}, de la marca " ${meta.marca_pilas}"), </strong>  el ratio de fugas anual de las pilas <strong>(${tasa_anual})</strong> y el factor provincia vinculado a las temperaturas máximas a lo largo de todo año <strong>(multiplica x ${factor_provincia} en ${meta.provincia})</strong>, el riesgo de fuga anual de su balizas es de:<br> 
-                <li><strong>Riesgo de fuga Anual= (${dias_calidos} / 365) × ${tasa_anual} × ${factor_provincia} = ${(prob_fuga * 100).toFixed(2)} %</strong></li>
+                <li><strong>
+			Riesgo de fuga Anual = ${tasa_anual} × mult<sub>avg</sub> × ${factor_provincia}</strong><small>, con <em>mult<sub>avg</sub> = (1 − d/365) + (d/365) × mult(T<sub>hot</sub>)</em>y <em>mult(T) = e^{(E<sub>a</sub>/R)(1/T<sub>ref</sub> − 1/T)}</em>.
+</small>
+</li>
                 Fuentes: Battery University, Vehicle Cabin Temperature (NHTSA), Fuente Factor Provincia: CSIC. ${fuente_sulfat}; ${fuente_temp}, ${fuente_dias}, 
               </td>
               <td><strong>${(prob_fuga * 100).toFixed(2)} %</strong></td>
