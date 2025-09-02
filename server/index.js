@@ -164,16 +164,14 @@ function canonicalBrand(s){
   return s;
 }
 
-// — Aquí insertas getFundaFactor —
 function getFundaFactor(tipoFunda) {
-  const map = {
-    tela:      1.01,
-    neopreno:  1.10,
-    'eva foam': 1.15
-  };
-  const key = String(tipoFunda || '').toLowerCase().trim();
-  return map[key] || 1.00;
-} // <-- ESTA LLAVE FALTABA
+  const v = String(tipoFunda || '').toLowerCase().trim();
+  if (v.includes('eva'))        return 1.15; // EVA Foam / silicona térmica buena
+  if (v.includes('neopreno'))   return 1.10;
+  if (v.includes('tela'))       return 1.01;
+  return 1.00;
+}
+
 
 function getVidaBase(tipo, marca_pilas) {
   const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
@@ -263,17 +261,18 @@ function getTempFactor(provincia) {
 
 function getLeakRisk(tipo, marca_pilas) {
   const map = {
-    "Duracell": 0.0055,
-    "Energizer": 0.0055,
-    "Varta": 0.0085,
-    "Maxell": 0.0095,
-    "Generalista": 0.0105,
+    "Duracell":     0.0055,
+    "Energizer":    0.0055,
+    "Varta":        0.0085,
+    "Maxell":       0.0095,
+    "Generalista":  0.0105,
     "Marca Blanca": 0.0115,
-    "Sin marca": 0.0125,
-    "China": 0.0125
+    "Sin marca":    0.0125,
+    "China":        0.0125
   };
-  return map[marca_pilas] ?? 0.0055;
+  return map[canonicalBrand(marca_pilas)] ?? 0.0055;
 }
+
 
 // DEPRECATED: mantener solo si aún es invocada por código antiguo.
 function getLeakFinalRisk(tipo, marca_pilas, desconectable, funda) {
@@ -767,16 +766,29 @@ app.post('/api/calcula', async (req, res) => {
     const sourceData     = beaconInfo || salesPointInfo || {};
 
     const baseData = getVidaBase(tipo, marca_pilas);
-    const uso  = baseData.uso;
-    const shelf = baseData.shelf;
+const uso  = baseData.uso;
+const shelf = baseData.shelf;
 
-    const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
-    const factor_temp  = getTempFactor(provincia);
-    const factor_funda = getFundaFactor(funda);
+const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
+const factor_funda = getFundaFactor(funda);
 
-    const vida_ajustada = +(
-      valor_desconexion * factor_temp * factor_funda
-    ).toFixed(2);
+// ——— Arrhenius (autodescarga) para la vida útil ———
+const pTemp = provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(provincia)) || {};
+const dias_calidos_SD = pTemp.dias_anuales_30grados ?? 0;
+const factor_prov_SD  = pTemp.factor_provincia ?? 1;
+
+const TrefC_SD = batteryData?.arrhenius?.TrefC ?? 21;
+const EaSD_kJ  = batteryData?.arrhenius?.Ea_kJ?.self_discharge ?? 40;
+
+const wHot_SD  = Math.max(0, Math.min(1, dias_calidos_SD / 365));
+const Thot_SD  = estimateHotBinTemp(factor_prov_SD);
+const multHot_SD = arrheniusMult(Thot_SD, EaSD_kJ, TrefC_SD);
+const multAvg_SD = (1 - wHot_SD) + wHot_SD * multHot_SD;
+const multAvgClamped_SD = Math.min(multAvg_SD, 5); // cap prudente
+
+const factor_temp = 1 / multAvgClamped_SD; // ⇒ reduce años si el estrés térmico es alto
+const vida_ajustada = +((valor_desconexion) * factor_temp * factor_funda).toFixed(2);
+
 
     const reposiciones = Math.ceil(12 / vida_ajustada);
     const precio_pack = getBatteryPackPrice(tipo, marca_pilas, sourceData);
