@@ -614,13 +614,8 @@ const hasModeloCompra =
             <!-- 10) Mitigación de Riesgo -->
             <tr>
               <td>Mitigación de Riesgo de fugas</td>
-                <td>
-  El riesgo de fugas se reduce si la baliza permite <strong>desconectar los polos</strong> (${esDesconectable ? 'sí' : 'no'})
-  y si incluye <strong>funda térmica de silicona/EVA</strong> (${meta.funda}).<br>
-  Reducciones aplicadas: <strong>${(mitDescPct*100).toFixed(0)}%</strong> (desconexión) y
-  <strong>${(mitFundaPct*100).toFixed(0)}%</strong> (funda), combinadas como
-  <strong>Factor de Mitigación = ${(mitigacionPct*100).toFixed(0)}%</strong>.<br>
-  La temperatura eleva el riesgo de forma exponencial (Arrhenius); desconexión elimina consumos parásitos y la funda atenúa picos térmicos.
+                <td>El riesgo de fugas se reduce si la baliza permite <strong>desconectar los polos</strong> (${esDesconectable ? 'sí' : 'no'}) y si incluye <strong>funda térmica de silicona/EVA</strong> (${meta.funda}).<br>Reducciones aplicadas: <strong>${(mitDescPct*100).toFixed(0)}%</strong> (desconexión) y<strong>${(mitFundaPct*100).toFixed(0)}%</strong> (funda), combinadas como <strong>Factor de Mitigación = ${(mitigacionPct*100).toFixed(0)}%</strong>.<br> 
+				La temperatura eleva el riesgo de forma exponencial (Arrhenius); desconexión elimina consumos parásitos y la funda atenúa picos térmicos.
   Fuentes: documentación técnica de fabricantes; literatura de cinética (Arrhenius).
   Fuentes: Energizer Technical Info / Battery University; estudios de temperatura en habitáculo (NHTSA/SAE). Fuente: Estudio MIT sobre fugas.
               </td>
