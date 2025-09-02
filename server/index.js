@@ -269,11 +269,13 @@ function getLeakRisk(tipo, marca_pilas) {
   return map[marca_pilas] ?? 0.0040;
 }
 
+// DEPRECATED: mantener solo si aún es invocada por código antiguo.
 function getLeakFinalRisk(tipo, marca_pilas, desconectable, funda) {
-  const base = getLeakRisk(tipo, marca_pilas);
   const mit = (normalizarBooleano(desconectable) ? 0.6 : 1) * (normalizarBooleano(funda) ? 0.6 : 1);
-  return +(base * mit).toFixed(4);
+  // devuelve SOLO el multiplicador de mitigación; el riesgo anual real ya se computa fuera con Arrhenius
+  return +mit.toFixed(4);
 }
+
 function getFineProb(edad) {
   const e = Math.min(parseInt(edad) || 0, 30);
   const base = 0.015, max = 0.258;
@@ -492,17 +494,20 @@ const hasModeloCompra =
                 Factor Temperatura<br>
                 <strong>${typeof tempExt === 'number' ? tempExt.toFixed(1) : tempExt}°C</strong>
               </td>
-              <td>
-  			En ${meta.provincia} las temperaturas anuales oscilan entre
-  			<strong>${typeof tempMax === 'number' ? tempMax.toFixed(1) : tempMax}°C</strong> (máxima) y
-  			<strong>${typeof tempMin === 'number' ? tempMin.toFixed(1) : tempMin}°C</strong> (mínima),
-  			con media anual de <strong>${typeof tempMedia === 'number' ? tempMedia.toFixed(1) : tempMedia}°C</strong>.<br>
-  			Aplicamos un modelo de <strong>Arrhenius</strong> para ponderar los <strong>${dias_calidos}</strong> días/año de guantera caliente.
-  			El multiplicador térmico anual es:	<em><strong>mult<sub>avg</sub> = (1 − d/365) × 1 + (d/365) × mult(T<sub>hot</sub>)</strong></em>,
-  			donde <em>mult(T)</em> crece exponencialmente con la temperatura respecto a 21&nbsp;°C.
-  			Esto acelera la autodescarga y el riesgo de fuga en los días calurosos.<br>
-  			Fuente: AEMET (series térmicas); documentación técnica de fabricantes; cinética de Arrhenius.
-			</td>
+            <td>
+  En ${meta.provincia} las temperaturas anuales oscilan entre
+  <strong>${typeof tempMax === 'number' ? tempMax.toFixed(1) : tempMax}°C</strong> (máxima) y
+  <strong>${typeof tempMin === 'number' ? tempMin.toFixed(1) : tempMin}°C</strong> (mínima),
+  con media anual de
+  <strong>${typeof tempMedia === 'number' ? tempMedia.toFixed(1) : tempMedia}°C</strong>.<br>
+  Aplicamos un modelo de <strong>Arrhenius</strong> para ponderar los <strong>${dias_calidos}</strong> días/año de guantera caliente.
+  El multiplicador térmico anual es:
+  <em><strong>mult<sub>avg</sub> = (1 − d/365) × 1 + (d/365) × mult(T<sub>hot</sub>)</strong></em>,
+  donde <em>mult(T)</em> crece exponencialmente con la temperatura respecto a 21&nbsp;°C.
+  Esto acelera la autodescarga y el riesgo de fuga en los días calurosos.<br>
+  Fuente: AEMET (series térmicas); documentación técnica de fabricantes; cinética de Arrhenius.
+</td>
+
               <td><strong>${((1 - pasos.factor_temp) * 100).toFixed(1).replace('.', ',')}%</strong> descarga</td>
             </tr>
 
@@ -522,10 +527,15 @@ const hasModeloCompra =
             <tr>
   		<td>Vida útil Real de las Pilas</td>
   		<td>
-		    Vida útil estimada de las pilas de una baliza <strong>${meta.marca_baliza} ${meta.modelo}</strong>,  
-		    teniendo en cuenta la vida de las pilas según el tipo <strong>(${meta.tipo}</strong>),  
-		    su marca <strong>(${meta.marca_pilas}</strong>), si la baliza permite la desconexión de las pilas a sus polos mientras no se utilice <strong>(${esDesconectable ? 'Sí' : 'No'})</strong>, la descarga que producen las temperaturas extremas que se suelen dar en primavera, verano y otoño en <strong>${meta.provincia}</strong>, y el factor funda, si ésta se entrega junto con la baliza (<strong>${meta.funda}</strong>).<br> <li><strong>Vida Útil Ajustada = ${valor_desconexion.toFixed(2).replace('.', ',')} × ${factor_temp.toFixed(2).replace('.', ',')} × ${factorFunda.toFixed(2).replace('.', ',')}= ${vida_ajustada.toFixed(2).replace('.', ',')}</strong></li>
-  		</td>
+  Vida útil estimada de las pilas en la baliza <strong>${meta.marca_baliza} ${meta.modelo}</strong>,
+  considerando el tipo de pila <strong>(${meta.tipo})</strong>, su marca <strong>(${meta.marca_pilas})</strong>,
+  la <strong>desconexión</strong> (${esDesconectable ? 'Sí' : 'No'}), el estrés térmico por provincia (modelo de <strong>Arrhenius</strong>)
+  y el <strong>factor funda</strong> (${meta.funda}).<br>
+  <li><strong>Vida Útil Ajustada = Vida base ${(esDesconectable?'(shelf)':'(uso)')} ÷ mult<sub>avg,SD</sub> × ${factorFunda.toFixed(2).replace('.', ',')}</strong></li>
+  donde <em>mult<sub>avg,SD</sub></em> es el multiplicador térmico promedio para <em>autodescarga</em> (Arrhenius) con ${dias_calidos} días calientes.<br>
+  Resultado: <strong>${vida_ajustada.toFixed(2).replace('.', ',')} años</strong>.
+</td>
+
   		<td><strong>${vida_ajustada.toFixed(2).replace('.', ',')}</strong> años</td>
 	     </tr>
             <!-- 6) Reposiciones (12 años) -->
@@ -573,8 +583,18 @@ const hasModeloCompra =
             <tr>
               <td>Mitigación de Riesgo de fugas</td>
               <td>
-                El riesgo de fugas se puede mitigar si la baliza dispone de la posibilidad de desconexión de los polos, <strong>(${esDesconectable ? 'sí' : 'no'})</strong>, con un <strong>${(mitDescPct*100).toFixed(0)}%</strong> de reducción. Si además lleva funda térmica de silicona/ EVA Foam  el factor funda genera un <strong>(<strong>${(mitFundaPct*100).toFixed(0)}%</strong> extra.)</strong>. La degradación y el riesgo de fuga aumentan con la temperatura y con descargas profundas. La funda térmica (silicona/EVA) reduce picos térmicos y la desconexión de polos evita consumo parásito, disminuyendo el riesgo. Fuentes: Energizer Technical Info / Battery University; estudios de temperatura en habitáculo (NHTSA/SAE). En su Baliza <strong>${meta.marca_baliza} ${meta.modelo} </strong> este factor mitigación es por tanto de:<br> <strong><li>Factor de Mitigación = ${(mitDescPct*100).toFixed(0)}% + ${(mitFundaPct*100).toFixed(0)}% = ${(mitigacionPct*100).toFixed(0)}%</strong><br>. Fuente: Estudio MIT sobre fugas.
+                <td>
+  El riesgo de fugas se reduce si la baliza permite <strong>desconectar los polos</strong> (${esDesconectable ? 'sí' : 'no'})
+  y si incluye <strong>funda térmica de silicona/EVA</strong> (${meta.funda}).<br>
+  Reducciones aplicadas: <strong>${(mitDescPct*100).toFixed(0)}%</strong> (desconexión) y
+  <strong>${(mitFundaPct*100).toFixed(0)}%</strong> (funda), combinadas como
+  <strong>Factor de Mitigación = ${(mitigacionPct*100).toFixed(0)}%</strong>.<br>
+  La temperatura eleva el riesgo de forma exponencial (Arrhenius); desconexión elimina consumos parásitos y la funda atenúa picos térmicos.
+  Fuentes: documentación técnica de fabricantes; literatura de cinética (Arrhenius).
+  Fuentes: Energizer Technical Info / Battery University; estudios de temperatura en habitáculo (NHTSA/SAE). Fuente: Estudio MIT sobre fugas.
               </td>
+</td>
+
               <td><strong>${(mitigacionPct*100).toFixed(0)}%</strong></td>
             </tr>
 
