@@ -614,7 +614,6 @@ const hasModeloCompra =
             <!-- 10) Mitigación de Riesgo -->
             <tr>
               <td>Mitigación de Riesgo de fugas</td>
-              <td>
                 <td>
   El riesgo de fugas se reduce si la baliza permite <strong>desconectar los polos</strong> (${esDesconectable ? 'sí' : 'no'})
   y si incluye <strong>funda térmica de silicona/EVA</strong> (${meta.funda}).<br>
@@ -625,8 +624,6 @@ const hasModeloCompra =
   Fuentes: documentación técnica de fabricantes; literatura de cinética (Arrhenius).
   Fuentes: Energizer Technical Info / Battery University; estudios de temperatura en habitáculo (NHTSA/SAE). Fuente: Estudio MIT sobre fugas.
               </td>
-</td>
-
               <td><strong>${(mitigacionPct*100).toFixed(0)}%</strong></td>
             </tr>
 
