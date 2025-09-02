@@ -220,7 +220,7 @@ function getTempFactor(provincia) {
 }
 
 function getLeakRisk(tipo, marca_pilas) {
-  const map = { "Duracell": 0.0010, "Energizer": 0.0010, "Varta": 0.0020, "Maxell": 0.0030, "Generalista": 0.0030, "Marca Blanca": 0.0040, "No": 0.0060 };
+  const map = { "Duracell": 0.0015, "Energizer": 0.0015, "Varta": 0.0020, "Maxell": 0.0030, "Generalista": 0.0030, "Marca Blanca": 0.0060, "No": 0.0080};
   return map[marca_pilas] || 0.0040;
 }
 function getLeakFinalRisk(tipo, marca_pilas, desconectable, funda) {
