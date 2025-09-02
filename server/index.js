@@ -882,18 +882,25 @@ let prob_fuga = +(tasa_anual * multAvgClamped * factor_prov).toFixed(4);
       coste_multas
     };
 
-    const meta = {
-      marca_baliza,
-      modelo,
-      modelo_compra,
-      tipo,
-      marca_pilas,
-      desconectable,
-      funda,
-      provincia,
-      coste_inicial: parseFloat(coste_inicial),
-      edad_vehiculo: parseInt(edad_vehiculo)
-    };
+    // Fallback de marca/modelo desde la baliza seleccionada (por si no vienen en el body)
+const marca_baliza_eff = (marca_baliza && String(marca_baliza).trim()) 
+  || beaconInfo?.marca_baliza || beaconInfo?.marca || 'Desconocida';
+const modelo_eff = (modelo && String(modelo).trim()) 
+  || beaconInfo?.modelo || beaconInfo?.model || beaconInfo?.modelo_baliza || 'Desconocido';
+
+const meta = {
+  marca_baliza: String(marca_baliza_eff),
+  modelo: String(modelo_eff),
+  modelo_compra,
+  tipo,
+  marca_pilas,
+  desconectable,
+  funda,
+  provincia,
+  coste_inicial: parseFloat(coste_inicial),
+  edad_vehiculo: parseInt(edad_vehiculo)
+};
+
 
     // === GUARDAR EN BD (opcional) ===
     try {
@@ -948,8 +955,28 @@ let prob_fuga = +(tasa_anual * multAvgClamped * factor_prov).toFixed(4);
   }
 });
 
-// ===== Datos públicos =====
-app.get('/api/beacons',      (req, res) => res.json(beacons));
+// ===== Datos públicos (BEACONS saneado) =====
+app.get('/api/beacons', (req, res) => {
+  try {
+    const list = Array.isArray(beacons) ? beacons : [];
+    const out = list.map((b, i) => {
+      const marca  = b.marca_baliza ?? b.marca ?? b.brand ?? 'Desconocida';
+      const modelo = b.modelo ?? b.model ?? b.modelo_baliza ?? `Modelo ${i+1}`;
+      return {
+        id_baliza: b.id_baliza ?? b.id ?? (i + 1),
+        marca_baliza: String(marca),
+        modelo: String(modelo),
+        // deja el resto de campos tal cual, por si los usas
+        ...b
+      };
+    });
+    res.set('Cache-Control','no-store');
+    res.json(out);
+  } catch (e) {
+    res.status(500).json({ error: 'beacons_sanitize_fail', details: String(e) });
+  }
+});
+
 app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
