@@ -37,6 +37,36 @@ try {
 const app = express();
 app.disable("x-powered-by");
 
+// ===== CORS para el widget =====
+const CORS_ORIGINS = [
+  'https://widget.comparativabalizas.es',
+  'https://comparativabalizas.es',
+  'https://www.comparativabalizas.es'
+];
+
+app.use(cors({
+  origin: CORS_ORIGINS,
+  methods: ['GET','POST','OPTIONS'],
+  allowedHeaders: ['Content-Type','X-Requested-With'],
+  maxAge: 600
+}));
+
+app.options('*', cors({
+  origin: CORS_ORIGINS,
+  methods: ['GET','POST','OPTIONS'],
+  allowedHeaders: ['Content-Type','X-Requested-With'],
+  maxAge: 600
+}));
+
+// Anti-cache (evita respuestas “viejas” del navegador/CDN)
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
+
 // ===== DEBUG SWITCH =====
 const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1';
 
