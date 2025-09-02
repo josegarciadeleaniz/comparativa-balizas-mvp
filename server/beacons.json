@@ -1,5 +1,3 @@
-[file name]: beacons.json
-[file content begin]
 [
   {
     "id": 1,
@@ -669,4 +667,3 @@
     "fuente_oficial": "seat.es"
   }
 ]
-[file content end]
