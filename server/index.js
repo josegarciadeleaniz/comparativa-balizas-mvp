@@ -213,7 +213,7 @@ function arrheniusMult(TC, Ea_kJ, TrefC=21){
   const T  = K(TC), Tr = K(TrefC);
   return Math.exp((Ea/R)*(1/Tr - 1/T));
 }
-// Estimación conservadora del “hot bin” por factor_provincia
+// “Hot bin” conservador en guantera según factor_provincia (de provincias.json)
 function estimateHotBinTemp(factor_provincia){
   if (factor_provincia >= 1.9) return 55;
   if (factor_provincia >= 1.7) return 52.5;
@@ -222,6 +222,61 @@ function estimateHotBinTemp(factor_provincia){
   if (factor_provincia >= 1.2) return 45;
   return 42.5;
 }
+// Funda → factor multiplicativo sobre VIDA (no sobre fuga)
+function getFundaFactor(tipoFunda) {
+  const key = String(tipoFunda || '').toLowerCase().trim();
+  if (key.includes('eva'))       return 1.15; // EVA foam / silicona térmica
+  if (key.includes('neopreno'))  return 1.10;
+  if (key.includes('tela'))      return 1.01;
+  return 1.00; // sin funda
+}
+// Vida real por Arrhenius (autodescarga) + funda (vida)
+function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias){
+  // Base: uso vs shelf según desconexión
+  const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
+  const m = canonicalBrand(marca_pilas);
+  const base = batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin marca'];
+  const baseYears = normalizarBooleano(desconectable) ? base.shelf : base.uso;
+
+  // Provincia y “días >30 ºC”
+  const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia)) || {};
+  const dias   = +(p.dias_anuales_30grados ?? p.dias_calidos ?? 0);
+  const fp     = +(p.factor_provincia ?? 1);
+  const Thot   = estimateHotBinTemp(fp);
+
+  // Arrhenius para AUTODESCARGA (vida)
+  const TrefC  = batteryData?.arrhenius?.TrefC ?? 21;
+  const EaSD   = batteryData?.arrhenius?.Ea_kJ?.self_discharge ?? 40;
+  const wHot   = Math.max(0, Math.min(1, dias/365));
+  const multHot= arrheniusMult(Thot, EaSD, TrefC);
+  const multAvg= (1 - wHot) + wHot * multHot;        // promedio ponderado
+  const multAvgClamped = Math.min(multAvg, 5);       // cap prudente para vida
+
+  // Funda en VIDA
+  const factorFunda = getFundaFactor(funda);
+  const vida = (baseYears / multAvgClamped) * factorFunda;
+  return +vida.toFixed(2);
+}
+// Riesgo anual de FUGA por Arrhenius (no incluye mitigaciones)
+function leakRiskArrhenius(tipo, marca_pilas, provincia, batteryData, provincias){
+  const tasaBase = getLeakRisk(tipo, marca_pilas);
+
+  const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia)) || {};
+  const dias   = +(p.dias_anuales_30grados ?? p.dias_calidos ?? 0);
+  const fp     = +(p.factor_provincia ?? 1);
+  const Thot   = estimateHotBinTemp(fp);
+
+  const TrefC  = batteryData?.arrhenius?.TrefC ?? 21;
+  const EaLeak = batteryData?.arrhenius?.Ea_kJ?.leak ?? 50;
+  const wHot   = Math.max(0, Math.min(1, dias/365));
+  const multHot= arrheniusMult(Thot, EaLeak, TrefC);
+  const multAvg= (1 - wHot) + wHot * multHot;
+  const multAvgClamped = Math.min(multAvg, 8); // cap prudente para fuga
+
+  // Riesgo anual (SIN mitigaciones)
+  return +(tasaBase * multAvgClamped * fp).toFixed(4);
+}
+
 
 function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
   if (sourceData?.precio_por_pila) {
@@ -770,7 +825,21 @@ const uso  = baseData.uso;
 const shelf = baseData.shelf;
 
 const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
+
+// Vida ajustada por Arrhenius + funda (vida)
+const vida_ajustada = lifeArrheniusYears(
+  tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias
+);
+
+// Para mostrar “factor temperatura” en la tabla (explicativo):
+// factor_temp ≈  1 / multAvgClamped  (se deduce de la vida calculada)
 const factor_funda = getFundaFactor(funda);
+const factor_temp  = +(
+  vida_ajustada && valor_desconexion
+    ? vida_ajustada / (valor_desconexion * factor_funda)
+    : 1
+).toFixed(3);
+
 
 // ——— Arrhenius (autodescarga) para la vida útil ———
 const pTemp = provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(provincia)) || {};
@@ -787,7 +856,8 @@ const multAvg_SD = (1 - wHot_SD) + wHot_SD * multHot_SD;
 const multAvgClamped_SD = Math.min(multAvg_SD, 5); // cap prudente
 
 const factor_temp = 1 / multAvgClamped_SD; // ⇒ reduce años si el estrés térmico es alto
-const vida_ajustada = +((valor_desconexion) * factor_temp * factor_funda).toFixed(2);
+// Vida ajustada por Arrhenius + funda (vida)
+
 
 
     const reposiciones = Math.ceil(12 / vida_ajustada);
@@ -813,21 +883,27 @@ const vida_ajustada = +((valor_desconexion) * factor_temp * factor_funda).toFixe
     const fuente_temp    = pData.fuente_temp_extrema     ?? 'provincias.json';
     const fuente_dias    = pData.fuente_dias_calidos     ?? 'provincias.json';
 
-    // === Arrhenius para fuga ===
-const TrefC   = batteryData?.arrhenius?.TrefC ?? 21;
-const EaLeak  = batteryData?.arrhenius?.Ea_kJ?.leak ?? 50;
-const wHot    = dias_calidos/365;
-const Thot    = estimateHotBinTemp(factor_prov);
-const multHot = arrheniusMult(Thot, EaLeak, TrefC);
+// === Riesgo anual de fuga (Arrhenius, sin mitigaciones aún) ===
+const prob_fuga = leakRiskArrhenius(
+  tipo, marca_pilas, provincia, batteryData, provincias
+);
 
-// promedio anual ponderado: días templados (1x) + días calientes (multHot)
-const multAvg = (1 - wHot) + wHot * multHot;
+// === Mitigaciones ===
+// Desconexión: -30%  → multiplicador 0.70
+// Funda (silicona/EVA): -40% → multiplicador 0.60
+const tieneDescon   = normalizarBooleano(desconectable);
+const fundaLower    = String(funda || '').toLowerCase();
+const multDesc      = tieneDescon ? 0.70 : 1.00;
+const multFunda     = (fundaLower.includes('eva') || fundaLower.includes('silicona')) ? 0.60
+                    : (fundaLower.includes('neopreno') ? 0.75
+                    : (fundaLower.includes('tela') ? 0.90 : 1.00));
+const mitigacionMult = +(multDesc * multFunda).toFixed(2);
+const mitigacionPct  = +(1 - mitigacionMult).toFixed(2); // para mostrar en %
 
-// clamp razonable para no desbocar por errores de datos
-const multAvgClamped = Math.min(multAvg, 8);
+const riesgo_final   = +(
+  Math.max(0, Math.min(1, prob_fuga)) * mitigacionMult
+).toFixed(4);
 
-// riesgo anual base con Arrhenius
-let prob_fuga = +(tasa_anual * multAvgClamped * factor_prov).toFixed(4);
 
 
     const factorDescon   = normalizarBooleano(desconectable) ? 0.3 : 1;
@@ -891,7 +967,8 @@ let prob_fuga = +(tasa_anual * multAvgClamped * factor_prov).toFixed(4);
       prob_fuga,
       riesgo_final,
       coste_fugas,
-      coste_multas
+      coste_multas,
+	  mitigacion: mitigacionMult
     };
 
     // Fallback de marca/modelo desde la baliza seleccionada (por si no vienen en el body)
