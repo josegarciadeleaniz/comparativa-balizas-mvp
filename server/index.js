@@ -321,11 +321,11 @@ function getLeakRisk(tipo, marca_pilas) {
     "Varta":        0.0085,
     "Maxell":       0.0095,
     "Generalista":  0.0105,
-    "Marca Blanca": 0.0115,
-    "Sin marca":    0.0125,
-    "China":        0.0125
+    "Marca Blanca": 0.0125,
+    "Sin marca":    0.0155,
+    "China":        0.0155
   };
-  return map[canonicalBrand(marca_pilas)] ?? 0.0055;
+  return map[canonicalBrand(marca_pilas)] ?? 0.0075;
 }
 
 
