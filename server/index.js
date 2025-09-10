@@ -834,7 +834,7 @@ const vida_ajustada = lifeArrheniusYears(
 // Para mostrar “factor temperatura” en la tabla (explicativo):
 // factor_temp ≈  1 / multAvgClamped  (se deduce de la vida calculada)
 const factor_funda = getFundaFactor(funda);
-const factor_temp  = +(
+let factor_temp  = +(
   vida_ajustada && valor_desconexion
     ? vida_ajustada / (valor_desconexion * factor_funda)
     : 1
@@ -855,7 +855,7 @@ const multHot_SD = arrheniusMult(Thot_SD, EaSD_kJ, TrefC_SD);
 const multAvg_SD = (1 - wHot_SD) + wHot_SD * multHot_SD;
 const multAvgClamped_SD = Math.min(multAvg_SD, 5); // cap prudente
 
-const factor_temp = 1 / multAvgClamped_SD; // ⇒ reduce años si el estrés térmico es alto
+factor_temp = 1 / multAvgClamped_SD; // ⇒ reduce años si el estrés térmico es alto
 // Vida ajustada por Arrhenius + funda (vida)
 
 
@@ -904,16 +904,9 @@ const riesgo_final   = +(
   Math.max(0, Math.min(1, prob_fuga)) * mitigacionMult
 ).toFixed(4);
 
+const coste_fugas    = +((parseFloat(coste_inicial) || 0) * riesgo_final).toFixed(2);
+const coste_fugas_12 = +(coste_fugas * 12).toFixed(2);
 
-
-    const factorDescon   = normalizarBooleano(desconectable) ? 0.3 : 1;
-    const fundaLower     = String(funda || '').toLowerCase();
-    const factorFundaMit = (fundaLower.includes('silicona') || fundaLower.includes('eva')) ? 0.4 : 1;
-    const mitigacionCalc = factorDescon * factorFundaMit;
-
-    const riesgo_final   = +(Math.max(0, Math.min(1, prob_fuga)) * mitigacionCalc).toFixed(4);
-    const coste_fugas    = +((parseFloat(coste_inicial) || 0) * riesgo_final).toFixed(2);
-    const coste_fugas_12 = +(coste_fugas * 12).toFixed(2); 
 
     const importeMulta  = 200;
     const tasaDenuncia  = 0.32;
