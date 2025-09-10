@@ -73,7 +73,7 @@
     }
   },
 
-    "factor_sulfatacion": {
+  "factor_sulfatacion": {
     "9V": {
       "Energizer": { "tasa_anual": 0.0055, "fuente": "Battery University, Duracell Technical Bulletin #45" },
       "Duracell":  { "tasa_anual": 0.0055, "fuente": "Duracell White Paper on Alkaline Degradation" },
@@ -105,6 +105,7 @@
       "China":     { "tasa_anual": 0.0155, "fuente": "Bulk Import Testing" }
     }
   },
+
   "formulario_pilas": {
     "secciones": [
       {
