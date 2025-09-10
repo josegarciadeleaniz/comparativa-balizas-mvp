@@ -1,1406 +1,1460 @@
 [
-  {
-    "id_punto": 1,
-    "nombre_punto": "Alcampo",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 49.95,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "alcampo.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 2,
-    "nombre_punto": "Aldi",
-    "marca_baliza": "Baliza V16 IoT Aldi",
-    "modelo": "DP-EL2022-C1",
-    "Fabricante": "Distribuciones Escudero Fijo, S. L.",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.99,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.28,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "Crowdsourced Device Damage Reports"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "aldi.es",
-    "imagen": "Baliza_V16_IoT_Aldi.png"
-  },
-  {
-    "id_punto": 3,
-    "nombre_punto": "Amazon",
-    "marca_baliza": "Flash Mate",
-    "modelo": "Beacon Light IoT",
-    "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 54.95,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Maxell",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.60,
-      "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0095,
-      "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
-    },
-    "desconectable": "No",
-    "funda_termica": "Tela",
-    "fuente_oficial": "amazon.es",
-    "imagen": "Flash_Mate.png"
-  },
-  {
-    "id_punto": 3,
-    "nombre_punto": "Amazon",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 46.5,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "Neopreno",
-    "fuente_oficial": "amazon.es",
-    "imagen": "Help_Flash_IoT_Neopreno.png"
-  },
-  {
-    "id_punto": 3,
-    "nombre_punto": "Amazon",
-    "marca_baliza": "SOOS V16",
-    "modelo": "V16IoT",
-    "Fabricante": "Yuyao Jiming Electronic Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Fabricación",
-    "precio_venta": 48.6,
-    "alimentacion": "3x AAA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AAA",
-    "precio_por_pila": {
-      "precio": 0.20,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "User-Reported Failure Rates"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "amazon.es",
-    "imagen": "SOOS_V16.png"
-  },
-  {
-    "id_punto": 3,
-    "nombre_punto": "Amazon",
-    "marca_baliza": "Light Mup beacon",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 46,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Maxell",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.60,
-      "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0095,
-      "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
-    },
-    "desconectable": "No",
-    "funda_termica": "Tela",
-    "fuente_oficial": "amazon.es",
-    "imagen": "Light_Mup_beacon.png"
-  },
-  {
-    "id_punto": 5,
-    "nombre_punto": "Aurgi",
-    "marca_baliza": "SOS Flash Connected",
-    "modelo": "BAL/2",
-    "Fabricante": "Yuyao Jiming Electronic Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 44.95,
-    "alimentacion": "3x AAA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AAA",
-    "precio_por_pila": {
-      "precio": 0.20,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "User-Reported Failure Rates"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "aurgi.es",
-    "imagen": "SOS_Flash_Connected.png"
-  },
-  {
-    "id_punto": 6,
-    "nombre_punto": "BMW",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "bmw.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 7,
-    "nombre_punto": "BP",
-    "marca_baliza": "iWottoLight IoT",
-    "modelo": "IWottoLight IoT",
-    "Fabricante": "Ningbo Shenglin Electric Appliance Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.99,
-    "alimentacion": "3x AAA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AAA",
-    "precio_por_pila": {
-      "precio": 0.20,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "User-Reported Failure Rates"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "bp.com",
-    "imagen": "iWottoLight_IoT.png"
-  },
-  {
-    "id_punto": 8,
-    "nombre_punto": "Carrefour",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 57.49,
-    "alimentacion": "3x AAA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AAA",
-    "precio_por_pila": {
-      "precio": 0.20,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "User-Reported Failure Rates"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "carrefour.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 8,
-    "nombre_punto": "Carrefour",
-    "marca_baliza": "iWottoLight IoT",
-    "modelo": "IWottoLight IoT",
-    "Fabricante": "Ningbo Shenglin Electric Appliance Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.99,
-    "alimentacion": "3x AAA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AAA",
-    "precio_por_pila": {
-      "precio": 0.20,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "User-Reported Failure Rates"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "carrefour.es",
-    "imagen": "iWottoLight_IoT.png"
-  },
-  {
-    "id_punto": 8,
-    "nombre_punto": "Carrefour",
-    "marca_baliza": "PMK Grupo",
-    "modelo": "30101",
-    "Fabricante": "Yuyao Jiming Electronic Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 49.9,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.28,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "Crowdsourced Device Damage Reports"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "carrefour.es",
-    "imagen": "PMK_Grupo.png"
-  },
-  {
-    "id_punto": 8,
-    "nombre_punto": "Carrefour",
-    "marca_baliza": "SOOS V16",
-    "modelo": "V16IoT",
-    "Fabricante": "Yuyao Jiming Electronic Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Fabricación",
-    "precio_venta": 48.6,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.28,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "Crowdsourced Device Damage Reports"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "carrefour.es",
-    "imagen": "SOOS_V16.png"
-  },
-  {
-    "id_punto": 9,
-    "nombre_punto": "Correos",
-    "marca_baliza": "BALIZA3e V-16/SMART MOD100",
-    "modelo": "MOD100",
-    "Fabricante": "Energía Eléctrica Eficiente, S.L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 59.99,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 0.80,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "Empirical Data from Repair Shops"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "correos.es",
-    "imagen": "BALIZA3e_V-16/SMART_MOD100.png"
-  },
-  {
-    "id_punto": 10,
-    "nombre_punto": "Costco",
-    "marca_baliza": "Geoblueshield49",
-    "modelo": "RV7000",
-    "Fabricante": "Atressa Global Corporation, S.L., Vizcaya",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Fabricación",
-    "precio_venta": 54.95,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Energizer",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 3.00,
-      "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0055,
-      "fuente": "Battery University, Duracell Technical Bulletin #45"
-    },
-    "desconectable": "Si",
-    "funda_termica": "Eva foam",
-    "fuente_oficial": "costco.es",
-    "imagen": "Geoblueshield49.png"
-  },
-  {
-    "id_punto": 11,
-    "nombre_punto": "eBay",
-    "marca_baliza": "FlashLED SOS V16",
-    "modelo": "FlashLED SOS",
-    "Fabricante": "Kepar Electrónica, Zaragoza",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 69.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "ebay.es",
-    "imagen": "FlashLED_SOS_V16.png"
-  },
-  {
-    "id_punto": 11,
-    "nombre_punto": "eBay",
-    "marca_baliza": "Hella V16",
-    "modelo": "HV16.1",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 51.99,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Varta",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 2.1,
-      "fuente": "Varta oficial y minoristas europeos"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0085,
-      "fuente": "Varta Long-Term Storage Study (2019)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "ebay.es",
-    "imagen": "Hella_V16.png"
-  },
-  {
-    "id_punto": 11,
-    "nombre_punto": "eBay",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 52,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "ebay.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 11,
-    "nombre_punto": "eBay",
-    "marca_baliza": "Osram LEDguardian V16",
-    "modelo": "OSRAM LEDguardian® ROAD FLARE Signal V16 IoT",
-    "Fabricante": "Hangzhou Tiger Auto Industry Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 51.99,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "ebay.es",
-    "imagen": "Osram_LEDguardian_V16.png"
-  },
-  {
-    "id_punto": 12,
-    "nombre_punto": "El Corte Inglés",
-    "marca_baliza": "Car-Lite",
-    "modelo": "MOD100",
-    "Fabricante": "Energía Eléctrica Eficiente, S.L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.95,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-     "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.3,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "elcorteingles.es",
-    "imagen": "Car-Lite.png"
-  },
-  {
-    "id_punto": 12,
-    "nombre_punto": "El Corte Inglés",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.95,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "elcorteingles.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 12,
-    "nombre_punto": "El Corte Inglés",
-    "marca_baliza": "Uirax V16 2.0 IoT",
-    "modelo": "Beacon Light IoT",
-    "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.99,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Maxell",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.60,
-      "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0095,
-      "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "elcorteingles.es",
-    "imagen": "Uirax_V16_2.0_IoT.png"
-  },
-  {
-    "id_punto": 13,
-    "nombre_punto": "Ford",
-    "marca_baliza": "EmergLight Geo IoT",
-    "modelo": "EmergLight X",
-    "Fabricante": "Yuyao Jiming Electronic Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 43.95,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.28,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "Crowdsourced Device Damage Reports"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "ford.es",
-    "imagen": "EmergLight_Geo_IoT.png"
-  },
-  {
-    "id_punto": 14,
-    "nombre_punto": "Generali",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 42.17,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "generali.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 15,
-    "nombre_punto": "Itevelesa (estaciones)",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 49.95,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "itevelesa.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 16,
-    "nombre_punto": "Iveco",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "iveco.com",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 17,
-    "nombre_punto": "Kia",
-    "marca_baliza": "Baliza V16 Geolocalizada Kia",
-    "modelo": "Beacon Light IoT CH-009",
-    "Fabricante": "Ningbo Chakesi Electronic Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 48.96,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.28,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "Crowdsourced Device Damage Reports"
-    },
-    "desconectable": "Si",
-    "funda_termica": "Tela",
-    "fuente_oficial": "kia.es",
-    "imagen": "Baliza_V16_Geolocalizada_Kia.png"
-  },
-  {
-    "id_punto": 18,
-    "nombre_punto": "Leroy Merlin",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 52.99,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "leroymerlin.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 18,
-    "nombre_punto": "Leroy Merlin",
-    "marca_baliza": "Ledone Connected",
-    "modelo": "Ledone Connected /Erum Vial",
-    "Fabricante": "Plásticos Erum s.l., Alcoy",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Fabricación",
-    "precio_venta": 52.99,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.3,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "leroymerlin.es",
-    "imagen": "Ledone_Connected.png"
-  },
-  {
-    "id_punto": 19,
-    "nombre_punto": "Lidl",
-    "marca_baliza": "Baliza V16 IoT Lidl",
-    "modelo": "DP-EL2022-C1",
-    "Fabricante": "Distribuciones Escudero Fijo, S. L.",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.99,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.28,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "Crowdsourced Device Damage Reports"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "lidl.es",
-    "imagen": "Baliza_V16_IoT_Lidl.png"
-  },
-  {
-    "id_punto": 20,
-    "nombre_punto": "MAN",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "man.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 21,
-    "nombre_punto": "Mapfre",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 42.17,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "mapfre.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 22,
-    "nombre_punto": "MediaMarkt",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 49.95,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "mediamarkt.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 22,
-    "nombre_punto": "MediaMarkt",
-    "marca_baliza": "Osram LEDguardian V16",
-    "modelo": "OSRAM LEDguardian® ROAD FLARE Signal V16 IoT",
-    "Fabricante": "Hangzhou Tiger Auto Industry Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 51.99,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "mediamarkt.es",
-    "imagen": "Osram_LEDguardian_V16.png"
-  },
-  {
-    "id_punto": 22,
-    "nombre_punto": "MediaMarkt",
-    "marca_baliza": "Uirax V16 2.0 IoT",
-    "modelo": "Beacon Light IoT",
-    "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.99,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Maxell",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.60,
-      "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0095,
-      "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "mediamarkt.es",
-    "imagen": "Uirax_V16_2.0_IoT.png"
-  },
-  {
-    "id_punto": 23,
-    "nombre_punto": "Mercedes-Benz",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "mercedes-benz.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 24,
-    "nombre_punto": "Norauto",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 49.95,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "norauto.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 24,
-    "nombre_punto": "Norauto",
-    "marca_baliza": "Ledone Connected",
-    "modelo": "Ledone Connected /Erum Vial",
-    "Fabricante": "Plásticos Erum s.l., Alcoy",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Fabricación",
-    "precio_venta": 52.99,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.3,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "norauto.es",
-    "imagen": "Ledone_Connected.png"
-  },
-  {
-    "id_punto": 25,
-    "nombre_punto": "Peugeot",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "peugeot.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 26,
-    "nombre_punto": "Primark",
-    "marca_baliza": "Baliza V16 IoT Primark",
-    "modelo": "DP-EL2022-C1",
-    "Fabricante": "Distribuciones Escudero Fijo, S. L.",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.99,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.28,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "Crowdsourced Device Damage Reports"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "primark.es",
-    "imagen": "Baliza_V16_IoT_Primark.png"
-  },
-  {
-    "id_punto": 27,
-    "nombre_punto": "RACC",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 42.17,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "racc.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 28,
-    "nombre_punto": "Renault",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "renault.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 29,
-    "nombre_punto": "Repsol",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 49.95,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "repsol.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 29,
-    "nombre_punto": "Repsol",
-    "marca_baliza": "iWottoLight IoT",
-    "modelo": "IWottoLight IoT",
-    "Fabricante": "Ningbo Shenglin Electric Appliance Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.99,
-    "alimentacion": "3x AAA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AAA",
-    "precio_por_pila": {
-      "precio": 0.20,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "User-Reported Failure Rates"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "repsol.es",
-    "imagen": "iWottoLight_IoT.png"
-  },
-  {
-    "id_punto": 30,
-    "nombre_punto": "Seat",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "seat.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 31,
-    "nombre_punto": "Shell",
-    "marca_baliza": "iWottoLight IoT",
-    "modelo": "IWottoLight IoT",
-    "Fabricante": "Ningbo Shenglin Electric Appliance Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.99,
-    "alimentacion": "3x AAA",
-    "numero_pilas": 3,
-    "marca_pilas": "Sin Marca",
-    "tipo_pila": "AAA",
-    "precio_por_pila": {
-      "precio": 0.20,
-      "fuente": "AliExpress, Shein, bazares multiprecio"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0125,
-      "fuente": "User-Reported Failure Rates"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "shell.es",
-    "imagen": "iWottoLight_IoT.png"
-  },
-  {
-    "id_punto": 32,
-    "nombre_punto": "Skoda",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "skoda.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 33,
-    "nombre_punto": "Tesla",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "tesla.com",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 34,
-    "nombre_punto": "Toyota",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "toyota.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 35,
-    "nombre_punto": "Volkswagen",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "volkswagen.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 36,
-    "nombre_punto": "Volvo",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 54.9,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.30,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "volvo.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 37,
-    "nombre_punto": "Worten",
-    "marca_baliza": "Help Flash IoT",
-    "modelo": "Help Flash IoT",
-    "Fabricante": "Kepar Electrónica S. L.",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Ensamblaje",
-    "precio_venta": 49.95,
-    "alimentacion": "4x AA",
-    "numero_pilas": 4,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.45,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Retailer Quality Audits"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "worten.es",
-    "imagen": "Help_Flash_IoT.png"
-  },
-  {
-    "id_punto": 37,
-    "nombre_punto": "Worten",
-    "marca_baliza": "Ledone Connected",
-    "modelo": "Ledone Connected /Erum Vial",
-    "Fabricante": "Plásticos Erum s.l., Alcoy",
-    "Origen": "España",
-    "Actuación_realizada_en_España": "Fabricación",
-    "precio_venta": 52.99,
-    "alimentacion": "1x 9V",
-    "numero_pilas": 1,
-    "marca_pilas": "Marca Blanca",
-    "tipo_pila": "9V",
-    "precio_por_pila": {
-      "precio": 1.3,
-      "fuente": "Distribuidores OEM y marketplaces nacionales"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0115,
-      "fuente": "Independent Lab Tests (2023)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "worten.es",
-    "imagen": "Ledone_Connected.png"
-  },
-  {
-    "id_punto": 37,
-    "nombre_punto": "Worten",
-    "marca_baliza": "Uirax V16 2.0 IoT",
-    "modelo": "Beacon Light IoT",
-    "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
-    "Origen": "China",
-    "Actuación_realizada_en_España": "Distribución",
-    "precio_venta": 39.99,
-    "alimentacion": "3x AA",
-    "numero_pilas": 3,
-    "marca_pilas": "Maxell",
-    "tipo_pila": "AA",
-    "precio_por_pila": {
-      "precio": 0.60,
-      "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
-    },
-    "factor_sulfatacion": {
-      "tasa_anual": 0.0095,
-      "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
-    },
-    "desconectable": "No",
-    "funda_termica": "No",
-    "fuente_oficial": "worten.es",
-    "imagen": "Uirax_V16_2.0_IoT.png"
-  }
+    {
+        "id_punto": 1,
+        "nombre_punto": "Alcampo",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 49.95,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "alcampo.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 2,
+        "nombre_punto": "Aldi",
+        "marca_baliza": "Baliza V16 IoT Aldi",
+        "modelo": "DP-EL2022-C1",
+        "Fabricante": "Distribuciones Escudero Fijo, S. L.",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.99,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.28,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "Crowdsourced Device Damage Reports"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "aldi.es",
+        "imagen": "Baliza_V16_IoT_Aldi.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Baliza_V16_IoT_Aldi.png"
+    },
+    {
+        "id_punto": 3,
+        "nombre_punto": "Amazon",
+        "marca_baliza": "Flash Mate",
+        "modelo": "Beacon Light IoT",
+        "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 54.95,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Maxell",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.6,
+            "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0095,
+            "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
+        },
+        "desconectable": "No",
+        "funda_termica": "Tela",
+        "fuente_oficial": "amazon.es",
+        "imagen": "Flash_Mate.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Flash_Mate.png"
+    },
+    {
+        "id_punto": 3,
+        "nombre_punto": "Amazon",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 46.5,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "Neopreno",
+        "fuente_oficial": "amazon.es",
+        "imagen": "Help_Flash_IoT_Neopreno.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT_Neopreno.png"
+    },
+    {
+        "id_punto": 3,
+        "nombre_punto": "Amazon",
+        "marca_baliza": "SOOS V16",
+        "modelo": "V16IoT",
+        "Fabricante": "Yuyao Jiming Electronic Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Fabricación",
+        "precio_venta": 48.6,
+        "alimentacion": "3x AAA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AAA",
+        "precio_por_pila": {
+            "precio": 0.2,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "User-Reported Failure Rates"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "amazon.es",
+        "imagen": "SOOS_V16.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/SOOS_V16.png"
+    },
+    {
+        "id_punto": 3,
+        "nombre_punto": "Amazon",
+        "marca_baliza": "Light Mup beacon",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 46,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Maxell",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.6,
+            "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0095,
+            "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
+        },
+        "desconectable": "No",
+        "funda_termica": "Tela",
+        "fuente_oficial": "amazon.es",
+        "imagen": "Light_Mup_beacon.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Light_Mup_beacon.png"
+    },
+    {
+        "id_punto": 5,
+        "nombre_punto": "Aurgi",
+        "marca_baliza": "SOS Flash Connected",
+        "modelo": "BAL/2",
+        "Fabricante": "Yuyao Jiming Electronic Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 44.95,
+        "alimentacion": "3x AAA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AAA",
+        "precio_por_pila": {
+            "precio": 0.2,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "User-Reported Failure Rates"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "aurgi.es",
+        "imagen": "SOS_Flash_Connected.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/SOS_Flash_Connected.png"
+    },
+    {
+        "id_punto": 6,
+        "nombre_punto": "BMW",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "bmw.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 7,
+        "nombre_punto": "BP",
+        "marca_baliza": "iWottoLight IoT",
+        "modelo": "IWottoLight IoT",
+        "Fabricante": "Ningbo Shenglin Electric Appliance Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.99,
+        "alimentacion": "3x AAA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AAA",
+        "precio_por_pila": {
+            "precio": 0.2,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "User-Reported Failure Rates"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "bp.com",
+        "imagen": "iWottoLight_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/iWottoLight_IoT.png"
+    },
+    {
+        "id_punto": 8,
+        "nombre_punto": "Carrefour",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 57.49,
+        "alimentacion": "3x AAA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AAA",
+        "precio_por_pila": {
+            "precio": 0.2,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "User-Reported Failure Rates"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "carrefour.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 8,
+        "nombre_punto": "Carrefour",
+        "marca_baliza": "iWottoLight IoT",
+        "modelo": "IWottoLight IoT",
+        "Fabricante": "Ningbo Shenglin Electric Appliance Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.99,
+        "alimentacion": "3x AAA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AAA",
+        "precio_por_pila": {
+            "precio": 0.2,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "User-Reported Failure Rates"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "carrefour.es",
+        "imagen": "iWottoLight_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/iWottoLight_IoT.png"
+    },
+    {
+        "id_punto": 8,
+        "nombre_punto": "Carrefour",
+        "marca_baliza": "PMK Grupo",
+        "modelo": "30101",
+        "Fabricante": "Yuyao Jiming Electronic Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 49.9,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.28,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "Crowdsourced Device Damage Reports"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "carrefour.es",
+        "imagen": "PMK_Grupo.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/PMK_Grupo.png"
+    },
+    {
+        "id_punto": 8,
+        "nombre_punto": "Carrefour",
+        "marca_baliza": "SOOS V16",
+        "modelo": "V16IoT",
+        "Fabricante": "Yuyao Jiming Electronic Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Fabricación",
+        "precio_venta": 48.6,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.28,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "Crowdsourced Device Damage Reports"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "carrefour.es",
+        "imagen": "SOOS_V16.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/SOOS_V16.png"
+    },
+    {
+        "id_punto": 9,
+        "nombre_punto": "Correos",
+        "marca_baliza": "BALIZA3e V-16/SMART MOD100",
+        "modelo": "MOD100",
+        "Fabricante": "Energía Eléctrica Eficiente, S.L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 59.99,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 0.8,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "Empirical Data from Repair Shops"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "correos.es",
+        "imagen": "BALIZA3e_V-16/SMART_MOD100.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/SMART_MOD100.png"
+    },
+    {
+        "id_punto": 10,
+        "nombre_punto": "Costco",
+        "marca_baliza": "Geoblueshield49",
+        "modelo": "RV7000",
+        "Fabricante": "Atressa Global Corporation, S.L., Vizcaya",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Fabricación",
+        "precio_venta": 54.95,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Energizer",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 3,
+            "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0055,
+            "fuente": "Battery University, Duracell Technical Bulletin #45"
+        },
+        "desconectable": "Si",
+        "funda_termica": "Eva foam",
+        "fuente_oficial": "costco.es",
+        "imagen": "Geoblueshield49.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Geoblueshield49.png"
+    },
+    {
+        "id_punto": 11,
+        "nombre_punto": "eBay",
+        "marca_baliza": "FlashLED SOS V16",
+        "modelo": "FlashLED SOS",
+        "Fabricante": "Kepar Electrónica, Zaragoza",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 69.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "ebay.es",
+        "imagen": "FlashLED_SOS_V16.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/FlashLED_SOS_V16.png"
+    },
+    {
+        "id_punto": 11,
+        "nombre_punto": "eBay",
+        "marca_baliza": "Hella V16",
+        "modelo": "HV16.1",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 51.99,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Varta",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 2.1,
+            "fuente": "Varta oficial y minoristas europeos"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0085,
+            "fuente": "Varta Long-Term Storage Study (2019)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "ebay.es",
+        "imagen": "Hella_V16.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Hella_V16.png"
+    },
+    {
+        "id_punto": 11,
+        "nombre_punto": "eBay",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 52,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "ebay.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 11,
+        "nombre_punto": "eBay",
+        "marca_baliza": "Osram LEDguardian V16",
+        "modelo": "OSRAM LEDguardian® ROAD FLARE Signal V16 IoT",
+        "Fabricante": "Hangzhou Tiger Auto Industry Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 51.99,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "ebay.es",
+        "imagen": "Osram_LEDguardian_V16.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Osram_LEDguardian_V16.png"
+    },
+    {
+        "id_punto": 12,
+        "nombre_punto": "El Corte Inglés",
+        "marca_baliza": "Car-Lite",
+        "modelo": "MOD100",
+        "Fabricante": "Energía Eléctrica Eficiente, S.L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.95,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "elcorteingles.es",
+        "imagen": "Car-Lite.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Car-Lite.png"
+    },
+    {
+        "id_punto": 12,
+        "nombre_punto": "El Corte Inglés",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.95,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "elcorteingles.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 12,
+        "nombre_punto": "El Corte Inglés",
+        "marca_baliza": "Uirax V16 2.0 IoT",
+        "modelo": "Beacon Light IoT",
+        "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.99,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Maxell",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.6,
+            "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0095,
+            "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "elcorteingles.es",
+        "imagen": "Uirax_V16_2.0_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Uirax_V16_2.0_IoT.png"
+    },
+    {
+        "id_punto": 13,
+        "nombre_punto": "Ford",
+        "marca_baliza": "EmergLight Geo IoT",
+        "modelo": "EmergLight X",
+        "Fabricante": "Yuyao Jiming Electronic Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 43.95,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.28,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "Crowdsourced Device Damage Reports"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "ford.es",
+        "imagen": "EmergLight_Geo_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/EmergLight_Geo_IoT.png"
+    },
+    {
+        "id_punto": 14,
+        "nombre_punto": "Generali",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 42.17,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "generali.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 15,
+        "nombre_punto": "Itevelesa (estaciones)",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 49.95,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "itevelesa.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 16,
+        "nombre_punto": "Iveco",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "iveco.com",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 17,
+        "nombre_punto": "Kia",
+        "marca_baliza": "Baliza V16 Geolocalizada Kia",
+        "modelo": "Beacon Light IoT CH-009",
+        "Fabricante": "Ningbo Chakesi Electronic Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 48.96,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.28,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "Crowdsourced Device Damage Reports"
+        },
+        "desconectable": "Si",
+        "funda_termica": "Tela",
+        "fuente_oficial": "kia.es",
+        "imagen": "Baliza_V16_Geolocalizada_Kia.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Baliza_V16_Geolocalizada_Kia.png"
+    },
+    {
+        "id_punto": 18,
+        "nombre_punto": "Leroy Merlin",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 52.99,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "leroymerlin.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 18,
+        "nombre_punto": "Leroy Merlin",
+        "marca_baliza": "Ledone Connected",
+        "modelo": "Ledone Connected /Erum Vial",
+        "Fabricante": "Plásticos Erum s.l., Alcoy",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Fabricación",
+        "precio_venta": 52.99,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "leroymerlin.es",
+        "imagen": "Ledone_Connected.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Ledone_Connected.png"
+    },
+    {
+        "id_punto": 19,
+        "nombre_punto": "Lidl",
+        "marca_baliza": "Baliza V16 IoT Lidl",
+        "modelo": "DP-EL2022-C1",
+        "Fabricante": "Distribuciones Escudero Fijo, S. L.",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.99,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.28,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "Crowdsourced Device Damage Reports"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "lidl.es",
+        "imagen": "Baliza_V16_IoT_Lidl.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Baliza_V16_IoT_Lidl.png"
+    },
+    {
+        "id_punto": 20,
+        "nombre_punto": "MAN",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "man.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 21,
+        "nombre_punto": "Mapfre",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 42.17,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "mapfre.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 22,
+        "nombre_punto": "MediaMarkt",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 49.95,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "mediamarkt.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 22,
+        "nombre_punto": "MediaMarkt",
+        "marca_baliza": "Osram LEDguardian V16",
+        "modelo": "OSRAM LEDguardian® ROAD FLARE Signal V16 IoT",
+        "Fabricante": "Hangzhou Tiger Auto Industry Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 51.99,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "mediamarkt.es",
+        "imagen": "Osram_LEDguardian_V16.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Osram_LEDguardian_V16.png"
+    },
+    {
+        "id_punto": 22,
+        "nombre_punto": "MediaMarkt",
+        "marca_baliza": "Uirax V16 2.0 IoT",
+        "modelo": "Beacon Light IoT",
+        "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.99,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Maxell",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.6,
+            "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0095,
+            "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "mediamarkt.es",
+        "imagen": "Uirax_V16_2.0_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Uirax_V16_2.0_IoT.png"
+    },
+    {
+        "id_punto": 23,
+        "nombre_punto": "Mercedes-Benz",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "mercedes-benz.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 24,
+        "nombre_punto": "Norauto",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 49.95,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "norauto.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 24,
+        "nombre_punto": "Norauto",
+        "marca_baliza": "Ledone Connected",
+        "modelo": "Ledone Connected /Erum Vial",
+        "Fabricante": "Plásticos Erum s.l., Alcoy",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Fabricación",
+        "precio_venta": 52.99,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "norauto.es",
+        "imagen": "Ledone_Connected.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Ledone_Connected.png"
+    },
+    {
+        "id_punto": 25,
+        "nombre_punto": "Peugeot",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "peugeot.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 26,
+        "nombre_punto": "Primark",
+        "marca_baliza": "Baliza V16 IoT Primark",
+        "modelo": "DP-EL2022-C1",
+        "Fabricante": "Distribuciones Escudero Fijo, S. L.",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.99,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.28,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "Crowdsourced Device Damage Reports"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "primark.es",
+        "imagen": "Baliza_V16_IoT_Primark.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Baliza_V16_IoT_Primark.png"
+    },
+    {
+        "id_punto": 27,
+        "nombre_punto": "RACC",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 42.17,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "racc.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 28,
+        "nombre_punto": "Renault",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "renault.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 29,
+        "nombre_punto": "Repsol",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 49.95,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "repsol.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 29,
+        "nombre_punto": "Repsol",
+        "marca_baliza": "iWottoLight IoT",
+        "modelo": "IWottoLight IoT",
+        "Fabricante": "Ningbo Shenglin Electric Appliance Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.99,
+        "alimentacion": "3x AAA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AAA",
+        "precio_por_pila": {
+            "precio": 0.2,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "User-Reported Failure Rates"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "repsol.es",
+        "imagen": "iWottoLight_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/iWottoLight_IoT.png"
+    },
+    {
+        "id_punto": 30,
+        "nombre_punto": "Seat",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "seat.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 31,
+        "nombre_punto": "Shell",
+        "marca_baliza": "iWottoLight IoT",
+        "modelo": "IWottoLight IoT",
+        "Fabricante": "Ningbo Shenglin Electric Appliance Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.99,
+        "alimentacion": "3x AAA",
+        "numero_pilas": 3,
+        "marca_pilas": "Sin Marca",
+        "tipo_pila": "AAA",
+        "precio_por_pila": {
+            "precio": 0.2,
+            "fuente": "AliExpress, Shein, bazares multiprecio"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0105,
+            "fuente": "User-Reported Failure Rates"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "shell.es",
+        "imagen": "iWottoLight_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/iWottoLight_IoT.png"
+    },
+    {
+        "id_punto": 32,
+        "nombre_punto": "Skoda",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "skoda.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 33,
+        "nombre_punto": "Tesla",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "tesla.com",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 34,
+        "nombre_punto": "Toyota",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "toyota.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 35,
+        "nombre_punto": "Volkswagen",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "volkswagen.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 36,
+        "nombre_punto": "Volvo",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 54.9,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "volvo.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 37,
+        "nombre_punto": "Worten",
+        "marca_baliza": "Help Flash IoT",
+        "modelo": "Help Flash IoT",
+        "Fabricante": "Kepar Electrónica S. L.",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Ensamblaje",
+        "precio_venta": 49.95,
+        "alimentacion": "4x AA",
+        "numero_pilas": 4,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.45,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Retailer Quality Audits"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "worten.es",
+        "imagen": "Help_Flash_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Help_Flash_IoT.png"
+    },
+    {
+        "id_punto": 37,
+        "nombre_punto": "Worten",
+        "marca_baliza": "Ledone Connected",
+        "modelo": "Ledone Connected /Erum Vial",
+        "Fabricante": "Plásticos Erum s.l., Alcoy",
+        "Origen": "España",
+        "Actuación_realizada_en_España": "Fabricación",
+        "precio_venta": 52.99,
+        "alimentacion": "1x 9V",
+        "numero_pilas": 1,
+        "marca_pilas": "Marca Blanca",
+        "tipo_pila": "9V",
+        "precio_por_pila": {
+            "precio": 1.3,
+            "fuente": "Distribuidores OEM y marketplaces nacionales"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0125,
+            "fuente": "Independent Lab Tests (2023)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "worten.es",
+        "imagen": "Ledone_Connected.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Ledone_Connected.png"
+    },
+    {
+        "id_punto": 37,
+        "nombre_punto": "Worten",
+        "marca_baliza": "Uirax V16 2.0 IoT",
+        "modelo": "Beacon Light IoT",
+        "Fabricante": "Ningbo Tianqi Intelligent Technology Co., Ltd",
+        "Origen": "China",
+        "Actuación_realizada_en_España": "Distribución",
+        "precio_venta": 39.99,
+        "alimentacion": "3x AA",
+        "numero_pilas": 3,
+        "marca_pilas": "Maxell",
+        "tipo_pila": "AA",
+        "precio_por_pila": {
+            "precio": 0.6,
+            "fuente": "Amazon, MediaMarkt, Farnell, RS Components"
+        },
+        "factor_sulfatacion": {
+            "tasa_anual": 0.0095,
+            "fuente": "Maxell LR03 datasheet (biz.maxell.com)"
+        },
+        "desconectable": "No",
+        "funda_termica": "No",
+        "fuente_oficial": "worten.es",
+        "imagen": "Uirax_V16_2.0_IoT.png",
+        "imagen_url": "/comparativa-balizas-mvp/client/images/beacons/Uirax_V16_2.0_IoT.png"
+    }
 ]
