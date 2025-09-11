@@ -1171,3 +1171,62 @@ try {
 const PORT = Number(process.env.PORT) || 3003;
 app.listen(PORT, '0.0.0.0', () => console.log("Escuchando en", PORT));
 // ============================================================================
+// ===== PRE-REGISTRO (en Render) =====
+const crypto = require('crypto');
+const pending = new Map(); // token -> { email, exp }
+
+function signToken(payload, secret){
+  // token simple firmado (sin librerías) con HMAC
+  const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const sig  = crypto.createHmac('sha256', secret).update(data).digest('base64url');
+  return data+'.'+sig;
+}
+function verifyToken(tok, secret){
+  const [data,sig] = tok.split('.');
+  const good = crypto.createHmac('sha256', secret).update(data).digest('base64url');
+  if (good!==sig) return null;
+  try { return JSON.parse(Buffer.from(data,'base64url').toString('utf8')); }
+  catch{return null;}
+}
+
+app.post('/api/pre-register', async (req,res)=>{
+  try{
+    const { email } = req.body || {};
+    if (!email || !/.+@.+\..+/.test(email)) return res.status(400).json({ok:false,error:'email_invalido'});
+    const token = crypto.randomBytes(20).toString('hex');
+    const exp   = Date.now() + 1000*60*30; // 30 minutos
+    pending.set(token, { email, exp });
+
+    const base = process.env.PUBLIC_BASE || 'https://comparativabalizas.es';
+    const link = `${base}/comparativa-balizas-mvp/client/verify.html?token=${token}`;
+    const transporter = getTransporter();
+    await transporter.sendMail({
+      from: process.env.MAIL_FROM || 'no-reply@comparativabalizas.es',
+      to: email,
+      subject: 'Confirma tu acceso a ComparativaBalizas',
+      html: `<p>Hola, confirma tu acceso haciendo clic:</p>
+             <p><a href="${link}">${link}</a></p>
+             <p>Caduca en 30 minutos.</p>`
+    });
+    res.json({ok:true});
+  }catch(e){
+    console.error('pre-register error',e);
+    res.status(500).json({ok:false,error:'server'});
+  }
+});
+
+app.get('/api/verify', (req,res)=>{
+  const { token } = req.query;
+  const rec = pending.get(token);
+  if (!rec || rec.exp < Date.now()) return res.status(400).json({ok:false,error:'token_invalido'});
+  pending.delete(token);
+  const jwt = signToken({ email: rec.email, iat: Date.now() }, process.env.JWT_SECRET || 'devsecret');
+  res.json({ok:true, token: jwt});
+});
+
+app.get('/api/whoami', (req,res)=>{
+  const tok = req.headers.authorization?.replace(/^Bearer\s+/,'') || '';
+  const payload = verifyToken(tok, process.env.JWT_SECRET || 'devsecret');
+  if (!payload) return res.status(401).json({ok:false});
+  res.json({ok:true, email: payload.email});
+});
