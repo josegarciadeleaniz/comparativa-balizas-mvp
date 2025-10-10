@@ -1125,17 +1125,42 @@ app.get('/api/proxy-image', async (req, res) => {
   try {
     const u = req.query.url;
     if (!u) return res.status(400).send('missing url');
-    const r = await fetch(u, { redirect: 'follow' });
-    if (!r.ok) throw new Error('Bad status ' + r.status);
-    const ab = await r.arrayBuffer();
-    const buf = Buffer.from(ab);
-    res.set('Content-Type', r.headers.get('content-type') || 'image/png');
+    
+    console.log('Proxy fetching:', u);
+    
+    const response = await fetch(u, { 
+      redirect: 'follow',
+      timeout: 10000 // 10 segundos timeout
+    });
+    
+    if (!response.ok) {
+      console.warn('Proxy image bad status:', response.status, 'for', u);
+      // Devolver una imagen placeholder real en lugar de vacío
+      const placeholder = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+      res.set('Content-Type', 'image/png');
+      return res.send(placeholder);
+    }
+    
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.startsWith('image/')) {
+      throw new Error('Not an image: ' + contentType);
+    }
+    
+    const buffer = await response.arrayBuffer();
+    const buf = Buffer.from(buffer);
+    
+    res.set('Content-Type', contentType);
     res.set('Cache-Control', 'public, max-age=86400');
+    res.set('Access-Control-Allow-Origin', '*');
+    
     return res.send(buf);
+    
   } catch (e) {
-    console.warn('Proxy image error (non-critical):', e.message);
-    // Devolvemos 200 con vacío para no romper html2canvas
-    return res.status(200).send(Buffer.alloc(0));
+    console.warn('Proxy image error:', e.message);
+    // Devolver placeholder PNG real
+    const placeholder = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    res.set('Content-Type', 'image/png');
+    return res.send(placeholder);
   }
 });
 
