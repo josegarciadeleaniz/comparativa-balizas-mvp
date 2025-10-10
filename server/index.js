@@ -1120,47 +1120,56 @@ app.post('/api/enviar-pdf', async (req, res) => {
   }
 });
 
-// ===== Proxy de imágenes (único, limpio) =====
+// ===== Proxy de imágenes — versión robusta (2025-10) =====
 app.get('/api/proxy-image', async (req, res) => {
   try {
-    const u = req.query.url;
-    if (!u) return res.status(400).send('missing url');
-    
-    console.log('Proxy fetching:', u);
-    
-    const response = await fetch(u, { 
+    const targetUrl = req.query.url;
+    if (!targetUrl) return res.status(400).send('missing url');
+
+    console.log('[Proxy] solicitando:', targetUrl);
+
+    // ⚙️ Forzar cabeceras de navegador para saltar bloqueos tipo Cloudflare
+    const response = await fetch(targetUrl, {
       redirect: 'follow',
-      timeout: 10000 // 10 segundos timeout
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; WidgetComparativa/1.0)',
+        'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+        'Referer': 'https://comparativabalizas.es/'
+      }
     });
-    
+
     if (!response.ok) {
-      console.warn('Proxy image bad status:', response.status, 'for', u);
-      // Devolver una imagen placeholder real en lugar de vacío
-      const placeholder = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+      console.warn('[Proxy] Error HTTP', response.status, '→', targetUrl);
+      res.set('Access-Control-Allow-Origin', '*');
       res.set('Content-Type', 'image/png');
-      return res.send(placeholder);
+      const placeholder = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHgAL/2cYF8wAAAABJRU5ErkJggg==',
+        'base64'
+      );
+      return res.status(200).send(placeholder);
     }
-    
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.startsWith('image/')) {
-      throw new Error('Not an image: ' + contentType);
-    }
-    
-    const buffer = await response.arrayBuffer();
-    const buf = Buffer.from(buffer);
-    
-    res.set('Content-Type', contentType);
-    res.set('Cache-Control', 'public, max-age=86400');
+
+    const contentType = response.headers.get('content-type') || 'image/png';
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    res.set({
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'public, max-age=86400',
+      'Content-Type': contentType
+    });
+
+    res.send(buffer);
+
+  } catch (err) {
+    console.error('[Proxy] Excepción:', err.message);
     res.set('Access-Control-Allow-Origin', '*');
-    
-    return res.send(buf);
-    
-  } catch (e) {
-    console.warn('Proxy image error:', e.message);
-    // Devolver placeholder PNG real
-    const placeholder = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
     res.set('Content-Type', 'image/png');
-    return res.send(placeholder);
+    const placeholder = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHgAL/2cYF8wAAAABJRU5ErkJggg==',
+      'base64'
+    );
+    res.status(200).send(placeholder);
   }
 });
 
