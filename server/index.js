@@ -1210,8 +1210,9 @@ try {
 }
 
 // --- LISTEN: usar PORT de Render + 0.0.0.0 ---
-const PORT = Number(process.env.PORT) || 3003;
-app.listen(PORT, '0.0.0.0', () => console.log("Escuchando en", PORT));
+const PORT = process.env.PORT || 10000; 
+app.listen(PORT, () => console.log(`✅ Servidor escuchando en puerto ${PORT}`));
+
 // ============================================================================
 // ===== PRE-REGISTRO (en Render) =====
 const crypto = require('crypto');
