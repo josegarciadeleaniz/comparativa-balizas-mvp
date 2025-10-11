@@ -44,7 +44,8 @@ const ALLOWED_ORIGINS = new Set([
   'https://app.comparativabalizas.es',
   'https://comparativa-balizas-mvp.onrender.com' // pruebas
 ]);
-console.log("✅ Whitelist cargada:", Array.from(ALLOWED_ORIGINS));
+console.log('✅ Whitelist cargada:', Array.from(ALLOWED_ORIGINS));
+
 app.use((req, res, next) => {
   const origin = req.headers.origin || '';
   if (ALLOWED_ORIGINS.has(origin)) {
@@ -62,10 +63,11 @@ app.use((req, res, next) => {
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 
-  // Responder preflight
+  // Preflight
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
+
 
 // ===== DEBUG SWITCH =====
 const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1';
