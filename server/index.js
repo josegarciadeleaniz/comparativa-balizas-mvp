@@ -1,4 +1,3 @@
-// ======================== index.js (LIMPIO Y ORDENADO) ========================
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -111,12 +110,19 @@ app.get('/__routes', (req, res) => {
 });
 
 app.get('/__ping', (req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
-app.get('/__cors', (req, res) => {
+// ===== CORS INFO (usamos una ruta no reservada por Render) =====
+app.get('/api/__corsinfo', (req, res) => {
   res.json({
-    ALLOWED_ORIGINS,
-    note: 'Esta es la whitelist que usa el delegate de CORS'
+    ALLOWED_ORIGINS: Array.from(ALLOWED_ORIGINS),
+    note: 'Whitelist real del servidor Express (no del proxy de Render)',
+    debug: {
+      node_version: process.version,
+      port: process.env.PORT,
+      env: process.env.NODE_ENV || 'development'
+    }
   });
 });
+
 
 app.get('/__db', async (req, res) => {
   if (!pool) return res.json({ ok: false, note: 'Sin pool (DB no configurada en este entorno)' });
