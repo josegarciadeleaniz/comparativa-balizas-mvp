@@ -1066,7 +1066,6 @@ app.get('/api/beacons', (req, res) => {
     res.status(500).json({ error: 'beacons_sanitize_fail', details: String(e) });
   }
 });
-
 app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
