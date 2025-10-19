@@ -1072,14 +1072,28 @@ app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
 
 // ===== Envío de PDF (ÚNICA RUTA, sin duplicados) =====
+// ===== CONFIGURACIÓN SMTP (Google Workspace) =====
 function getTransporter() {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: false,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(process.env.SMTP_PORT || 465),
+    secure: true, // SSL para puerto 465
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    tls: { rejectUnauthorized: false }
   });
+
+  // Verificación inicial (solo en logs)
+  transporter.verify((err, success) => {
+    if (err) console.error('❌ Error conexión SMTP:', err);
+    else console.log('✅ Servidor SMTP (Google Workspace) listo para enviar correos');
+  });
+
+  return transporter;
 }
+
 
 app.post('/api/enviar-pdf', async (req, res) => {
   try {
