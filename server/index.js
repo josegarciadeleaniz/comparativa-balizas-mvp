@@ -1070,74 +1070,43 @@ app.get('/api/sales_points', (req, res) => res.json(salesPoints));
 app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
 
-// ===== Envío de PDF (ÚNICA RUTA, sin duplicados) =====
-function getTransporter() {
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'mail.comparativabalizas.es',
-    port: Number(process.env.SMTP_PORT || 465),
-    secure: true,
-    auth: {
-      user: process.env.SMTP_USER || 'noreply@comparativabalizas.es',
-      pass: process.env.SMTP_PASS,
-    },
-    tls: { rejectUnauthorized: false }
-  });
+// ===== Envío de PDF mediante relay interno HTTPS (Plesk) =====
+import fetch from "node-fetch"; // asegúrate de tenerlo: npm install node-fetch@2
 
-  transporter.verify((err, success) => {
-    if (err) console.error('❌ Error conexión SMTP:', err);
-    else console.log('✅ Servidor SMTP (comparativabalizas.es) listo para enviar correos');
-  });
-
-  return transporter;
-}
-
-
-app.post('/api/enviar-pdf', async (req, res) => {
+app.post("/api/enviar-pdf", async (req, res) => {
   try {
-    const { email, title = 'Informe de baliza', pdfBase64, filename = 'Informe.pdf' } = req.body || {};
-    if (!email)    return res.status(400).json({ ok:false, error:'Falta el email' });
-    if (!pdfBase64) return res.status(400).json({ ok:false, error:'Falta el PDF (base64)' });
+    const { email, title = "Informe de baliza", pdfBase64, filename = "Informe.pdf" } = req.body || {};
+    if (!email) return res.status(400).json({ ok: false, error: "Falta el email" });
+    if (!pdfBase64) return res.status(400).json({ ok: false, error: "Falta el PDF (base64)" });
 
-    console.log('[MAIL] Dest:', email, 'base64 chars:', pdfBase64.length);
+    console.log("[RELAY] Enviando PDF a", email);
 
-    // --- Opción A (recomendada): adjuntar como Buffer binario ---
-    const pdfBuffer = Buffer.from(pdfBase64, 'base64');
-    const transporter = getTransporter();
-    const info = await transporter.sendMail({
-      from: process.env.MAIL_FROM || 'no-reply@comparativabalizas.es',
-      to: email,
-      subject: title,
-      text: 'Adjuntamos su informe en PDF.',
-      html: '<p>Adjuntamos su informe en PDF.</p>',
-      attachments: [{
-        filename,
-        content: pdfBuffer,
-        contentType: 'application/pdf'
-      }]
+    // Cuerpo del correo (lo verá tu PHP)
+    const response = await fetch("https://comparativabalizas.es/api/send-mail.php?token=123456789SECRET", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: email,
+        subject: title,
+        body: `
+          <p>Adjunto su informe de baliza.</p>
+          <p>Puede descargarlo directamente <a href="data:application/pdf;base64,${pdfBase64}" target="_blank">aquí</a>.</p>
+        `,
+      }),
     });
 
-    // --- Opción B (alternativa “a prueba de SMTP raros”): usar path data: ---
-    // const transporter = getTransporter();
-    // const info = await transporter.sendMail({
-    //   from: process.env.MAIL_FROM || 'no-reply@comparativabalizas.es',
-    //   to: email,
-    //   subject: title,
-    //   text: 'Adjuntamos su informe en PDF.',
-    //   html: '<p>Adjuntamos su informe en PDF.</p>',
-    //   attachments: [{
-    //     filename,
-    //     path: `data:application/pdf;base64,${pdfBase64}`
-    //   }]
-    // });
+    const result = await response.json();
+    if (!result.ok) throw new Error(result.error || "Error en relay PHP");
 
-    console.log('[MAIL] OK messageId:', info.messageId);
-    return res.json({ ok:true, messageId: info.messageId });
+    console.log("[RELAY] Correo enviado correctamente por Plesk");
+    res.json({ ok: true, relay: result });
 
-  } catch (e) {
-    console.error('[MAIL] ERROR', e);
-    return res.status(500).json({ ok:false, error: e.message });
+  } catch (err) {
+    console.error("[RELAY] Error:", err.message);
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
+
 
 // ===== Proxy de imágenes — versión robusta (2025-10) =====
 app.get('/api/proxy-image', async (req, res) => {
