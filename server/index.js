@@ -16,6 +16,14 @@ const mysql = require('mysql2/promise');
 // Email
 const nodemailer   = require("nodemailer");
 
+import cors from 'cors';
+app.use(cors({
+  origin: '*',
+  methods: ['GET','POST','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
+}));
+
+
 // --- DB (MariaDB) opcional ---
 let pool = null;
 try {
@@ -1072,17 +1080,27 @@ app.get('/api/battery_types',(req, res) => res.json(batteryData));
 
 // ===== Envío de PDF (ÚNICA RUTA, sin duplicados) =====
 // ===== CONFIGURACIÓN SMTP (Google Workspace) =====
+// ===== CONFIGURACIÓN SMTP (Google Workspace) =====
 function getTransporter() {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: Number(process.env.SMTP_PORT || 465),
-    secure: true, // SSL para puerto 465
+    secure: true, // SSL para 465
     auth: {
-      user: process.env.SMTP_USER,
+      user: process.env.SMTP_USER || 'noreply@comparativabalizas.es',
       pass: process.env.SMTP_PASS,
     },
     tls: { rejectUnauthorized: false }
   });
+
+  transporter.verify((err, success) => {
+    if (err) console.error('❌ Error conexión SMTP:', err);
+    else console.log('✅ Servidor SMTP (Google Workspace) listo para enviar correos');
+  });
+
+  return transporter;
+}
+
 
   // Verificación inicial (solo en logs)
   transporter.verify((err, success) => {
