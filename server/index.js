@@ -16,14 +16,6 @@ const mysql = require('mysql2/promise');
 // Email
 const nodemailer   = require("nodemailer");
 
-import cors from 'cors';
-app.use(cors({
-  origin: '*',
-  methods: ['GET','POST','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization']
-}));
-
-
 // --- DB (MariaDB) opcional ---
 let pool = null;
 try {
