@@ -1075,7 +1075,7 @@ app.get('/api/battery_types',(req, res) => res.json(batteryData));
 // ===== CONFIGURACIÓN SMTP (Google Workspace) =====
 function getTransporter() {
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host: process.env.SMTP_HOST || 'mail.comparativabalizas.es',
     port: Number(process.env.SMTP_PORT || 465),
     secure: true, // SSL para 465
     auth: {
