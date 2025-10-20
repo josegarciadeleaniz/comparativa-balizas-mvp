@@ -38,6 +38,7 @@ try {
   pool = null;
 }
 
+
 const app = express();
 app.disable("x-powered-by");
 
@@ -234,14 +235,6 @@ function estimateHotBinTemp(factor_provincia){
   if (factor_provincia >= 1.3) return 47.5;
   if (factor_provincia >= 1.2) return 45;
   return 42.5;
-}
-// Funda → factor multiplicativo sobre VIDA (no sobre fuga)
-function getFundaFactor(tipoFunda) {
-  const key = String(tipoFunda || '').toLowerCase().trim();
-  if (key.includes('eva'))       return 1.15; // EVA foam / silicona térmica
-  if (key.includes('neopreno'))  return 1.10;
-  if (key.includes('tela'))      return 1.01;
-  return 1.00; // sin funda
 }
 // Vida real por Arrhenius (autodescarga) + funda (vida)
 function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias){
@@ -995,16 +988,14 @@ const meta = {
   coste_inicial: parseFloat(coste_inicial),
   edad_vehiculo: parseInt(edad_vehiculo)
 };
-
-
-  // === GUARDAR EN BD (opcional) ===
+ // === GUARDAR EN BD (opcional) ===
 try {
   const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
 
   if (pool) {
     await pool.execute(
-      'INSERT INTO calculos (email, user_hash, contexto, marca_baliza, modelo, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [email, userHash, contexto, marca_baliza, modelo, provincia, coste_inicial, total12y, JSON.stringify(req.body), JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })]
+      'INSERT INTO calculos_usuarios (user_email, user_hash, contexto, marca_baliza, modelo_baliza, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [email, userHash, contexto, marca_baliza, modelo, provincia, parseFloat(coste_inicial), total12y, JSON.stringify(req.body), JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })]
     );
     console.log('✅ Cálculo guardado en BD (directo)');
   } else {
@@ -1032,8 +1023,6 @@ try {
 } catch (dbError) {
   console.warn('⚠️ Error guardando cálculo (continuando):', dbError.message);
 }
-
-
     if (DEBUG) {
       console.log('— /api/calcula -> meta:', meta);
       console.log('— /api/calcula -> resumen:', resumen);
@@ -1111,6 +1100,7 @@ app.post('/api/enviar-pdf', async (req, res) => {
       return res.status(502).json({ ok: false, error: 'relay_mail_fail' });
     }
 
+    console.log('✅ Enviado PDF vía relay HTTPS');
     return res.json({ ok: true });
 
   } catch (e) {
@@ -1118,7 +1108,6 @@ app.post('/api/enviar-pdf', async (req, res) => {
     return res.status(500).json({ ok: false, error: 'server' });
   }
 });
-
 
 
 // ===== Proxy de imágenes — versión robusta (2025-10) =====
