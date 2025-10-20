@@ -1072,7 +1072,8 @@ app.get('/api/provincias',   (req, res) => res.json(provincias));
 app.get('/api/battery_types',(req, res) => res.json(batteryData));
 
 // ===== Envío de PDF mediante relay interno HTTPS (Plesk) =====
-import fetch from "node-fetch"; // asegúrate de tenerlo: npm install node-fetch@2
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 
 // === ENVIAR PDF (relay a Plesk) ===
 app.post('/api/enviar-pdf', async (req, res) => {
