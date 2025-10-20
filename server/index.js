@@ -16,20 +16,25 @@ const mysql = require('mysql2/promise');
 // Email
 const nodemailer   = require("nodemailer");
 
-// --- DB (MariaDB) opcional ---
+// === CONEXIÓN MYSQL (solo si hay variables de entorno) ===
 let pool = null;
 try {
-  pool = mysql.createPool({
-    host:     process.env.DB_HOST || '82.223.102.93',  
-    user:     process.env.DB_USER || 'balizas2_user',
-    password: process.env.DB_PASS || 'Cambiame-1',
-    database: process.env.DB_NAME || 'balizas',
-    port:     parseInt(process.env.DB_PORT || '3306', 10),
-    waitForConnections: true,
-    connectionLimit: 5
-  });
+  if (process.env.DB_HOST) {
+    pool = mysql.createPool({
+      host:     process.env.DB_HOST,
+      user:     process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
+      port:     parseInt(process.env.DB_PORT || '3306', 10),
+      waitForConnections: true,
+      connectionLimit: 5
+    });
+    console.log('✅ Conectado a base de datos remota');
+  } else {
+    console.warn('⚠️ DB desactivada (usaremos relay HTTPS)');
+  }
 } catch (e) {
-  console.warn('⚠️ pool no inicializado:', e.message);
+  console.warn('⚠️ Error inicializando pool MySQL:', e.message);
   pool = null;
 }
 
@@ -992,35 +997,42 @@ const meta = {
 };
 
 
-    // === GUARDAR EN BD (opcional) ===
-    try {
-      const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
-      
-      if (pool) {
-        await pool.execute(
-          `INSERT INTO calculos_usuarios 
-           (user_email, user_hash, contexto, marca_baliza, modelo_baliza, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            email,
-            userHash,
-            contexto,
-            marca_baliza,
-            modelo,
-            provincia,
-            parseFloat(coste_inicial),
-            total12y,
-            JSON.stringify(req.body),
-            JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })
-          ]
-        );
-        console.log('✅ Cálculo guardado en BD para tracking');
-      } else {
-        console.warn('⚠️ Sin DB (pool=null). Lead NO persistido; devolviendo ok:true.');
-      }
-    } catch (dbError) {
-      console.warn('⚠️ Error guardando cálculo en BD (continuando):', dbError.message);
+  // === GUARDAR EN BD (opcional) ===
+try {
+  const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
+
+  if (pool) {
+    await pool.execute(
+      'INSERT INTO calculos (email, user_hash, contexto, marca_baliza, modelo, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [email, userHash, contexto, marca_baliza, modelo, provincia, coste_inicial, total12y, JSON.stringify(req.body), JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })]
+    );
+    console.log('✅ Cálculo guardado en BD (directo)');
+  } else {
+    const relayUrl = process.env.RELAY_SAVE_URL
+      || 'https://comparativabalizas.es/comparativa-balizas-mvp/api/save-calc.php';
+    const payload = {
+      email, userHash, contexto, marca_baliza, modelo,
+      provincia, coste_inicial: parseFloat(coste_inicial),
+      coste_12_anios: total12y,
+      datos_entrada: req.body,
+      datos_resultado: { meta, pasos, resumen, total_12_anios: total12y }
+    };
+    const rr = await fetch(relayUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Relay-Token': process.env.RELAY_SECRET || '' },
+      body: JSON.stringify(payload)
+    });
+    const dj = await rr.json().catch(()=> ({}));
+    if (!rr.ok || dj.ok === false) {
+      console.warn('⚠️ Relay save fallo:', rr.status, dj);
+    } else {
+      console.log('✅ Cálculo guardado vía relay');
     }
+  }
+} catch (dbError) {
+  console.warn('⚠️ Error guardando cálculo (continuando):', dbError.message);
+}
+
 
     if (DEBUG) {
       console.log('— /api/calcula -> meta:', meta);
@@ -1073,39 +1085,40 @@ app.get('/api/battery_types',(req, res) => res.json(batteryData));
 // ===== Envío de PDF mediante relay interno HTTPS (Plesk) =====
 import fetch from "node-fetch"; // asegúrate de tenerlo: npm install node-fetch@2
 
-app.post("/api/enviar-pdf", async (req, res) => {
+// === ENVIAR PDF (relay a Plesk) ===
+app.post('/api/enviar-pdf', async (req, res) => {
   try {
-    const { email, title = "Informe de baliza", pdfBase64, filename = "Informe.pdf" } = req.body || {};
-    if (!email) return res.status(400).json({ ok: false, error: "Falta el email" });
-    if (!pdfBase64) return res.status(400).json({ ok: false, error: "Falta el PDF (base64)" });
+    const { email, title = 'Informe de baliza', pdfBase64, filename = 'Informe.pdf' } = req.body || {};
+    if (!email || !pdfBase64) {
+      return res.status(400).json({ ok: false, error: 'Faltan campos' });
+    }
 
-    console.log("[RELAY] Enviando PDF a", email);
+    const relayUrl = process.env.RELAY_MAIL_URL 
+      || 'https://comparativabalizas.es/comparativa-balizas-mvp/api/send-mail.php';
 
-    // Cuerpo del correo (lo verá tu PHP)
-    const response = await fetch("https://comparativabalizas.es/api/send-mail.php?token=123456789SECRET", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: email,
-        subject: title,
-        body: `
-          <p>Adjunto su informe de baliza.</p>
-          <p>Puede descargarlo directamente <a href="data:application/pdf;base64,${pdfBase64}" target="_blank">aquí</a>.</p>
-        `,
-      }),
+    const r = await fetch(relayUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Relay-Token': process.env.RELAY_SECRET || ''
+      },
+      body: JSON.stringify({ email, title, pdfBase64, filename })
     });
 
-    const result = await response.json();
-    if (!result.ok) throw new Error(result.error || "Error en relay PHP");
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || data.ok === false) {
+      console.error('Relay mail fallo:', r.status, data);
+      return res.status(502).json({ ok: false, error: 'relay_mail_fail' });
+    }
 
-    console.log("[RELAY] Correo enviado correctamente por Plesk");
-    res.json({ ok: true, relay: result });
+    return res.json({ ok: true });
 
-  } catch (err) {
-    console.error("[RELAY] Error:", err.message);
-    res.status(500).json({ ok: false, error: err.message });
+  } catch (e) {
+    console.error('Error enviar-pdf:', e);
+    return res.status(500).json({ ok: false, error: 'server' });
   }
 });
+
 
 
 // ===== Proxy de imágenes — versión robusta (2025-10) =====
