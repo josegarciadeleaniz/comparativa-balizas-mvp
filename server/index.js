@@ -1124,10 +1124,10 @@ app.get('/api/proxy-image', async (req, res) => {
     const response = await fetch(targetUrl, {
       redirect: 'follow',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; WidgetComparativa/1.0)',
-        'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
-        'Referer': 'https://comparativabalizas.es/'
-      }
+  'User-Agent': 'Mozilla/5.0 (compatible; WidgetComparativa/1.0)',
+  'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+  'Referer': 'https://balizas.pro/'
+}
     });
 
     if (!response.ok) {
