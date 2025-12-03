@@ -37,41 +37,39 @@ try {
   console.warn('⚠️ Error inicializando pool MySQL:', e.message);
   pool = null;
 }
-
-
 const app = express();
 app.disable("x-powered-by");
 
-const ALLOWED_ORIGINS = new Set([
+// === CORS FLEXIBLE PARA BALIZAS.PRO + WHITELIST ===
+const ALLOWED_ORIGINS = [
   'https://widget.comparativabalizas.es',
-  'https://balizas.pro',
-  'https://www.balizas.pro',
   'https://comparativabalizas.es',
   'https://www.comparativabalizas.es',
   'https://app.comparativabalizas.es',
   'https://comparativa-balizas-mvp.onrender.com'
-]);
-console.log('✅ Whitelist cargada:', Array.from(ALLOWED_ORIGINS));
-
+];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin || '';
-  if (ALLOWED_ORIGINS.has(origin)) {
+
+  // 1) Permitir cualquier origen de balizas.pro (dominio + subdominios)
+  // 2) O permitirlo si está en la whitelist
+  if (
+    origin.includes('balizas.pro') ||
+    ALLOWED_ORIGINS.includes(origin)
+  ) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
-  // Para proxies/CDN
-  res.setHeader('Vary', 'Origin');
 
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
-  // No usamos credenciales/cookies: NO enviar Allow-Credentials.
 
   // Anti-cache
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 
-  // Preflight
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
