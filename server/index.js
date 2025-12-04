@@ -40,39 +40,33 @@ try {
 const app = express();
 app.disable("x-powered-by");
 
-// === CORS FLEXIBLE PARA BALIZAS.PRO + WHITELIST ===
-const ALLOWED_ORIGINS = [
-  'https://widget.comparativabalizas.es',
-  'https://comparativabalizas.es',
-  'https://www.comparativabalizas.es',
-  'https://app.comparativabalizas.es',
-  'https://comparativa-balizas-mvp.onrender.com'
+const ALLOWED = [
+  "https://balizas.pro",
+  "https://www.balizas.pro",
+  "https://widget.balizas.pro",
+  "https://widget.comparativabalizas.es",
+  "https://comparativabalizas.es",
+  "https://www.comparativabalizas.es"
 ];
 
 app.use((req, res, next) => {
-  const origin = req.headers.origin || '';
+  const origin = req.headers.origin;
 
-  // 1) Permitir cualquier origen de balizas.pro (dominio + subdominios)
-  // 2) O permitirlo si está en la whitelist
-  if (
-    origin.includes('balizas.pro') ||
-    ALLOWED_ORIGINS.includes(origin)
-  ) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+  if (origin && ALLOWED.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
-  res.setHeader('Vary', 'Origin');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // Anti-cache
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
 
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
+
 
 
 // ===== DEBUG SWITCH =====
