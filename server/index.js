@@ -40,35 +40,38 @@ try {
 const app = express();
 app.disable("x-powered-by");
 
-const ALLOWED = [
-  "https://balizas.pro",
-  "https://www.balizas.pro",
-  "https://widget.balizas.pro",
-  "https://widget.comparativabalizas.es",
-  "https://comparativabalizas.es",
-  "https://www.comparativabalizas.es"
-];
+const ALLOWED_ORIGINS = new Set([
+  // ⚡ Nuevo dominio principal
+  'https://balizas.pro',
+  'https://www.balizas.pro',
+  'https://widget.balizas.pro',
 
+  // ⚡ Dominios antiguos (los dejamos por compatibilidad)
+  'https://widget.comparativabalizas.es',
+  'https://comparativabalizas.es',
+  'https://www.comparativabalizas.es',
+  'https://app.comparativabalizas.es',
+
+  // ⚡ Render
+  'https://comparativa-balizas-mvp.onrender.com'
+]);
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
+  const origin = req.headers.origin || '';
 
-  if (origin && ALLOWED.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
+  if (ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
   }
 
-  res.setHeader("Vary", "Origin");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return res.sendStatus(204);
   }
 
   next();
 });
-
-
-
 // ===== DEBUG SWITCH =====
 const DEBUG = process.env.RENDER_DEBUG === '1' || process.env.DEBUG === '1';
 
