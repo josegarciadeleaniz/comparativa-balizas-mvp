@@ -1164,14 +1164,14 @@ app.use((err, req, res, next) => {
 // --- Verificar carga JSON (igual que antes) ---
 try {
   if (!batteryData || !provincias || !beacons || !salesPoints) {
-    throw new Error("Error cargando JSON");
+    console.error("⚠️ Error cargando JSON (continuamos, pero API puede dar datos incompletos)");
+  } else {
+    console.log('Datos cargados correctamente');
   }
-  console.log('Datos cargados correctamente');
 } catch (e) {
-  console.error('Error crítico cargando JSON:', e);
-  process.exit(1);
+  console.error('⚠️ Error crítico cargando JSON:', e);
+  // NO hacemos process.exit() → así no rompe CORS ni la API
 }
-
 // --- LISTEN: usar PORT de Render + 0.0.0.0 ---
 const PORT = process.env.PORT || 10000; 
 app.listen(PORT, () => console.log(`✅ Servidor escuchando en puerto ${PORT}`));
