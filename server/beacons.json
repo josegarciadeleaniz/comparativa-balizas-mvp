@@ -1,25 +1,5 @@
 [
-    {
-        "id_baliza": 3,
-        "marca_baliza": "Geoblueshield49",
-        "modelo": "RV7000",
-        "Fabricante": "Atressa Global Corporation, s.l.",
-        "Origen": "ESPAÑA",
-        "Actuación_realizada_en_España": "Fabrica",
-        "homologacion_dgt": "LCOE 2024020157G1",
-        "operador_movil": "Multioperador",
-        "app": "SoS Traffic",
-        "precio_venta": 54.95,
-        "alimentacion": "9V",
-        "numero_pilas": 1,
-        "marca_pilas": "Energizer",
-        "tipo_pila": "9V",
-        "funda_termica": "Eva Foam",
-        "id_funda_termica": null,
-        "desconectable": 1,
-        "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/blueshield49.png"
-    },
+ 
     {
         "id_baliza": 4,
         "marca_baliza": "Help Flash IoT+",
@@ -39,7 +19,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/helpflashiot.png"
+        "imagen_url": "helpflashiot.png"
     },
     {
         "id_baliza": 5,
@@ -60,7 +40,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/callsos.png"
+        "imagen_url": "callsos.png"
     },
     {
         "id_baliza": 6,
@@ -81,7 +61,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/baliza3e.png"
+        "imagen_url": "baliza3e.png"
     },
     {
         "id_baliza": 7,
@@ -102,7 +82,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/flashled.png"
+        "imagen_url": "flashled.png"
     },
     {
         "id_baliza": 8,
@@ -123,7 +103,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/racc.png"
+        "imagen_url": "racc.png"
     },
     {
         "id_baliza": 9,
@@ -144,7 +124,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/ledgps.png"
+        "imagen_url": "ledgps.png"
     },
     {
         "id_baliza": 10,
@@ -165,7 +145,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/elite6modelos.png"
+        "imagen_url": "elite6modelos.png"
     },
     {
         "id_baliza": 11,
@@ -186,7 +166,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/rsr.png"
+        "imagen_url": "rsr.png"
     },
     {
         "id_baliza": 12,
@@ -207,7 +187,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/iwottolight.png"
+        "imagen_url": "iwottolight.png"
     },
     {
         "id_baliza": 13,
@@ -228,7 +208,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/faselight.png"
+        "imagen_url": "faselight.png"
     },
     {
         "id_baliza": 14,
@@ -249,7 +229,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/beaconlightiot.png"
+        "imagen_url": "beaconlightiot.png"
     },
     {
         "id_baliza": 15,
@@ -270,7 +250,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/beaconlightiotch009.png"
+        "imagen_url": "beaconlightiotch009.png"
     },
     {
         "id_baliza": 16,
@@ -291,7 +271,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/sosflashv16.png"
+        "imagen_url": "sosflashv16.png"
     },
     {
         "id_baliza": 17,
@@ -312,7 +292,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/sosflashv16evo.png"
+        "imagen_url": "sosflashv16evo.png"
     },
     {
         "id_baliza": 18,
@@ -333,7 +313,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/v16iot.png"
+        "imagen_url": "v16iot.png"
     },
     {
         "id_baliza": 19,
@@ -354,7 +334,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/pmkv16iot.png"
+        "imagen_url": "pmkv16iot.png"
     },
     {
         "id_baliza": 20,
@@ -375,7 +355,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/pmkv16premium.png"
+        "imagen_url": "pmkv16premium.png"
     },
     {
         "id_baliza": 21,
@@ -396,7 +376,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/carguard.png"
+        "imagen_url": "carguard.png"
     },
     {
         "id_baliza": 22,
@@ -417,7 +397,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/claim.png"
+        "imagen_url": "claim.png"
     },
     {
         "id_baliza": 23,
@@ -438,7 +418,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/osram.png"
+        "imagen_url": "osram.png"
     },
     {
         "id_baliza": 24,
@@ -459,7 +439,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/jbmbaliza.png"
+        "imagen_url": "jbmbaliza.png"
     },
     {
         "id_baliza": 25,
@@ -480,7 +460,7 @@
         "id_funda_termica": null,
         "desconectable": 1,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/zte.png"
+        "imagen_url": "zte.png"
     },
     {
         "id_baliza": 26,
@@ -501,7 +481,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/ledone.png"
+        "imagen_url": "ledone.png"
     },
     {
         "id_baliza": 27,
@@ -522,7 +502,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/sosroad.png"
+        "imagen_url": "sosroad.png"
     },
     {
         "id_baliza": 28,
@@ -543,7 +523,7 @@
         "id_funda_termica": null,
         "desconectable": 1,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/sostraffic.png"
+        "imagen_url": "sostraffic.png"
     },
     {
         "id_baliza": 29,
@@ -564,7 +544,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/hella.png"
+        "imagen_url": "hella.png"
     },
     {
         "id_baliza": 30,
@@ -585,7 +565,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/helpflashiotnormal.png"
+        "imagen_url": "helpflashiotnormal.png"
     },
     {
         "id_baliza": 31,
@@ -606,7 +586,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/gsk.png"
+        "imagen_url": "gsk.png"
     },
     {
         "id_baliza": 32,
@@ -627,7 +607,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/soos.png"
+        "imagen_url": "soos.png"
     },
     {
         "id_baliza": 33,
@@ -648,7 +628,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/emerglight.png"
+        "imagen_url": "emerglight.png"
     },
     {
         "id_baliza": 34,
@@ -669,7 +649,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/daewoo.png"
+        "imagen_url": "daewoo.png"
     },
     {
         "id_baliza": 35,
@@ -690,7 +670,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/raykong.png"
+        "imagen_url": "raykong.png"
     },
     {
         "id_baliza": 36,
@@ -711,7 +691,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/extrastar.png"
+        "imagen_url": "extrastar.png"
     },
     {
         "id_baliza": 37,
@@ -732,7 +712,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/ital.png"
+        "imagen_url": "ital.png"
     },
     {
         "id_baliza": 38,
@@ -753,7 +733,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/neoway.png"
+        "imagen_url": "neoway.png"
     },
     {
         "id_baliza": 39,
@@ -774,7 +754,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "https:\/\/balizas.pro\/comparador\/images\/motorclub.png"
+        "imagen_url": "motorclub.png"
     },
     {
         "id_baliza": 122,
@@ -795,7 +775,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "\/comparador\/images\/helpflashiot4vconfunda.png"
+        "imagen_url": "helpflashiot4vconfunda.png"
     },
     {
         "id_baliza": 123,
@@ -816,7 +796,7 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "\/comparador\/images\/flashledconfunda.png"
+        "imagen_url": "flashledconfunda.png"
     },
     {
         "id_baliza": 124,
@@ -837,6 +817,6 @@
         "id_funda_termica": null,
         "desconectable": 0,
         "imagen": "",
-        "imagen_url": "\/comparador\/images\/cuantocuestajpg.jpg"
+        "imagen_url": "cuantocuestajpg.jpg"
     }
 ]
