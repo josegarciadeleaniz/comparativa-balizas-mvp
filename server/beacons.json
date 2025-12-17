@@ -797,26 +797,5 @@
         "desconectable": 0,
         "imagen": "",
         "imagen_url": "flashledconfunda.png"
-    },
-    {
-        "id_baliza": 124,
-        "marca_baliza": "PEPE",
-        "modelo": "BALIZA PRUEBA",
-        "Fabricante": "",
-        "Origen": "ESPAÑA",
-        "Actuación_realizada_en_España": "Distribucion",
-        "homologacion_dgt": "",
-        "operador_movil": "Orange",
-        "app": "No",
-        "precio_venta": 34,
-        "alimentacion": "9V",
-        "numero_pilas": 1,
-        "marca_pilas": "Duracell",
-        "tipo_pila": "9V",
-        "funda_termica": "No",
-        "id_funda_termica": null,
-        "desconectable": 0,
-        "imagen": "",
-        "imagen_url": "cuantocuestajpg.jpg"
     }
 ]
