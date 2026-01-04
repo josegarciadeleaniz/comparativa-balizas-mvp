@@ -1186,10 +1186,14 @@ const battery = {
 };
 
 
-    const provinceData = provincias[province];
-    if (!provinceData) {
-      return res.status(400).json({ error: 'Provincia no válida' });
-    }
+    const provinceData = provincias.find(
+  p => p.provincia === province
+);
+
+if (!provinceData) {
+  return res.status(400).json({ error: 'Provincia no válida' });
+}
+
 
     const beacon = beacons.find(b => b.id === beacon_id);
     if (!beacon) {
