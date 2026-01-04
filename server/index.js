@@ -1200,10 +1200,16 @@ if (!provinceData) {
 
 console.log('DEBUG beacons disponibles:', beacons.map(b => b.id));
 
-const beacon = beacons.find(b => b.id === beacon_id);
+const beacon = beacons.find(
+  b => String(b.id_baliza) === String(beacon_id) ||
+       b.modelo === beacon_id ||
+       b.nombre === beacon_id
+);
+
 if (!beacon) {
   return res.status(400).json({ error: 'Baliza no válida' });
 }
+
 
 
     // -----------------------------
