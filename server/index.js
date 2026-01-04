@@ -1198,10 +1198,13 @@ if (!provinceData) {
 }
 
 
-    const beacon = beacons.find(b => b.id === beacon_id);
-    if (!beacon) {
-      return res.status(400).json({ error: 'Baliza no válida' });
-    }
+console.log('DEBUG beacons disponibles:', beacons.map(b => b.id));
+
+const beacon = beacons.find(b => b.id === beacon_id);
+if (!beacon) {
+  return res.status(400).json({ error: 'Baliza no válida' });
+}
+
 
     // -----------------------------
     // 2. VIDA ÚTIL REAL DE LA PILA
