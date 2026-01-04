@@ -1185,8 +1185,11 @@ const battery = {
   leak_risk: leakObj.tasa_anual
 };
 
+console.log('DEBUG provincias disponibles:',
+  provincias.map(p => p.provincia)
+);
 
-    const provinceData = provincias.find(
+const provinceData = provincias.find(
   p => p.provincia === province
 );
 
