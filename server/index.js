@@ -1236,3 +1236,117 @@ app.get('/api/whoami', (req,res)=>{
   if (!payload) return res.status(401).json({ok:false});
   res.json({ok:true, email: payload.email});
 });
+// ======================================================
+// API TCO — CÁLCULO ÚNICO Y CENTRALIZADO
+// ======================================================
+app.post('/api/tco', express.json(), (req, res) => {
+  try {
+    const {
+      battery_type,
+      battery_brand,
+      disconnectable,
+      thermal_case,
+      province,
+      car_age,
+      beacon_id
+    } = req.body;
+
+    // -----------------------------
+    // 1. DATOS BASE
+    // -----------------------------
+    const battery = batteryData[battery_type]?.[battery_brand];
+    if (!battery) {
+      return res.status(400).json({ error: 'Tipo o marca de pila no válida' });
+    }
+
+    const provinceData = provincias[province];
+    if (!provinceData) {
+      return res.status(400).json({ error: 'Provincia no válida' });
+    }
+
+    const beacon = beacons.find(b => b.id === beacon_id);
+    if (!beacon) {
+      return res.status(400).json({ error: 'Baliza no válida' });
+    }
+
+    // -----------------------------
+    // 2. VIDA ÚTIL REAL DE LA PILA
+    // -----------------------------
+    let batteryLife = battery.uso; // años base
+
+    if (disconnectable === true) {
+      batteryLife *= 1.6;
+    }
+
+    if (thermal_case === true) {
+      batteryLife *= 1.4;
+    }
+
+    // -----------------------------
+    // 3. FACTOR TEMPERATURA (Arrhenius simplificado)
+    // -----------------------------
+    const hotDays = provinceData.hot_days || 0;
+    const tempFactor = Math.min(1, hotDays / 365);
+
+    // -----------------------------
+    // 4. COSTE PILAS A 12 AÑOS
+    // -----------------------------
+    const batteryReplacements = Math.ceil(12 / batteryLife);
+    const batteryCost12y = batteryReplacements * battery.price;
+
+    // -----------------------------
+    // 5. RIESGO DE FUGA / SULFATACIÓN
+    // -----------------------------
+    const leakRisk = battery.leak_risk * tempFactor;
+    const leakCost = beacon.price * leakRisk;
+
+    // -----------------------------
+    // 6. MULTAS (modelo lineal por antigüedad)
+    // -----------------------------
+    const maxFineProb = 0.258;
+    const minFineProb = 0.015;
+    const fineProb = Math.min(
+      minFineProb + ((maxFineProb - minFineProb) * (car_age / 15)),
+      maxFineProb
+    );
+
+    const finesCost = fineProb * 200 * 0.32;
+
+    // -----------------------------
+    // 7. TOTALES
+    // -----------------------------
+    const maintenanceTotal =
+      batteryCost12y +
+      leakCost +
+      finesCost;
+
+    const tcoTotal =
+      beacon.price +
+      maintenanceTotal;
+
+    const annualAvg = maintenanceTotal / 12;
+
+    // -----------------------------
+    // 8. RESPUESTA
+    // -----------------------------
+    res.json({
+      beacon: beacon.name,
+      purchase_price: beacon.price,
+      battery_cost_12y: Number(batteryCost12y.toFixed(2)),
+      leak_cost: Number(leakCost.toFixed(2)),
+      fines_cost: Number(finesCost.toFixed(2)),
+      maintenance_total: Number(maintenanceTotal.toFixed(2)),
+      tco_total: Number(tcoTotal.toFixed(2)),
+      annual_avg: Number(annualAvg.toFixed(2)),
+      debug: {
+        battery_life_years: Number(batteryLife.toFixed(2)),
+        temp_factor: Number(tempFactor.toFixed(3)),
+        replacements: batteryReplacements
+      }
+    });
+
+  } catch (e) {
+    console.error('❌ Error TCO:', e);
+    res.status(500).json({ error: 'Error interno TCO' });
+  }
+});
