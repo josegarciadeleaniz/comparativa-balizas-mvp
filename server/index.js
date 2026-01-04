@@ -1167,10 +1167,20 @@ app.post('/api/tco', express.json(), (req, res) => {
     // -----------------------------
     // 1. DATOS BASE
     // -----------------------------
-    const battery = batteryData[battery_type]?.[battery_brand];
-    if (!battery) {
-      return res.status(400).json({ error: 'Tipo o marca de pila no válida' });
-    }
+    const priceObj = batteryData.precio_por_pila?.[battery_type]?.[battery_brand];
+const lifeObj  = batteryData.vida_base?.[battery_type]?.[battery_brand];
+const leakObj  = batteryData.factor_sulfatacion?.[battery_type]?.[battery_brand];
+
+if (!priceObj || !lifeObj || !leakObj) {
+  return res.status(400).json({ error: 'Tipo o marca de pila no válida' });
+}
+
+const battery = {
+  price: priceObj.precio,
+  uso: lifeObj.uso,
+  leak_risk: leakObj.tasa_anual
+};
+
 
     const provinceData = provincias[province];
     if (!provinceData) {
