@@ -1167,10 +1167,14 @@ app.post('/api/tco', express.json(), (req, res) => {
     // -----------------------------
     // 1. DATOS BASE
     // -----------------------------
-    const priceObj = batteryData.precio_por_pila?.[battery_type]?.[battery_brand];
+const priceObj = batteryData.precio_por_pila?.[battery_type]?.[battery_brand];
 const lifeObj  = batteryData.vida_base?.[battery_type]?.[battery_brand];
 const leakObj  = batteryData.factor_sulfatacion?.[battery_type]?.[battery_brand];
 
+console.log('DEBUG battery_type:', battery_type);
+console.log('DEBUG battery_brand:', battery_brand);
+console.log('DEBUG claves 9V disponibles:', Object.keys(batteryData.precio_por_pila?.[battery_type] || {}));
+	  
 if (!priceObj || !lifeObj || !leakObj) {
   return res.status(400).json({ error: 'Tipo o marca de pila no válida' });
 }
