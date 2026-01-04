@@ -1149,93 +1149,6 @@ app.use(express.static(path.join(__dirname, '../client')));
 app.use('/images', express.static(path.join(__dirname, '../client/images')));
 app.use('/fonts',  express.static(path.join(__dirname, '../client/fonts')));
 
-// --- 404 ---
-app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
-
-// --- Manejador de errores (al final) ---
-app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({ error: "JSON malformado", message: "Verifica el formato" });
-  }
-  console.error('Error no controlado:', err);
-  res.status(500).json({ error: 'Error interno' });
-});
-
-// --- Verificar carga JSON (igual que antes) ---
-try {
-  if (!batteryData || !provincias || !beacons || !salesPoints) {
-    console.error("⚠️ Error cargando JSON (continuamos, pero API puede dar datos incompletos)");
-  } else {
-    console.log('Datos cargados correctamente');
-  }
-} catch (e) {
-  console.error('⚠️ Error crítico cargando JSON:', e);
-  // NO hacemos process.exit() → así no rompe CORS ni la API
-}
-// --- LISTEN: usar PORT de Render + 0.0.0.0 ---
-const PORT = process.env.PORT || 10000; 
-app.listen(PORT, () => console.log(`✅ Servidor escuchando en puerto ${PORT}`));
-
-// ============================================================================
-// ===== PRE-REGISTRO (en Render) =====
-const crypto = require('crypto');
-const pending = new Map(); // token -> { email, exp }
-
-function signToken(payload, secret){
-  // token simple firmado (sin librerías) con HMAC
-  const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  const sig  = crypto.createHmac('sha256', secret).update(data).digest('base64url');
-  return data+'.'+sig;
-}
-function verifyToken(tok, secret){
-  const [data,sig] = tok.split('.');
-  const good = crypto.createHmac('sha256', secret).update(data).digest('base64url');
-  if (good!==sig) return null;
-  try { return JSON.parse(Buffer.from(data,'base64url').toString('utf8')); }
-  catch{return null;}
-}
-
-app.post('/api/pre-register', async (req,res)=>{
-  try{
-    const { email } = req.body || {};
-    if (!email || !/.+@.+\..+/.test(email)) return res.status(400).json({ok:false,error:'email_invalido'});
-    const token = crypto.randomBytes(20).toString('hex');
-    const exp   = Date.now() + 1000*60*30; // 30 minutos
-    pending.set(token, { email, exp });
-
-    const base = process.env.PUBLIC_BASE || 'https://comparativabalizas.es';
-    const link = `${base}/comparativa-balizas-mvp/client/verify.html?token=${token}`;
-    const transporter = getTransporter();
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM || 'no-reply@comparativabalizas.es',
-      to: email,
-      subject: 'Confirma tu acceso a ComparativaBalizas',
-      html: `<p>Hola, confirma tu acceso haciendo clic:</p>
-             <p><a href="${link}">${link}</a></p>
-             <p>Caduca en 30 minutos.</p>`
-    });
-    res.json({ok:true});
-  }catch(e){
-    console.error('pre-register error',e);
-    res.status(500).json({ok:false,error:'server'});
-  }
-});
-
-app.get('/api/verify', (req,res)=>{
-  const { token } = req.query;
-  const rec = pending.get(token);
-  if (!rec || rec.exp < Date.now()) return res.status(400).json({ok:false,error:'token_invalido'});
-  pending.delete(token);
-  const jwt = signToken({ email: rec.email, iat: Date.now() }, process.env.JWT_SECRET || 'devsecret');
-  res.json({ok:true, token: jwt});
-});
-
-app.get('/api/whoami', (req,res)=>{
-  const tok = req.headers.authorization?.replace(/^Bearer\s+/,'') || '';
-  const payload = verifyToken(tok, process.env.JWT_SECRET || 'devsecret');
-  if (!payload) return res.status(401).json({ok:false});
-  res.json({ok:true, email: payload.email});
-});
 // ======================================================
 // API TCO — CÁLCULO ÚNICO Y CENTRALIZADO
 // ======================================================
@@ -1349,4 +1262,93 @@ app.post('/api/tco', express.json(), (req, res) => {
     console.error('❌ Error TCO:', e);
     res.status(500).json({ error: 'Error interno TCO' });
   }
+});
+
+
+// --- 404 ---
+app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
+
+// --- Manejador de errores (al final) ---
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: "JSON malformado", message: "Verifica el formato" });
+  }
+  console.error('Error no controlado:', err);
+  res.status(500).json({ error: 'Error interno' });
+});
+
+// --- Verificar carga JSON (igual que antes) ---
+try {
+  if (!batteryData || !provincias || !beacons || !salesPoints) {
+    console.error("⚠️ Error cargando JSON (continuamos, pero API puede dar datos incompletos)");
+  } else {
+    console.log('Datos cargados correctamente');
+  }
+} catch (e) {
+  console.error('⚠️ Error crítico cargando JSON:', e);
+  // NO hacemos process.exit() → así no rompe CORS ni la API
+}
+// --- LISTEN: usar PORT de Render + 0.0.0.0 ---
+const PORT = process.env.PORT || 10000; 
+app.listen(PORT, () => console.log(`✅ Servidor escuchando en puerto ${PORT}`));
+
+// ============================================================================
+// ===== PRE-REGISTRO (en Render) =====
+const crypto = require('crypto');
+const pending = new Map(); // token -> { email, exp }
+
+function signToken(payload, secret){
+  // token simple firmado (sin librerías) con HMAC
+  const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const sig  = crypto.createHmac('sha256', secret).update(data).digest('base64url');
+  return data+'.'+sig;
+}
+function verifyToken(tok, secret){
+  const [data,sig] = tok.split('.');
+  const good = crypto.createHmac('sha256', secret).update(data).digest('base64url');
+  if (good!==sig) return null;
+  try { return JSON.parse(Buffer.from(data,'base64url').toString('utf8')); }
+  catch{return null;}
+}
+
+app.post('/api/pre-register', async (req,res)=>{
+  try{
+    const { email } = req.body || {};
+    if (!email || !/.+@.+\..+/.test(email)) return res.status(400).json({ok:false,error:'email_invalido'});
+    const token = crypto.randomBytes(20).toString('hex');
+    const exp   = Date.now() + 1000*60*30; // 30 minutos
+    pending.set(token, { email, exp });
+
+    const base = process.env.PUBLIC_BASE || 'https://comparativabalizas.es';
+    const link = `${base}/comparativa-balizas-mvp/client/verify.html?token=${token}`;
+    const transporter = getTransporter();
+    await transporter.sendMail({
+      from: process.env.MAIL_FROM || 'no-reply@comparativabalizas.es',
+      to: email,
+      subject: 'Confirma tu acceso a ComparativaBalizas',
+      html: `<p>Hola, confirma tu acceso haciendo clic:</p>
+             <p><a href="${link}">${link}</a></p>
+             <p>Caduca en 30 minutos.</p>`
+    });
+    res.json({ok:true});
+  }catch(e){
+    console.error('pre-register error',e);
+    res.status(500).json({ok:false,error:'server'});
+  }
+});
+
+app.get('/api/verify', (req,res)=>{
+  const { token } = req.query;
+  const rec = pending.get(token);
+  if (!rec || rec.exp < Date.now()) return res.status(400).json({ok:false,error:'token_invalido'});
+  pending.delete(token);
+  const jwt = signToken({ email: rec.email, iat: Date.now() }, process.env.JWT_SECRET || 'devsecret');
+  res.json({ok:true, token: jwt});
+});
+
+app.get('/api/whoami', (req,res)=>{
+  const tok = req.headers.authorization?.replace(/^Bearer\s+/,'') || '';
+  const payload = verifyToken(tok, process.env.JWT_SECRET || 'devsecret');
+  if (!payload) return res.status(401).json({ok:false});
+  res.json({ok:true, email: payload.email});
 });
