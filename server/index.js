@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
+const { findBeaconForShop } = require('./adapters/shopBeaconAdapter');
 const { resolveBeaconFromShop } = require('./adapters/shopBeaconAdapter');
 
 const batteryData  = require("./battery_types.json");
@@ -1229,11 +1230,19 @@ app.post('/api/tco', express.json(), (req, res) => {
     // -----------------------------
     // 3. BALIZA (beacons.json)
     // -----------------------------
-    const beacon = beacons.find(b => Number(b.id) === Number(beacon_id));
-    if (!beacon) {
-      return res.status(400).json({ error: 'Baliza no válida' });
-    }
+const beacon = findBeaconForShop(beacons, shop.beacon_brand);
 
+if (!beacon) {
+  console.error('❌ No se pudo mapear baliza de tienda:', {
+    beacon_brand: shop.beacon_brand,
+    disponibles: beacons.map(b => b.name)
+  });
+
+  return res.status(400).json({
+    error: 'Baliza asociada no válida',
+    beacon_brand: shop.beacon_brand
+  });
+}
     // -----------------------------
     // 4. VIDA ÚTIL REAL DE LA PILA
     // -----------------------------
