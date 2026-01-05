@@ -4,7 +4,10 @@ const path = require("path");
 
 const batteryData  = require("./battery_types.json");
 const provincias   = require("./provincias.json");
-const beacons      = require("./beacons.json");
+const rawBeacons = require('./beacons.json');
+const { adaptBeacons } = require('./adapters/beaconsAdapter');
+const beacons = adaptBeacons(rawBeacons);
+
 const salesPoints  = require("./sales_points.json");
 
 // Dejamos PDFDocument aunque no se usa, para no “cambiar contenido”
