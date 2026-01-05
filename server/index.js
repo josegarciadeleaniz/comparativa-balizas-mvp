@@ -1336,41 +1336,23 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
     }
 
 // -----------------------------
-// 2. RESOLVER BALIZA (VÍA ADAPTER)
+// 2. RESOLVER BALIZA (CORRECTO)
 // -----------------------------
-console.log('DEBUG [tco-shop] shop.beacon_brand =', shop.beacon_brand);
-
-const resolvedBeacon = shopBeaconAdapter.resolve(shop.beacon_brand);
-
-console.log(
-  'DEBUG [tco-shop] resolvedBeacon =',
-  resolvedBeacon
+const beacon = shopBeaconAdapter.findBeaconForShop(
+  shop.beacon_brand,
+  beacons
 );
 
-if (!resolvedBeacon || !resolvedBeacon.beacon_id) {
-  console.error('❌ No se pudo resolver beacon para:', shop.beacon_brand);
+console.log('DEBUG [tco-shop] shop.beacon_brand =', shop.beacon_brand);
+console.log('DEBUG [tco-shop] beacon resuelto =', beacon);
+
+if (!beacon) {
   return res.status(400).json({
     error: 'Baliza asociada no válida',
     debug: {
-      beacon_brand_shop: shop.beacon_brand
+      beacon_brand_shop: shop.beacon_brand,
+      available_beacons: beacons.map(b => b.name)
     }
-  });
-}
-
-const beacon = beacons.find(
-  b => String(b.id) === String(resolvedBeacon.beacon_id)
-);
-
-console.log(
-  'DEBUG [tco-shop] beacon catálogo =',
-  beacon
-);
-
-if (!beacon) {
-  console.error('❌ Beacon ID no encontrado en catálogo:', resolvedBeacon);
-  return res.status(400).json({
-    error: 'Baliza asociada no válida (catálogo)',
-    debug: resolvedBeacon
   });
 }
 
