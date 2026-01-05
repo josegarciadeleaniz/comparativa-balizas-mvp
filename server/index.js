@@ -3,6 +3,9 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
+const shopBeaconAdapter = require('./adapters/shopBeaconAdapter');
+console.log('✅ shopBeaconAdapter cargado');
+
 const { findBeaconForShop } = require('./adapters/shopBeaconAdapter');
 console.log('✅ shopBeaconAdapter cargado');
 const { resolveBeaconFromShop } = require('./adapters/shopBeaconAdapter');
