@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
+const { resolveBeaconFromShop } = require('./adapters/shopBeaconAdapter');
+
 const batteryData  = require("./battery_types.json");
 const provincias   = require("./provincias.json");
 const rawBeacons = require('./beacons.json');
@@ -1374,13 +1376,8 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
 
     // 4) Resolver baliza real desde beacons (mantenemos tu enfoque actual: match por nombre/modelo)
     //    Si en tu adapter de beacons ya tienes id/modelo/marca normalizados, mejor, pero esto vale YA.
-    const beacon = beacons.find(b => {
-      const n = String(b.name || '').toLowerCase();
-      const m = String(b.modelo || '').toLowerCase();
-      const wanted = String(row.beacon_brand || '').toLowerCase();
-      return n.includes(wanted) || m.includes(wanted) || wanted.includes(n);
-    });
-
+    const beacon = resolveBeaconFromShop(beacons, row.beacon_brand);
+	  
     if (!beacon) {
       return res.status(400).json({ error: 'Baliza asociada no encontrada' });
     }
