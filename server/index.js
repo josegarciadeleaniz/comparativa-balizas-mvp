@@ -1178,7 +1178,7 @@ app.use('/images', express.static(path.join(__dirname, '../client/images')));
 app.use('/fonts',  express.static(path.join(__dirname, '../client/fonts')));
 
 // ======================================================
-// API TCO — CÁLCULO ÚNICO Y CENTRALIZADO
+// API TCO — CÁLCULO ÚNICO Y CENTRALIZADO (VERSIÓN FINAL)
 // ======================================================
 app.post('/api/tco', express.json(), (req, res) => {
   try {
@@ -1193,116 +1193,94 @@ app.post('/api/tco', express.json(), (req, res) => {
     } = req.body;
 
     // -----------------------------
-    // 1. DATOS BASE
+    // 1. BATERÍA (DESDE battery_types.json)
     // -----------------------------
-const priceObj = batteryData.precio_por_pila?.[battery_type]?.[battery_brand];
-const lifeObj  = batteryData.vida_base?.[battery_type]?.[battery_brand];
-const leakObj  = batteryData.factor_sulfatacion?.[battery_type]?.[battery_brand];
+    const priceObj = batteryData.precio_por_pila?.[battery_type]?.[battery_brand];
+    const lifeObj  = batteryData.vida_base?.[battery_type]?.[battery_brand];
+    const leakObj  = batteryData.factor_sulfatacion?.[battery_type]?.[battery_brand];
 
-console.log('DEBUG battery_type:', battery_type);
-console.log('DEBUG battery_brand:', battery_brand);
-console.log('DEBUG claves 9V disponibles:', Object.keys(batteryData.precio_por_pila?.[battery_type] || {}));
-	  
-if (!priceObj || !lifeObj || !leakObj) {
-  return res.status(400).json({ error: 'Tipo o marca de pila no válida' });
-}
-
-const battery = {
-  price: priceObj.precio,
-  uso: lifeObj.uso,
-  leak_risk: leakObj.tasa_anual
-};
-
-console.log('DEBUG provincias disponibles:',
-  provincias.map(p => p.provincia)
-);
-
-const provinceData = provincias.find(
-  p => p.provincia === province
-);
-
-if (!provinceData) {
-  return res.status(400).json({ error: 'Provincia no válida' });
-}
-
-console.log('DEBUG beacons disponibles:', beacons.map(b => b.id));
-console.log('DEBUG beacon sample:', beacons[0]);
-console.log('DEBUG beacon type:', typeof beacons[0]);
-console.log('DEBUG beacon_id recibido:', beacon_id);
-console.log('DEBUG beacon_id typeof:', typeof beacon_id);
-
-
-const beacon = beacons.find(b => Number(b.id) === Number(beacon_id));
-
-if (!beacon) {
-  return res.status(400).json({ error: 'Baliza no válida' });
-}
-
-
-
-    // -----------------------------
-    // 2. VIDA ÚTIL REAL DE LA PILA
-    // -----------------------------
-    let batteryLife = battery.uso; // años base
-
-    if (disconnectable === true) {
-      batteryLife *= 1.6;
+    if (!priceObj || !lifeObj || !leakObj) {
+      return res.status(400).json({
+        error: 'Tipo o marca de pila no válida',
+        debug: {
+          battery_type,
+          battery_brand,
+          available_brands: Object.keys(
+            batteryData.precio_por_pila?.[battery_type] || {}
+          )
+        }
+      });
     }
 
-    if (thermal_case === true) {
-      batteryLife *= 1.4;
+    const battery = {
+      price: priceObj.precio,
+      uso: lifeObj.uso,
+      leak_risk: leakObj.tasa_anual
+    };
+
+    // -----------------------------
+    // 2. PROVINCIA (provincias.json)
+    // -----------------------------
+    const provinceData = provincias.find(p => p.provincia === province);
+    if (!provinceData) {
+      return res.status(400).json({ error: 'Provincia no válida' });
     }
 
     // -----------------------------
-    // 3. FACTOR TEMPERATURA (Arrhenius simplificado)
+    // 3. BALIZA (beacons.json)
     // -----------------------------
-    const hotDays = provinceData.hot_days || 0;
+    const beacon = beacons.find(b => Number(b.id) === Number(beacon_id));
+    if (!beacon) {
+      return res.status(400).json({ error: 'Baliza no válida' });
+    }
+
+    // -----------------------------
+    // 4. VIDA ÚTIL REAL DE LA PILA
+    // -----------------------------
+    let batteryLife = battery.uso;
+    if (disconnectable === true) batteryLife *= 1.6;
+    if (thermal_case === true)   batteryLife *= 1.4;
+
+    // -----------------------------
+    // 5. FACTOR TEMPERATURA
+    // -----------------------------
+    const hotDays = provinceData.dias_anuales_30grados || 0;
     const tempFactor = Math.min(1, hotDays / 365);
 
     // -----------------------------
-    // 4. COSTE PILAS A 12 AÑOS
+    // 6. COSTE PILAS (12 AÑOS)
     // -----------------------------
-    const batteryReplacements = Math.ceil(12 / batteryLife);
-    const batteryCost12y = batteryReplacements * battery.price;
+    const replacements = Math.ceil(12 / batteryLife);
+    const batteryCost12y = replacements * battery.price;
 
     // -----------------------------
-    // 5. RIESGO DE FUGA / SULFATACIÓN
+    // 7. RIESGO DE FUGA
     // -----------------------------
     const leakRisk = battery.leak_risk * tempFactor;
     const leakCost = beacon.price * leakRisk;
 
     // -----------------------------
-    // 6. MULTAS (modelo lineal por antigüedad)
+    // 8. MULTAS
     // -----------------------------
-    const maxFineProb = 0.258;
-    const minFineProb = 0.015;
     const fineProb = Math.min(
-      minFineProb + ((maxFineProb - minFineProb) * (car_age / 15)),
-      maxFineProb
+      0.015 + ((0.258 - 0.015) * (car_age / 15)),
+      0.258
     );
-
     const finesCost = fineProb * 200 * 0.32;
 
     // -----------------------------
-    // 7. TOTALES
+    // 9. TOTALES
     // -----------------------------
-    const maintenanceTotal =
-      batteryCost12y +
-      leakCost +
-      finesCost;
-
-    const tcoTotal =
-      beacon.price +
-      maintenanceTotal;
-
+    const maintenanceTotal = batteryCost12y + leakCost + finesCost;
+    const tcoTotal = beacon.price + maintenanceTotal;
     const annualAvg = maintenanceTotal / 12;
 
     // -----------------------------
-    // 8. RESPUESTA
+    // 10. RESPUESTA
     // -----------------------------
     res.json({
       beacon: beacon.name,
-      purchase_price: beacon.price,
+      purchase_price: Number(beacon.price.toFixed(2)),
       battery_cost_12y: Number(batteryCost12y.toFixed(2)),
       leak_cost: Number(leakCost.toFixed(2)),
       fines_cost: Number(finesCost.toFixed(2)),
@@ -1312,7 +1290,7 @@ if (!beacon) {
       debug: {
         battery_life_years: Number(batteryLife.toFixed(2)),
         temp_factor: Number(tempFactor.toFixed(3)),
-        replacements: batteryReplacements
+        replacements
       }
     });
 
@@ -1321,6 +1299,7 @@ if (!beacon) {
     res.status(500).json({ error: 'Error interno TCO' });
   }
 });
+
 
 // ======================================================
 // API TCO — TIENDA (sin tocar sales_points.json)
