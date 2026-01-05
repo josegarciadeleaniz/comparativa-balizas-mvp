@@ -1344,11 +1344,10 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
     const provinceData = provincias.find(
   p => p.provincia === province
 );
-
-    if (!provinceData) {
-      return res.status(400).json({ error: 'Provincia no válida' });
-    }
-
+if (!provinceData) {
+  console.log('DEBUG provincias disponibles:', provincias.map(p => p.provincia));
+  return res.status(400).json({ error: 'Provincia no válida' });
+}
     // -----------------------------
     // 4. CÁLCULO MANTENIMIENTO (REUTILIZA MOTOR)
     // -----------------------------
