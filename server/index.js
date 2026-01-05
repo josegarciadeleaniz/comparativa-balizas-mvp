@@ -1004,6 +1004,10 @@ const marca_baliza_eff = (marca_baliza && String(marca_baliza).trim())
 const modelo_eff = (modelo && String(modelo).trim()) 
   || beaconInfo?.modelo || beaconInfo?.model || beaconInfo?.modelo_baliza || 'Desconocido';
 
+const beacon = beacons.find(
+  b => Number(b.id) === Number(id_baliza)
+);
+
 const meta = {
   marca_baliza: String(marca_baliza_eff),
   modelo: String(modelo_eff),
