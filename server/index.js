@@ -1336,15 +1336,15 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
     }
 
 // -----------------------------
-// 2. RESOLVER BALIZA (CORRECTO)
+// 2. RESOLVER BALIZA (USANDO shopBeaconAdapter REAL)
 // -----------------------------
-const beacon = shopBeaconAdapter.findBeaconForShop(
-  shop.beacon_brand,
-  beacons
-);
-
 console.log('DEBUG [tco-shop] shop.beacon_brand =', shop.beacon_brand);
-console.log('DEBUG [tco-shop] beacon resuelto =', beacon);
+
+const { findBeaconForShop } = require('./adapters/shopBeaconAdapter');
+
+const beacon = findBeaconForShop(shop.beacon_brand, beacons);
+
+console.log('DEBUG [tco-shop] beacon resuelta =', beacon);
 
 if (!beacon) {
   return res.status(400).json({
@@ -1355,6 +1355,7 @@ if (!beacon) {
     }
   });
 }
+
 
     // -----------------------------
     // 3. PROVINCIA
