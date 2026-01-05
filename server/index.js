@@ -1332,15 +1332,32 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
     }
 
     // -----------------------------
-    // 2. BALIZA ASOCIADA (por marca/modelo)
-    // -----------------------------
-    const beacon = beacons.find(b =>
-      (b.marca_baliza || '').toLowerCase() === (shop.beacon_brand || '').toLowerCase()
-    );
-    if (!beacon) {
-      return res.status(400).json({ error: 'Baliza asociada no válida' });
-    }
+// 2. RESOLVER BALIZA (VÍA ADAPTER, NO sales_points)
+// -----------------------------
+const resolvedBeacon = shopBeaconAdapter.resolve(shop.beacon_brand);
 
+if (!resolvedBeacon) {
+  console.error('❌ No se pudo resolver beacon para:', shop.beacon_brand);
+  return res.status(400).json({
+    error: 'Baliza asociada no válida',
+    debug: {
+      beacon_brand_shop: shop.beacon_brand,
+      available_mappings: shopBeaconAdapter.list()
+    }
+  });
+}
+
+const beacon = beacons.find(
+  b => b.id === resolvedBeacon.beacon_id
+);
+
+if (!beacon) {
+  console.error('❌ Beacon ID no encontrado en catálogo:', resolvedBeacon);
+  return res.status(400).json({
+    error: 'Baliza asociada no válida (catálogo)',
+    debug: resolvedBeacon
+  });
+}
     // -----------------------------
     // 3. PROVINCIA
     // -----------------------------
