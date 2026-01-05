@@ -159,6 +159,22 @@ app.post('/__echo', (req, res) => {
 });
 
 // ===== Utilidades varias =====
+function normalizeBatteryBrand(brand) {
+  if (!brand) return 'Marca Blanca';
+
+  const b = brand.toString().trim().toLowerCase();
+
+  if (b.includes('blanca')) return 'Marca Blanca';
+  if (b.includes('china')) return 'China';
+  if (b.includes('sin')) return 'Sin marca';
+  if (b.includes('varta')) return 'Varta';
+  if (b.includes('duracell')) return 'Duracell';
+  if (b.includes('energizer')) return 'Energizer';
+  if (b.includes('maxell')) return 'Maxell';
+
+  return 'Marca Blanca'; // fallback seguro
+}
+
 function stripAccents(str) {
   return str
     .normalize("NFD")
@@ -1339,7 +1355,9 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
     }
 	// === Inyectar datos técnicos desde la baliza ===
 const battery_type = beacon.battery_type || beacon.tipo_pila || '9V';
-const battery_brand = beacon.battery_brand || beacon.marca_pilas || 'Marca Blanca';
+const battery_brand = normalizeBatteryBrand(
+  beacon.battery_brand || beacon.marca_pilas
+);
 const disconnectable = Boolean(beacon.disconnectable);
 const thermal_case = Boolean(beacon.thermal_case);
 if (!battery_type || !battery_brand) {
