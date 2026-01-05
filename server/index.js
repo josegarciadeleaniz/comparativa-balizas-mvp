@@ -1444,34 +1444,43 @@ if (
   });
 }
 // -----------------------------
-// 5. CÁLCULO MANTENIMIENTO (MISMO MOTOR, JSON REAL)
+// 5. CÁLCULO MANTENIMIENTO (JSON REAL)
 // -----------------------------
 
+// batteryVida ES un número (años)
 let batteryLife = Number(batteryVida);
+
+if (!batteryLife || batteryLife <= 0) {
+  return res.status(400).json({
+    error: 'Vida útil de pila inválida',
+    debug: { batteryVida }
+  });
+}
+
+// Factores correctores
 if (disconnectable) batteryLife *= 1.6;
 if (thermal_case)   batteryLife *= 1.4;
 
+// === TEMPERATURA ===
 const hotDays = provinceData.dias_anuales_30grados || 0;
 const tempFactor = Math.min(1, hotDays / 365);
 
-// Nº de sustituciones en 12 años
+// === PILAS A 12 AÑOS ===
 const replacements = Math.ceil(12 / batteryLife);
-
-// COSTE PILAS
 const batteryCost12y = replacements * Number(batteryPrecio);
 
-// RIESGO DE FUGA
-const leakRisk = Number(batteryLeak) * tempFactor;
+// === FUGAS ===
+const leakRisk = Number(batteryLeak || 0) * tempFactor;
 const leakCost = Number(shop.shop_price) * leakRisk;
 
-// MULTAS
+// === MULTAS ===
 const fineProb = Math.min(
   0.015 + ((0.258 - 0.015) * (car_age / 15)),
   0.258
 );
 const finesCost = fineProb * 200 * 0.32;
 
-// TOTAL
+// === TOTAL ===
 const maintenance12y =
   batteryCost12y +
   leakCost +
@@ -1480,6 +1489,7 @@ const maintenance12y =
 const tcoShop =
   Number(shop.shop_price) +
   maintenance12y;
+
 
     // -----------------------------
     // 6. RESPUESTA
