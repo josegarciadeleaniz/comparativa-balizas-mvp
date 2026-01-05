@@ -1308,6 +1308,7 @@ if (!beacon) {
 // API TCO — TIENDA (PRECIO TIENDA + MANTENIMIENTO BALIZA)
 // ======================================================
 app.post('/api/tco-shop', express.json(), (req, res) => {
+	console.log('DEBUG body recibido:', req.body);
   try {
     const { shop_id, province, car_age } = req.body;
 
