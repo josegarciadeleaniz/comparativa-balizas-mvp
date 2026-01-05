@@ -1,36 +1,25 @@
-function normalize(str = '') {
-  return String(str)
+/**
+ * Adapter TIENDA → BALIZA
+ * Traduce beacon_brand (tienda) a beacon.id (motor TCO)
+ * NO toca JSONs
+ * NO inventa
+ */
+
+function normalize(str) {
+  return String(str || '')
     .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita acentos
-    .replace(/[^a-z0-9]+/g, ' ')                      // limpia símbolos
-    .trim();
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
 }
 
-function resolveBeaconFromShop(beacons, shopBeaconBrand) {
-  const wanted = normalize(shopBeaconBrand);
+function findBeaconForShop(beacons, beacon_brand) {
+  const target = normalize(beacon_brand);
 
-  // 1) match fuerte por inclusión normalizada
-  let match = beacons.find(b =>
-    normalize(b.name).includes(wanted) ||
-    wanted.includes(normalize(b.name))
+  const match = beacons.find(b =>
+    normalize(b.name).includes(target)
   );
 
-  if (match) return match;
-
-  // 2) fallback por marca conocida
-  const knownBrands = [
-    { key: 'help flash', match: 'help flash' },
-    { key: 'sos', match: 'sos' },
-    { key: '3e', match: '3e' },
-    { key: 'car lite', match: 'car lite' }
-  ];
-
-  const brand = knownBrands.find(b => wanted.includes(b.key));
-  if (!brand) return null;
-
-  return beacons.find(b =>
-    normalize(b.name).includes(brand.match)
-  ) || null;
+  return match || null;
 }
 
-module.exports = { resolveBeaconFromShop };
+module.exports = { findBeaconForShop };
