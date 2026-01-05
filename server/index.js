@@ -4,6 +4,7 @@ const cors = require("cors");
 const path = require("path");
 
 const { findBeaconForShop } = require('./adapters/shopBeaconAdapter');
+console.log('✅ shopBeaconAdapter cargado');
 const { resolveBeaconFromShop } = require('./adapters/shopBeaconAdapter');
 
 const batteryData  = require("./battery_types.json");
