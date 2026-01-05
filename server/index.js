@@ -1443,37 +1443,35 @@ if (
     }
   });
 }
-
 // -----------------------------
 // 5. CÁLCULO MANTENIMIENTO (MISMO MOTOR, JSON REAL)
 // -----------------------------
 
-// === VIDA ÚTIL BASE DE LA PILA (AÑOS) ===
-let batteryLife = Number(batteryVida);   // YA ES UN NÚMERO
-
+let batteryLife = Number(batteryVida);
 if (disconnectable) batteryLife *= 1.6;
 if (thermal_case)   batteryLife *= 1.4;
 
-// === FACTOR TEMPERATURA (PROVINCIA) ===
 const hotDays = provinceData.dias_anuales_30grados || 0;
 const tempFactor = Math.min(1, hotDays / 365);
 
-// === COSTE PILAS A 12 AÑOS ===
+// Nº de sustituciones en 12 años
 const replacements = Math.ceil(12 / batteryLife);
+
+// COSTE PILAS
 const batteryCost12y = replacements * Number(batteryPrecio);
 
-// === RIESGO DE FUGA / SULFATACIÓN ===
+// RIESGO DE FUGA
 const leakRisk = Number(batteryLeak) * tempFactor;
 const leakCost = Number(shop.shop_price) * leakRisk;
 
-// === MULTAS (MODELO LINEAL POR EDAD VEHÍCULO) ===
+// MULTAS
 const fineProb = Math.min(
   0.015 + ((0.258 - 0.015) * (car_age / 15)),
   0.258
 );
 const finesCost = fineProb * 200 * 0.32;
 
-// === TOTALES ===
+// TOTAL
 const maintenance12y =
   batteryCost12y +
   leakCost +
@@ -1483,13 +1481,12 @@ const tcoShop =
   Number(shop.shop_price) +
   maintenance12y;
 
-
     // -----------------------------
     // 6. RESPUESTA
     // -----------------------------
     res.json({
       shop: shop.shop_name,
-      beacon: beacon.marca_baliza + ' ' + beacon.modelo,
+      beacon: beacon.name,
       shop_price: Number(shop.shop_price.toFixed(2)),
       maintenance_12y: Number(maintenance12y.toFixed(2)),
       tco_shop: Number(tcoShop.toFixed(2)),
