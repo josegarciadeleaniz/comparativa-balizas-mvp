@@ -1335,15 +1335,10 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
       return res.status(400).json({ error: 'Tienda no válida' });
     }
 
- // -----------------------------
-// 2. RESOLVER BALIZA (VÍA ADAPTER, NO sales_points)
+// -----------------------------
+// 2. RESOLVER BALIZA (VÍA ADAPTER)
 // -----------------------------
 console.log('DEBUG [tco-shop] shop.beacon_brand =', shop.beacon_brand);
-
-console.log(
-  'DEBUG [tco-shop] shopBeaconAdapter.list() =',
-  shopBeaconAdapter.list()
-);
 
 const resolvedBeacon = shopBeaconAdapter.resolve(shop.beacon_brand);
 
@@ -1357,8 +1352,7 @@ if (!resolvedBeacon || !resolvedBeacon.beacon_id) {
   return res.status(400).json({
     error: 'Baliza asociada no válida',
     debug: {
-      beacon_brand_shop: shop.beacon_brand,
-      available_mappings: shopBeaconAdapter.list()
+      beacon_brand_shop: shop.beacon_brand
     }
   });
 }
