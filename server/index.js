@@ -1334,6 +1334,12 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
     // -----------------------------
 // 2. RESOLVER BALIZA (VÍA ADAPTER, NO sales_points)
 // -----------------------------
+console.log('DEBUG [tco-shop] shop.beacon_brand =', shop.beacon_brand);
+console.log(
+  'DEBUG [tco-shop] adapter keys =',
+  shopBeaconAdapter.list()
+);
+
 const resolvedBeacon = shopBeaconAdapter.resolve(shop.beacon_brand);
 
 if (!resolvedBeacon) {
