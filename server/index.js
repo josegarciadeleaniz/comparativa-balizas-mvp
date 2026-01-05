@@ -1200,8 +1200,9 @@ if (!provinceData) {
   return res.status(400).json({ error: 'Provincia no válida' });
 }
 
-
 console.log('DEBUG beacons disponibles:', beacons.map(b => b.id));
+console.log('DEBUG beacon sample:', beacons[0]);
+console.log('DEBUG beacon type:', typeof beacons[0]);
 
 const beacon = beacons.find(b => Number(b.id) === Number(beacon_id));
 
