@@ -1371,42 +1371,66 @@ if (!beacon) {
     const disconnectable = Boolean(beacon.desconectable);
     const thermal_case = false; // tiendas no consideran funda
 
-    const battery = batteryData[battery_type]?.[battery_brand];
-    if (!battery) {
-      return res.status(400).json({
-        error: 'Tipo o marca de pila no válida',
-        debug: {
-          battery_type,
-          battery_brand,
-          available_brands: Object.keys(batteryData[battery_type] || {})
-        }
-      });
+    const batteryVida =
+  batteryData.vida_base?.[battery_type]?.[battery_brand];
+
+const batteryPrecio =
+  batteryData.precio_por_pila?.[battery_type]?.[battery_brand];
+
+const batteryLeak =
+  batteryData.factor_sulfatacion?.[battery_type]?.[battery_brand];
+
+if (!batteryVida || !batteryPrecio || !batteryLeak) {
+  return res.status(400).json({
+    error: 'Tipo o marca de pila no válida',
+    debug: {
+      battery_type,
+      battery_brand,
+      available_brands: Object.keys(
+        batteryData.vida_base?.[battery_type] || {}
+      )
     }
+  });
+}
 
-    // -----------------------------
-    // 5. CÁLCULO MANTENIMIENTO (MISMO MOTOR)
-    // -----------------------------
-    let batteryLife = battery.uso;
-    if (disconnectable) batteryLife *= 1.6;
-    if (thermal_case)   batteryLife *= 1.4;
+// -----------------------------
+// 5. CÁLCULO MANTENIMIENTO (MISMO MOTOR, JSON REAL)
+// -----------------------------
 
-    const hotDays = provinceData.dias_anuales_30grados || 0;
-    const tempFactor = Math.min(1, hotDays / 365);
+// === VIDA ÚTIL BASE DE LA PILA ===
+let batteryLife = batteryVida.uso;   // años base desde battery_types.json
 
-    const replacements = Math.ceil(12 / batteryLife);
-    const batteryCost12y = replacements * battery.price;
+if (disconnectable) batteryLife *= 1.6;
+if (thermal_case)   batteryLife *= 1.4;
 
-    const leakRisk = (battery.leak_risk || 0) * tempFactor;
-    const leakCost = Number(shop.shop_price) * leakRisk;
+// === FACTOR TEMPERATURA (PROVINCIA) ===
+const hotDays = provinceData.dias_anuales_30grados || 0;
+const tempFactor = Math.min(1, hotDays / 365);
 
-    const fineProb = Math.min(
-      0.015 + ((0.258 - 0.015) * (car_age / 15)),
-      0.258
-    );
-    const finesCost = fineProb * 200 * 0.32;
+// === COSTE PILAS A 12 AÑOS ===
+const replacements = Math.ceil(12 / batteryLife);
+const batteryCost12y = replacements * batteryPrecio.precio;
 
-    const maintenance12y = batteryCost12y + leakCost + finesCost;
-    const tcoShop = Number(shop.shop_price) + maintenance12y;
+// === RIESGO DE FUGA / SULFATACIÓN ===
+const leakRisk = (batteryLeak.tasa_anual || 0) * tempFactor;
+const leakCost = Number(shop.shop_price) * leakRisk;
+
+// === MULTAS (MODELO LINEAL POR EDAD VEHÍCULO) ===
+const fineProb = Math.min(
+  0.015 + ((0.258 - 0.015) * (car_age / 15)),
+  0.258
+);
+const finesCost = fineProb * 200 * 0.32;
+
+// === TOTALES ===
+const maintenance12y =
+  batteryCost12y +
+  leakCost +
+  finesCost;
+
+const tcoShop =
+  Number(shop.shop_price) +
+  maintenance12y;
 
     // -----------------------------
     // 6. RESPUESTA
