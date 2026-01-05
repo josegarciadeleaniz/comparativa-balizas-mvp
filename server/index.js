@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
+console.log('🔥 VERSION INDEX.JS:', new Date().toISOString());
+
 console.log('✅ shopBeaconAdapter cargado');
 const { findBeaconForShop } = require('./adapters/shopBeaconAdapter');
 
