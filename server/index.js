@@ -1448,8 +1448,8 @@ if (
 // 5. CÁLCULO MANTENIMIENTO (MISMO MOTOR, JSON REAL)
 // -----------------------------
 
-// === VIDA ÚTIL BASE DE LA PILA ===
-let batteryLife = batteryVida.uso;   // años base desde battery_types.json
+// === VIDA ÚTIL BASE DE LA PILA (AÑOS) ===
+let batteryLife = Number(batteryVida);   // YA ES UN NÚMERO
 
 if (disconnectable) batteryLife *= 1.6;
 if (thermal_case)   batteryLife *= 1.4;
@@ -1460,10 +1460,10 @@ const tempFactor = Math.min(1, hotDays / 365);
 
 // === COSTE PILAS A 12 AÑOS ===
 const replacements = Math.ceil(12 / batteryLife);
-const batteryCost12y = replacements * batteryPrecio.precio;
+const batteryCost12y = replacements * Number(batteryPrecio);
 
 // === RIESGO DE FUGA / SULFATACIÓN ===
-const leakRisk = (batteryLeak.tasa_anual || 0) * tempFactor;
+const leakRisk = Number(batteryLeak) * tempFactor;
 const leakCost = Number(shop.shop_price) * leakRisk;
 
 // === MULTAS (MODELO LINEAL POR EDAD VEHÍCULO) ===
@@ -1482,6 +1482,7 @@ const maintenance12y =
 const tcoShop =
   Number(shop.shop_price) +
   maintenance12y;
+
 
     // -----------------------------
     // 6. RESPUESTA
