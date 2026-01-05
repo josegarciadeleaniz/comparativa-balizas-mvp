@@ -1205,6 +1205,9 @@ if (!provinceData) {
 console.log('DEBUG beacons disponibles:', beacons.map(b => b.id));
 console.log('DEBUG beacon sample:', beacons[0]);
 console.log('DEBUG beacon type:', typeof beacons[0]);
+console.log('DEBUG beacon_id recibido:', beacon_id);
+console.log('DEBUG beacon_id typeof:', typeof beacon_id);
+
 
 const beacon = beacons.find(b => Number(b.id) === Number(beacon_id));
 
