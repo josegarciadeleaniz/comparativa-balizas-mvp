@@ -1300,86 +1300,54 @@ app.post('/api/tco', express.json(), (req, res) => {
   }
 });
 
-
 // ======================================================
-// API TCO — TIENDA (sin tocar sales_points.json)
-// Requiere shop_id + beacon_brand (modelo seleccionado en la tienda)
+// API TCO — TIENDA (PRECIO TIENDA + MANTENIMIENTO BALIZA)
 // ======================================================
 app.post('/api/tco-shop', express.json(), (req, res) => {
-  console.log('DEBUG body recibido:', req.body);
-
   try {
-    const { shop_id, beacon_brand, province, car_age } = req.body;
+    const { shop_id, province, car_age } = req.body;
 
-    // 0) Validación mínima
     if (!shop_id || !province || car_age === undefined) {
       return res.status(400).json({ error: 'Datos incompletos' });
     }
 
-    // 1) Buscar filas de esa tienda (puede haber varias balizas)
-    const shopRows = salesPoints.filter(s => Number(s.shop_id) === Number(shop_id));
-    if (!shopRows.length) {
+    // -----------------------------
+    // 1. TIENDA
+    // -----------------------------
+    const shop = salesPoints.find(
+      s => Number(s.shop_id) === Number(shop_id)
+    );
+    if (!shop) {
       return res.status(400).json({ error: 'Tienda no válida' });
     }
 
-    // 2) Si hay varias filas, necesitamos beacon_brand (lo que el usuario elige en el widget)
-    let row;
-    if (shopRows.length === 1) {
-      row = shopRows[0];
-    } else {
-      if (!beacon_brand) {
-        // devolvemos opciones para que el frontend/tu prueba elija una
-        return res.status(400).json({
-          error: 'Falta seleccionar modelo en tienda (beacon_brand)',
-          available_beacons: shopRows.map(r => r.beacon_brand)
-        });
-      }
-      const wanted = String(beacon_brand).trim().toLowerCase();
-      row = shopRows.find(r => String(r.beacon_brand).trim().toLowerCase() === wanted)
-        || shopRows.find(r => String(r.beacon_brand).trim().toLowerCase().includes(wanted))
-        || shopRows.find(r => wanted.includes(String(r.beacon_brand).trim().toLowerCase()));
-
-      if (!row) {
-        return res.status(400).json({
-          error: 'Modelo no válido para esa tienda',
-          available_beacons: shopRows.map(r => r.beacon_brand)
-        });
-      }
+    // -----------------------------
+    // 2. BALIZA ASOCIADA (por marca/modelo)
+    // -----------------------------
+    const beacon = beacons.find(b =>
+      (b.marca_baliza || '').toLowerCase() === (shop.beacon_brand || '').toLowerCase()
+    );
+    if (!beacon) {
+      return res.status(400).json({ error: 'Baliza asociada no válida' });
     }
 
-    // 3) Resolver provincia (provincias.json es array)
+    // -----------------------------
+    // 3. PROVINCIA
+    // -----------------------------
     const provinceData = provincias.find(p => p.provincia === province);
     if (!provinceData) {
       return res.status(400).json({ error: 'Provincia no válida' });
     }
 
-    // 4) Resolver baliza real desde beacons (mantenemos tu enfoque actual: match por nombre/modelo)
-    //    Si en tu adapter de beacons ya tienes id/modelo/marca normalizados, mejor, pero esto vale YA.
-    const beacon = resolveBeaconFromShop(beacons, row.beacon_brand);
-	  
-    if (!beacon) {
-      return res.status(400).json({ error: 'Baliza asociada no encontrada' });
-    }
+    // -----------------------------
+    // 4. DATOS BATERÍA (desde baliza)
+    // -----------------------------
+    const battery_type = beacon.tipo_pila || beacon.alimentacion || '9V';
+    const battery_brand = beacon.marca_pilas || 'Marca Blanca';
+    const disconnectable = Boolean(beacon.desconectable);
+    const thermal_case = false; // tiendas no consideran funda
 
-    // 5) Precio de compra = precio tienda (NO el de la baliza base)
-    const purchasePrice = Number(row.shop_price);
-
-    // 6) Datos técnicos desde baliza + normalización
-    const battery_type = beacon.battery_type || beacon.tipo_pila || '9V';
-    const rawBrand = beacon.battery_brand || beacon.marca_pilas || 'Marca Blanca';
-    const battery_brand = (typeof normalizeBatteryBrand === 'function')
-      ? normalizeBatteryBrand(rawBrand)
-      : String(rawBrand).trim();
-
-    const disconnectable = Boolean(beacon.disconnectable);
-    const thermal_case = Boolean(beacon.thermal_case);
-
-    // 7) Lookup batería (SIN hardcodear)
-    let battery = batteryData[battery_type]?.[battery_brand];
-    if (!battery) {
-      // fallback seguro
-      battery = batteryData[battery_type]?.['Marca Blanca'] || batteryData[battery_type]?.['Generalista'];
-    }
+    const battery = batteryData[battery_type]?.[battery_brand];
     if (!battery) {
       return res.status(400).json({
         error: 'Tipo o marca de pila no válida',
@@ -1391,46 +1359,40 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
       });
     }
 
-    // 8) VIDA ÚTIL REAL
+    // -----------------------------
+    // 5. CÁLCULO MANTENIMIENTO (MISMO MOTOR)
+    // -----------------------------
     let batteryLife = battery.uso;
     if (disconnectable) batteryLife *= 1.6;
-    if (thermal_case) batteryLife *= 1.4;
+    if (thermal_case)   batteryLife *= 1.4;
 
-    // 9) TEMPERATURA
     const hotDays = provinceData.dias_anuales_30grados || 0;
     const tempFactor = Math.min(1, hotDays / 365);
 
-    // 10) COSTE PILAS 12 AÑOS
     const replacements = Math.ceil(12 / batteryLife);
     const batteryCost12y = replacements * battery.price;
 
-    // 11) FUGAS (sobre precio de compra real)
     const leakRisk = (battery.leak_risk || 0) * tempFactor;
-    const leakCost = purchasePrice * leakRisk;
+    const leakCost = Number(shop.shop_price) * leakRisk;
 
-    // 12) MULTAS
     const fineProb = Math.min(
       0.015 + ((0.258 - 0.015) * (car_age / 15)),
       0.258
     );
     const finesCost = fineProb * 200 * 0.32;
 
-    // 13) TOTALES
     const maintenance12y = batteryCost12y + leakCost + finesCost;
-    const tcoShop = purchasePrice + maintenance12y;
+    const tcoShop = Number(shop.shop_price) + maintenance12y;
 
-    // 14) RESPUESTA
+    // -----------------------------
+    // 6. RESPUESTA
+    // -----------------------------
     res.json({
-      shop: row.shop_name,
-      beacon: beacon.name,
-      beacon_brand: row.beacon_brand,
-      shop_price: Number(purchasePrice.toFixed(2)),
-      battery_cost_12y: Number(batteryCost12y.toFixed(2)),
-      leak_cost: Number(leakCost.toFixed(2)),
-      fines_cost: Number(finesCost.toFixed(2)),
+      shop: shop.shop_name,
+      beacon: beacon.marca_baliza + ' ' + beacon.modelo,
+      shop_price: Number(shop.shop_price.toFixed(2)),
       maintenance_12y: Number(maintenance12y.toFixed(2)),
       tco_shop: Number(tcoShop.toFixed(2)),
-      annual_avg: Number((maintenance12y / 12).toFixed(2)),
       debug: {
         battery_type,
         battery_brand,
@@ -1445,6 +1407,7 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
     res.status(500).json({ error: 'Error interno TCO tienda' });
   }
 });
+
 
 // --- 404 ---
 app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
