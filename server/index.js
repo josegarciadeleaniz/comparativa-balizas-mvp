@@ -1317,6 +1317,7 @@ if (!beacon) {
 // API TCO — TIENDA (PRECIO TIENDA + MANTENIMIENTO BALIZA)
 // ======================================================
 app.post('/api/tco-shop', express.json(), (req, res) => {
+	console.log('DEBUG [tco-shop] body:', req.body);
   try {
     const { shop_id, province, car_age } = req.body;
 
@@ -1334,18 +1335,24 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
       return res.status(400).json({ error: 'Tienda no válida' });
     }
 
-    // -----------------------------
+ // -----------------------------
 // 2. RESOLVER BALIZA (VÍA ADAPTER, NO sales_points)
 // -----------------------------
 console.log('DEBUG [tco-shop] shop.beacon_brand =', shop.beacon_brand);
+
 console.log(
-  'DEBUG [tco-shop] adapter keys =',
+  'DEBUG [tco-shop] shopBeaconAdapter.list() =',
   shopBeaconAdapter.list()
 );
 
 const resolvedBeacon = shopBeaconAdapter.resolve(shop.beacon_brand);
 
-if (!resolvedBeacon) {
+console.log(
+  'DEBUG [tco-shop] resolvedBeacon =',
+  resolvedBeacon
+);
+
+if (!resolvedBeacon || !resolvedBeacon.beacon_id) {
   console.error('❌ No se pudo resolver beacon para:', shop.beacon_brand);
   return res.status(400).json({
     error: 'Baliza asociada no válida',
@@ -1357,7 +1364,12 @@ if (!resolvedBeacon) {
 }
 
 const beacon = beacons.find(
-  b => b.id === resolvedBeacon.beacon_id
+  b => String(b.id) === String(resolvedBeacon.beacon_id)
+);
+
+console.log(
+  'DEBUG [tco-shop] beacon catálogo =',
+  beacon
 );
 
 if (!beacon) {
@@ -1367,6 +1379,7 @@ if (!beacon) {
     debug: resolvedBeacon
   });
 }
+
     // -----------------------------
     // 3. PROVINCIA
     // -----------------------------
