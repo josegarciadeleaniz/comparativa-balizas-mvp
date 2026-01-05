@@ -1321,10 +1321,11 @@ if (!beacon) {
 });
 
 // ======================================================
-// API TCO — TIENDA (PRECIO TIENDA + MANTENIMIENTO BALIZA)
+// API TCO — TIENDA (RESUELVE BALIZA + PRECIO TIENDA)
 // ======================================================
 app.post('/api/tco-shop', express.json(), (req, res) => {
-	console.log('DEBUG body recibido:', req.body);
+  console.log('DEBUG body recibido:', req.body);
+
   try {
     const { shop_id, province, car_age } = req.body;
 
@@ -1344,78 +1345,43 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
     }
 
     // -----------------------------
-    // 2. BUSCAR BALIZA ASOCIADA
+    // 2. BUSCAR BALIZA POR ID (CLAVE)
     // -----------------------------
-    const beacon = beacons.find(b =>
-      b.name.toLowerCase().includes(shop.beacon_brand.toLowerCase())
+    const beacon = beacons.find(
+      b => Number(b.id) === Number(shop.beacon_id)
     );
 
     if (!beacon) {
-      return res.status(400).json({ error: 'Baliza asociada no encontrada' });
+      return res.status(400).json({ error: 'Baliza asociada no válida' });
     }
-	// === Inyectar datos técnicos desde la baliza ===
-const battery_type = beacon.battery_type || beacon.tipo_pila || '9V';
-const battery_brand = normalizeBatteryBrand(
-  beacon.battery_brand || beacon.marca_pilas
-);
-const disconnectable = Boolean(beacon.disconnectable);
-const thermal_case = Boolean(beacon.thermal_case);
-if (!battery_type || !battery_brand) {
-  console.error('❌ Datos de batería incompletos en baliza:', beacon);
-  return res.status(400).json({ error: 'Baliza sin datos de batería válidos' });
-}
 
     // -----------------------------
-    // 3. DATOS PROVINCIA
+    // 3. OVERRIDE DE PRECIO (TIENDA)
     // -----------------------------
-    const provinceData = provincias.find(
-  p => p.provincia === province
-);
-if (!provinceData) {
-  console.log('DEBUG provincias disponibles:', provincias.map(p => p.provincia));
-  return res.status(400).json({ error: 'Provincia no válida' });
-}
-    // -----------------------------
-    // 4. CÁLCULO MANTENIMIENTO (REUTILIZA MOTOR)
-    // -----------------------------
-    const battery = batteryData['9V']['Marca Blanca'];
-
-    let batteryLife = battery.uso;
-    if (beacon.disconnectable) batteryLife *= 1.6;
-    if (beacon.thermal_case) batteryLife *= 1.4;
-
-    const tempFactor = Math.min(1, (provinceData.dias_anuales_30grados || 0) / 365);
-
-    const replacements = Math.ceil(12 / batteryLife);
-    const batteryCost12y = replacements * battery.price;
-
-    const leakRisk = battery.leak_risk * tempFactor;
-    const leakCost = beacon.price * leakRisk;
-
-    const fineProb = Math.min(
-      0.015 + ((0.258 - 0.015) * (car_age / 15)),
-      0.258
-    );
-
-    const finesCost = fineProb * 200 * 0.32;
-
-    const maintenance12y =
-      batteryCost12y + leakCost + finesCost;
+    const beaconForTCO = {
+      ...beacon,
+      price: Number(shop.shop_price)
+    };
 
     // -----------------------------
-    // 5. TCO TIENDA
+    // 4. LLAMAR AL MOTOR TCO ÚNICO
     // -----------------------------
-    const tcoShop = Number(shop.shop_price) + maintenance12y;
+    const tco = calculateTCO({
+      beacon: beaconForTCO,
+      province,
+      car_age
+    });
 
     // -----------------------------
-    // 6. RESPUESTA
+    // 5. RESPUESTA
     // -----------------------------
     res.json({
       shop: shop.shop_name,
       beacon: beacon.name,
       shop_price: Number(shop.shop_price.toFixed(2)),
-      maintenance_12y: Number(maintenance12y.toFixed(2)),
-      tco_shop: Number(tcoShop.toFixed(2))
+      maintenance_12y: Number(tco.maintenance_total.toFixed(2)),
+      tco_shop: Number(tco.tco_total.toFixed(2)),
+      annual_avg: Number(tco.annual_avg.toFixed(2))
     });
 
   } catch (e) {
@@ -1423,6 +1389,7 @@ if (!provinceData) {
     res.status(500).json({ error: 'Error interno TCO tienda' });
   }
 });
+
 
 
 // --- 404 ---
