@@ -1337,6 +1337,15 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
     if (!beacon) {
       return res.status(400).json({ error: 'Baliza asociada no encontrada' });
     }
+	// === Inyectar datos técnicos desde la baliza ===
+const battery_type = beacon.battery_type || beacon.tipo_pila || '9V';
+const battery_brand = beacon.battery_brand || beacon.marca_pilas || 'Marca Blanca';
+const disconnectable = Boolean(beacon.disconnectable);
+const thermal_case = Boolean(beacon.thermal_case);
+if (!battery_type || !battery_brand) {
+  console.error('❌ Datos de batería incompletos en baliza:', beacon);
+  return res.status(400).json({ error: 'Baliza sin datos de batería válidos' });
+}
 
     // -----------------------------
     // 3. DATOS PROVINCIA
