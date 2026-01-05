@@ -1341,7 +1341,10 @@ app.post('/api/tco-shop', express.json(), (req, res) => {
     // -----------------------------
     // 3. DATOS PROVINCIA
     // -----------------------------
-    const provinceData = provincias[province];
+    const provinceData = provincias.find(
+  p => p.provincia === province
+);
+
     if (!provinceData) {
       return res.status(400).json({ error: 'Provincia no válida' });
     }
