@@ -1363,86 +1363,50 @@ if (!beacon) {
       return res.status(400).json({ error: 'Provincia no válida' });
     }
 
-    // -----------------------------
-// 4. DATOS BATERÍA (desde baliza)
 // -----------------------------
-const rawBatteryType = beacon.tipo_pila || beacon.alimentacion || '9V';
-const rawBatteryBrand = beacon.marca_pilas || 'Marca Blanca';
+// 4. DATOS BATERÍA (JSON REAL, CLAVES NORMALIZADAS)
+// -----------------------------
 
-const battery_type = String(rawBatteryType).trim();
-const battery_brand = String(rawBatteryBrand).trim();
+const battery_type = beacon.tipo_pila || beacon.alimentacion || '9V';
+const battery_brand_raw = beacon.marca_pilas || 'Marca Blanca';
 
-const disconnectable = Boolean(beacon.desconectable);
-const thermal_case = false; // tiendas no consideran funda
-
-// --- Helpers: buscar clave real ignorando mayúsculas/espacios ---
-function normalizeKey(k) {
-  return String(k || '')
-    .trim()
+// normalizador de claves
+const norm = s =>
+  String(s)
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-}
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
 
-function findKeyInsensitive(obj, wanted) {
-  if (!obj || typeof obj !== 'object') return null;
-  const w = normalizeKey(wanted);
-  for (const k of Object.keys(obj)) {
-    if (normalizeKey(k) === w) return k;          // match exacto normalizado
-  }
-  // fallback: por si en el JSON pone "9 V" y tú pones "9V"
-  for (const k of Object.keys(obj)) {
-    if (normalizeKey(k).replace(/\s+/g, '') === w.replace(/\s+/g, '')) return k;
-  }
-  return null;
-}
+const typeKey = norm(battery_type);
 
-// --- 1) resolver battery_type REAL dentro de vida_base (fuente de verdad) ---
-const typeKey = findKeyInsensitive(batteryData.vida_base, battery_type);
-if (!typeKey) {
-  return res.status(400).json({
-    error: 'Tipo de pila no válido',
-    debug: {
-      battery_type_recibido: battery_type,
-      available_types: Object.keys(batteryData.vida_base || {})
-    }
-  });
-}
+// buscar marca compatible dentro del JSON
+const brandsVida = batteryData.vida_base?.[battery_type] || {};
+const brandsPrecio = batteryData.precio_por_pila?.[battery_type] || {};
+const brandsLeak = batteryData.factor_sulfatacion?.[battery_type] || {};
 
-// --- 2) resolver battery_brand REAL dentro de ese typeKey ---
-const brandKey = findKeyInsensitive(batteryData.vida_base[typeKey], battery_brand);
+const brandKey = Object.keys(brandsVida).find(
+  k => norm(k) === norm(battery_brand_raw)
+);
+
 if (!brandKey) {
   return res.status(400).json({
-    error: 'Marca de pila no válida',
+    error: 'Marca de pila no encontrada',
     debug: {
-      battery_type_real: typeKey,
-      battery_brand_recibido: battery_brand,
-      available_brands: Object.keys(batteryData.vida_base?.[typeKey] || {})
+      battery_type,
+      battery_brand_raw,
+      available_brands: Object.keys(brandsVida)
     }
   });
 }
 
-// --- 3) extraer los 3 valores con las claves REALES ---
-const batteryVida  = batteryData.vida_base?.[typeKey]?.[brandKey];
-const batteryPrecio = batteryData.precio_por_pila?.[typeKey]?.[brandKey];
-const batteryLeak  = batteryData.factor_sulfatacion?.[typeKey]?.[brandKey];
+const batteryVida = brandsVida[brandKey];
+const batteryPrecio = brandsPrecio[brandKey];
+const batteryLeak = brandsLeak[brandKey];
 
-if (
-  batteryVida === undefined || batteryVida === null ||
-  batteryPrecio === undefined || batteryPrecio === null ||
-  batteryLeak === undefined || batteryLeak === null
-) {
-  return res.status(400).json({
-    error: 'Datos de batería incompletos en battery_types.json',
-    debug: {
-      battery_type_real: typeKey,
-      battery_brand_real: brandKey,
-      vida_base: batteryVida,
-      precio_por_pila: batteryPrecio,
-      factor_sulfatacion: batteryLeak
-    }
-  });
-}
+const disconnectable = Boolean(beacon.desconectable);
+const thermal_case = false;
+
 // -----------------------------
 // 5. CÁLCULO MANTENIMIENTO (JSON REAL)
 // -----------------------------
