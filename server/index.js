@@ -9,8 +9,10 @@ const { adaptBeacons } = require('./adapters/beaconsAdapter');
 
 const beacons = adaptBeacons(rawBeacons);
 
+const { adaptSalesPoints } = require('./adapters/salesPointsAdapter');
+const rawSalesPoints = require('./sales_points.json');
+const salesPoints = adaptSalesPoints(rawSalesPoints);
 
-const salesPoints  = require("./sales_points.json");
 
 // Dejamos PDFDocument aunque no se usa, para no “cambiar contenido”
 const PDFDocument  = require("pdfkit");
@@ -1386,4 +1388,71 @@ app.get('/api/whoami', (req,res)=>{
   const payload = verifyToken(tok, process.env.JWT_SECRET || 'devsecret');
   if (!payload) return res.status(401).json({ok:false});
   res.json({ok:true, email: payload.email});
+});
+app.post('/api/tco-shop', express.json(), (req, res) => {
+  try {
+    const { shop_id, province, car_age } = req.body;
+
+    // 1. Buscar tienda
+    const shop = salesPoints.find(s => s.shop_id === Number(shop_id));
+    if (!shop) {
+      return res.status(400).json({ error: 'Tienda no válida' });
+    }
+
+    // 2. Resolver baliza por marca
+    const beacon = beacons.find(b =>
+      b.name.toLowerCase().includes(shop.beacon_brand)
+    );
+
+    if (!beacon) {
+      return res.status(400).json({ error: 'Baliza asociada no válida' });
+    }
+
+    // 3. Reusar lógica TCO de baliza
+    const battery = batteryData[beacon.battery_type]?.[beacon.battery_brand];
+    const provinceData = provincias[province];
+
+    if (!battery || !provinceData) {
+      return res.status(400).json({ error: 'Datos incompletos para TCO' });
+    }
+
+    // === VIDA ÚTIL ===
+    let batteryLife = battery.uso;
+    if (beacon.disconnectable) batteryLife *= 1.6;
+    if (beacon.thermal_case) batteryLife *= 1.4;
+
+    // === TEMPERATURA ===
+    const hotDays = provinceData.dias_anuales_30grados || 0;
+    const tempFactor = Math.min(1, hotDays / 365);
+
+    // === COSTES ===
+    const replacements = Math.ceil(12 / batteryLife);
+    const batteryCost12y = replacements * battery.price;
+
+    const leakRisk = battery.leak_risk * tempFactor;
+    const leakCost = beacon.price * leakRisk;
+
+    const fineProb = Math.min(
+      0.015 + ((0.258 - 0.015) * (car_age / 15)),
+      0.258
+    );
+    const finesCost = fineProb * 200 * 0.32;
+
+    const maintenanceTotal = batteryCost12y + leakCost + finesCost;
+    const tcoShop = shop.shop_price + maintenanceTotal;
+
+    // 4. Respuesta
+    res.json({
+      shop: shop.shop_name,
+      beacon: beacon.name,
+      shop_price: shop.shop_price,
+      maintenance_12y: Number(maintenanceTotal.toFixed(2)),
+      tco_shop: Number(tcoShop.toFixed(2)),
+      annual_avg: Number((maintenanceTotal / 12).toFixed(2))
+    });
+
+  } catch (e) {
+    console.error('❌ Error TCO tienda:', e);
+    res.status(500).json({ error: 'Error interno TCO tienda' });
+  }
 });
