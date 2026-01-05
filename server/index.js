@@ -1408,22 +1408,31 @@ const disconnectable = Boolean(beacon.desconectable);
 const thermal_case = false;
 
 // -----------------------------
-// 5. CÁLCULO MANTENIMIENTO (JSON REAL)
+// 5. CÁLCULO MANTENIMIENTO (MISMO MOTOR, JSON REAL)
 // -----------------------------
 
-// batteryVida ES un número (años)
-let batteryLife = Number(batteryVida);
-
-if (!batteryLife || batteryLife <= 0) {
+if (
+  typeof batteryVida !== 'object' ||
+  typeof batteryVida.uso !== 'number' ||
+  typeof batteryPrecio !== 'number' ||
+  typeof batteryLeak !== 'number'
+) {
   return res.status(400).json({
     error: 'Vida útil de pila inválida',
-    debug: { batteryVida }
+    debug: {
+      batteryVida,
+      batteryPrecio,
+      batteryLeak
+    }
   });
 }
 
-// Factores correctores
+// === VIDA ÚTIL BASE DE LA PILA (AÑOS DE USO REAL) ===
+let batteryLife = batteryVida.uso;
+
 if (disconnectable) batteryLife *= 1.6;
 if (thermal_case)   batteryLife *= 1.4;
+
 
 // === TEMPERATURA ===
 const hotDays = provinceData.dias_anuales_30grados || 0;
