@@ -1364,104 +1364,75 @@ if (!beacon) {
     }
 
 // -----------------------------
-// 4. DATOS BATERÍA (JSON REAL, CLAVES NORMALIZADAS)
+// 4. DATOS BATERÍA (JSON REAL)
 // -----------------------------
-
-const battery_type = beacon.tipo_pila || beacon.alimentacion || '9V';
-const battery_brand_raw = beacon.marca_pilas || 'Marca Blanca';
-
-// normalizador de claves
-const norm = s =>
-  String(s)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '');
-
-const typeKey = norm(battery_type);
-
-// buscar marca compatible dentro del JSON
-const brandsVida = batteryData.vida_base?.[battery_type] || {};
-const brandsPrecio = batteryData.precio_por_pila?.[battery_type] || {};
-const brandsLeak = batteryData.factor_sulfatacion?.[battery_type] || {};
-
-const brandKey = Object.keys(brandsVida).find(
-  k => norm(k) === norm(battery_brand_raw)
-);
-
-if (!brandKey) {
-  return res.status(400).json({
-    error: 'Marca de pila no encontrada',
-    debug: {
-      battery_type,
-      battery_brand_raw,
-      available_brands: Object.keys(brandsVida)
-    }
-  });
-}
-
-const batteryVida = brandsVida[brandKey];
-const batteryPrecio = brandsPrecio[brandKey];
-const batteryLeak = brandsLeak[brandKey];
-
+const battery_type  = beacon.tipo_pila || beacon.alimentacion || '9V';
+const battery_brand = beacon.marca_pilas || 'Marca Blanca';
 const disconnectable = Boolean(beacon.desconectable);
-const thermal_case = false;
+const thermal_case   = false;
 
-// -----------------------------
-// 5. CÁLCULO MANTENIMIENTO (MISMO MOTOR, JSON REAL)
-// -----------------------------
+// === EXTRAER OBJETOS ===
+const batteryVidaObj =
+  batteryData.vida_base?.[battery_type]?.[battery_brand];
 
+const batteryPrecioObj =
+  batteryData.precio_por_pila?.[battery_type]?.[battery_brand];
+
+const batteryLeakObj =
+  batteryData.factor_sulfatacion?.[battery_type]?.[battery_brand];
+
+// === VALIDACIÓN ESTRICTA ===
 if (
-  typeof batteryVida !== 'object' ||
-  typeof batteryVida.uso !== 'number' ||
-  typeof batteryPrecio !== 'number' ||
-  typeof batteryLeak !== 'number'
+  !batteryVidaObj ||
+  typeof batteryVidaObj.uso !== 'number' ||
+  !batteryPrecioObj ||
+  typeof batteryPrecioObj.precio !== 'number' ||
+  !batteryLeakObj ||
+  typeof batteryLeakObj.tasa_anual !== 'number'
 ) {
   return res.status(400).json({
-    error: 'Vida útil de pila inválida',
+    error: 'Datos de pila inválidos',
     debug: {
-      batteryVida,
-      batteryPrecio,
-      batteryLeak
+      battery_type,
+      battery_brand,
+      batteryVidaObj,
+      batteryPrecioObj,
+      batteryLeakObj
     }
   });
 }
 
-// === VIDA ÚTIL BASE DE LA PILA (AÑOS DE USO REAL) ===
-let batteryLife = batteryVida.uso;
+// === NÚMEROS PLANOS (ÚNICOS QUE PASAN AL MOTOR) ===
+const batteryLifeBase = batteryVidaObj.uso;
+const batteryPrice    = batteryPrecioObj.precio;
+const batteryLeakRate = batteryLeakObj.tasa_anual;
+
+// -----------------------------
+// 5. CÁLCULO MANTENIMIENTO
+// -----------------------------
+let batteryLife = batteryLifeBase;
 
 if (disconnectable) batteryLife *= 1.6;
 if (thermal_case)   batteryLife *= 1.4;
 
-
-// === TEMPERATURA ===
 const hotDays = provinceData.dias_anuales_30grados || 0;
 const tempFactor = Math.min(1, hotDays / 365);
 
-// === PILAS A 12 AÑOS ===
 const replacements = Math.ceil(12 / batteryLife);
-const batteryCost12y = replacements * Number(batteryPrecio);
+const batteryCost12y = replacements * batteryPrice;
 
-// === FUGAS ===
-const leakRisk = Number(batteryLeak || 0) * tempFactor;
+const leakRisk = batteryLeakRate * tempFactor;
 const leakCost = Number(shop.shop_price) * leakRisk;
 
-// === MULTAS ===
 const fineProb = Math.min(
   0.015 + ((0.258 - 0.015) * (car_age / 15)),
   0.258
 );
 const finesCost = fineProb * 200 * 0.32;
 
-// === TOTAL ===
-const maintenance12y =
-  batteryCost12y +
-  leakCost +
-  finesCost;
+const maintenance12y = batteryCost12y + leakCost + finesCost;
+const tcoShop = Number(shop.shop_price) + maintenance12y;
 
-const tcoShop =
-  Number(shop.shop_price) +
-  maintenance12y;
 
 
     // -----------------------------
