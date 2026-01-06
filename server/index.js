@@ -843,7 +843,29 @@ app.post('/api/calcula', async (req, res) => {
       email = '',
       contexto = 'A'
     } = req.body;
+	  
+// ======================================================
+// RESOLUCIÓN DE BALIZA (FORMULARIOS B y C)
+// ======================================================
+let beacon = null;
 
+if (id_baliza) {
+  beacon = beacons.find(b => Number(b.id) === Number(id_baliza));
+}
+
+if (!beacon && id_sales_point) {
+  const sp = salesPoints.find(
+    s => Number(s.id_punto) === Number(id_sales_point)
+  );
+  if (sp) {
+    beacon = beacons.find(b =>
+      String(b.marca || '').toLowerCase().includes(
+        String(sp.marca_baliza || '').toLowerCase()
+      )
+    );
+  }
+}
+  
     const marca_pilas = marca;
 
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
@@ -1007,19 +1029,19 @@ const modelo_eff = (modelo && String(modelo).trim())
 const beacon = beacons.find(
   b => Number(b.id) === Number(id_baliza)
 );
-
 const meta = {
-  marca_baliza: String(marca_baliza_eff),
-  modelo: String(modelo_eff),
-  modelo_compra,
+  marca_baliza: beacon?.marca || beacon?.brand || 'Desconocida',
+  modelo: beacon?.modelo || beacon?.name || 'Desconocido',
+  modelo_compra: beacon?.modelo_compra || '',
   tipo,
-  marca_pilas,
+  marca_pilas: marca_pilas || beacon?.marca_pilas || 'Marca Blanca',
   desconectable,
   funda,
   provincia,
-  coste_inicial: parseFloat(coste_inicial),
-  edad_vehiculo: parseInt(edad_vehiculo)
+  coste_inicial,
+  edad_vehiculo
 };
+
  // === GUARDAR EN BD (opcional) ===
 try {
   const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
