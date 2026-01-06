@@ -847,6 +847,8 @@ app.post('/api/calcula', async (req, res) => {
 // ======================================================
 // RESOLUCIÓN DE BALIZA (FORMULARIOS B y C)
 // ======================================================
+let beacon = beacon || null;
+
 if (id_baliza) {
   beacon = beacons.find(b => Number(b.id) === Number(id_baliza));
 }
@@ -863,18 +865,19 @@ if (!beacon && id_sales_point) {
     );
   }
 }
+
 // ======================================================
 // NORMALIZACIÓN DE MARCA DE PILAS (B y C)
 // ======================================================
-if (!marca_pilas) {
-  marca_pilas =
-    beacon?.marca_pilas ||
-    beacon?.brand_pilas ||
-    beacon?.battery_brand ||
-    'Marca Blanca';
-}
+let marca_pilas_normalizada =
+  marca_pilas ||
+  beacon?.marca_pilas ||
+  beacon?.brand_pilas ||
+  beacon?.battery_brand ||
+  'Marca Blanca';
 
-    const marca_pilas = marca;
+// A partir de aquí SOLO se usa esta variable
+const marca_pilas = marca_pilas_normalizada;
 
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
