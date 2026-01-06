@@ -860,8 +860,6 @@ app.post('/api/calcula', async (req, res) => {
   );
 }
 
-
-
     if (!beacon && id_sales_point) {
       const sp = salesPoints.find(s => Number(s.id_punto) === Number(id_sales_point));
       if (sp) {
