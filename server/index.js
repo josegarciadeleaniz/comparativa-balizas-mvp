@@ -854,8 +854,12 @@ app.post('/api/calcula', async (req, res) => {
     let beacon = null;
 
     if (id_baliza) {
-  beacon = beacons.find(b => Number(b.id_baliza) === Number(id_baliza));
+  const idBuscado = String(id_baliza).trim();
+  beacon = beacons.find(b =>
+    String(b.id_baliza).trim() === idBuscado
+  );
 }
+
 
 
     if (!beacon && id_sales_point) {
