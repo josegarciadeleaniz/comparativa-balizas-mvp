@@ -824,178 +824,143 @@ const hasModeloCompra =
   `;
 }
 
-// ====== ENDPOINT REAL: CALCULA ======
+// ====== ENDPOINT REAL: CALCULA (VERSIÓN LIMPIA Y FINAL) ======
 app.post('/api/calcula', async (req, res) => {
   try {
     const {
       id_baliza,
       id_sales_point,
-      marca,
+      marca,                 // marca de pilas (formulario A)
       tipo = '3x AA',
       desconectable = 'no',
       funda = 'no',
       provincia = 'Madrid',
       coste_inicial = 0,
       edad_vehiculo = 5,
-      marca_baliza = 'Desconocida',
-      modelo = 'Desconocido',
-      modelo_compra = '',
       email = '',
       contexto = 'A'
     } = req.body;
-	  
-// ======================================================
-// RESOLUCIÓN DE BALIZA (FORMULARIOS B y C)
-// ======================================================
-let beacon = beacon || null;
 
-if (id_baliza) {
-  beacon = beacons.find(b => Number(b.id) === Number(id_baliza));
-}
-
-if (!beacon && id_sales_point) {
-  const sp = salesPoints.find(
-    s => Number(s.id_punto) === Number(id_sales_point)
-  );
-  if (sp) {
-    beacon = beacons.find(b =>
-      String(b.marca || '').toLowerCase().includes(
-        String(sp.marca_baliza || '').toLowerCase()
-      )
-    );
-  }
-}
-
-// ======================================================
-// NORMALIZACIÓN DE MARCA DE PILAS (B y C)
-// ======================================================
-let marca_pilas_normalizada =
-  marca_pilas ||
-  beacon?.marca_pilas ||
-  beacon?.brand_pilas ||
-  beacon?.battery_brand ||
-  'Marca Blanca';
-
-// A partir de aquí SOLO se usa esta variable
-const marca_pilas = marca_pilas_normalizada;
-
+    // ======================================================
+    // VALIDACIONES BÁSICAS
+    // ======================================================
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
 
-    const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
-    const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point)
-    const sourceData     = beaconInfo || salesPointInfo || {};
+    // ======================================================
+    // RESOLUCIÓN DE BALIZA (A / B / C)
+    // ======================================================
+    let beacon = null;
 
+    if (id_baliza) {
+      beacon = beacons.find(b => Number(b.id) === Number(id_baliza));
+    }
+
+    if (!beacon && id_sales_point) {
+      const sp = salesPoints.find(s => Number(s.id_punto) === Number(id_sales_point));
+      if (sp) {
+        const shopBrand = String(sp.marca_baliza || '').toLowerCase();
+        beacon = beacons.find(b => {
+          const bb = String(b.marca || b.marca_baliza || b.brand || '').toLowerCase();
+          return bb.includes(shopBrand);
+        });
+      }
+    }
+
+    // ======================================================
+    // NORMALIZACIÓN DE MARCA DE PILAS
+    // ======================================================
+    let marca_pilas =
+      marca ||
+      beacon?.marca_pilas ||
+      beacon?.battery_brand ||
+      'Marca Blanca';
+
+    // ======================================================
+    // VIDA BASE Y VIDA AJUSTADA
+    // ======================================================
     const baseData = getVidaBase(tipo, marca_pilas);
-const uso  = baseData.uso;
-const shelf = baseData.shelf;
+    const uso   = baseData.uso;
+    const shelf = baseData.shelf;
 
-const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
+    const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
 
-// Vida ajustada por Arrhenius + funda (vida)
-const vida_ajustada = lifeArrheniusYears(
-  tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias
-);
+    const vida_ajustada = lifeArrheniusYears(
+      tipo,
+      marca_pilas,
+      provincia,
+      desconectable,
+      funda,
+      batteryData,
+      provincias
+    );
 
-// Para mostrar “factor temperatura” en la tabla (explicativo):
-// factor_temp ≈  1 / multAvgClamped  (se deduce de la vida calculada)
-const factor_funda = getFundaFactor(funda);
-let factor_temp  = +(
-  vida_ajustada && valor_desconexion
-    ? vida_ajustada / (valor_desconexion * factor_funda)
-    : 1
-).toFixed(3);
+    const factor_funda = getFundaFactor(funda);
+    let factor_temp = +(
+      vida_ajustada && valor_desconexion
+        ? vida_ajustada / (valor_desconexion * factor_funda)
+        : 1
+    ).toFixed(3);
 
-
-// ——— Arrhenius (autodescarga) para la vida útil ———
-const pTemp = provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(provincia)) || {};
-const dias_calidos_SD = pTemp.dias_anuales_30grados ?? 0;
-const factor_prov_SD  = pTemp.factor_provincia ?? 1;
-
-const TrefC_SD = batteryData?.arrhenius?.TrefC ?? 21;
-const EaSD_kJ  = batteryData?.arrhenius?.Ea_kJ?.self_discharge ?? 40;
-
-const wHot_SD  = Math.max(0, Math.min(1, dias_calidos_SD / 365));
-const Thot_SD  = estimateHotBinTemp(factor_prov_SD);
-const multHot_SD = arrheniusMult(Thot_SD, EaSD_kJ, TrefC_SD);
-const multAvg_SD = (1 - wHot_SD) + wHot_SD * multHot_SD;
-const multAvgClamped_SD = Math.min(multAvg_SD, 5); // cap prudente
-
-factor_temp = 1 / multAvgClamped_SD; // ⇒ reduce años si el estrés térmico es alto
-// Vida ajustada por Arrhenius + funda (vida)
-
-
-
+    // ======================================================
+    // REPOSICIONES Y COSTE DE PILAS
+    // ======================================================
     const reposiciones = Math.ceil(12 / vida_ajustada);
-    const precio_pack = getBatteryPackPrice(tipo, marca_pilas, sourceData);
-    let precio_fuente = sourceData.precio_por_pila ? sourceData.precio_por_pila.fuente : 'battery_types.json';
-    const coste_pilas  = parseFloat((reposiciones * precio_pack).toFixed(2));
+    const precio_pack  = getBatteryPackPrice(tipo, marca_pilas, beacon || {});
+    const coste_pilas  = +(reposiciones * precio_pack).toFixed(2);
 
-    console.log('--- Sulfatación: datos de entrada ---', {
-      id_baliza, id_sales_point, tipo, marca_pilas
-    });
+    // ======================================================
+    // RIESGO DE FUGA (SULFATACIÓN)
+    // ======================================================
+    const prob_fuga = leakRiskArrhenius(
+      tipo,
+      marca_pilas,
+      provincia,
+      batteryData,
+      provincias
+    );
 
-    const fuenteData = beacons.find(b => b.id_baliza === id_baliza)
-                       || salesPoints.find(s => s.id_punto === id_sales_point)
-                       || {};
-    console.log('fuenteData.factor_sulfatacion:', fuenteData.factor_sulfatacion);
-    const tasa_anual     = fuenteData.factor_sulfatacion?.tasa_anual ?? getLeakRisk(tipo, marca_pilas);
-    const fuente_sulfat  = fuenteData.factor_sulfatacion?.fuente     ?? 'battery_types.json';
+    const tieneDescon = normalizarBooleano(desconectable);
+    const fundaLower  = String(funda || '').toLowerCase();
 
-    const pData          = provincias.find(p=>normalizarTexto(p.provincia)===normalizarTexto(provincia))||{};
-    console.log('pData.dias_anuales_30grados, factor_provincia:', pData.dias_anuales_30grados, pData.factor_provincia);
-    const dias_calidos   = pData.dias_anuales_30grados ?? 0;
-    const factor_prov    = pData.factor_provincia        ?? 1;
-    const fuente_temp    = pData.fuente_temp_extrema     ?? 'provincias.json';
-    const fuente_dias    = pData.fuente_dias_calidos     ?? 'provincias.json';
+    const multDesc  = tieneDescon ? 0.70 : 1.00;
+    const multFunda =
+      fundaLower.includes('eva') || fundaLower.includes('silicona') ? 0.60 :
+      fundaLower.includes('neopreno') ? 0.75 :
+      fundaLower.includes('tela') ? 0.90 : 1.00;
 
-// === Riesgo anual de fuga (Arrhenius, sin mitigaciones aún) ===
-const prob_fuga = leakRiskArrhenius(
-  tipo, marca_pilas, provincia, batteryData, provincias
-);
+    const mitigacionMult = +(multDesc * multFunda).toFixed(2);
 
-// === Mitigaciones ===
-// Desconexión: -30%  → multiplicador 0.70
-// Funda (silicona/EVA): -40% → multiplicador 0.60
-const tieneDescon   = normalizarBooleano(desconectable);
-const fundaLower    = String(funda || '').toLowerCase();
-const multDesc      = tieneDescon ? 0.70 : 1.00;
-const multFunda     = (fundaLower.includes('eva') || fundaLower.includes('silicona')) ? 0.60
-                    : (fundaLower.includes('neopreno') ? 0.75
-                    : (fundaLower.includes('tela') ? 0.90 : 1.00));
-const mitigacionMult = +(multDesc * multFunda).toFixed(2);
-const mitigacionPct  = +(1 - mitigacionMult).toFixed(2); // para mostrar en %
+    const riesgo_final = +(
+      Math.max(0, Math.min(1, prob_fuga)) * mitigacionMult
+    ).toFixed(4);
 
-const riesgo_final   = +(
-  Math.max(0, Math.min(1, prob_fuga)) * mitigacionMult
-).toFixed(4);
+    const coste_fugas    = +((parseFloat(coste_inicial) || 0) * riesgo_final).toFixed(2);
+    const coste_fugas_12 = +(coste_fugas * 12).toFixed(2);
 
-const coste_fugas    = +((parseFloat(coste_inicial) || 0) * riesgo_final).toFixed(2);
-const coste_fugas_12 = +(coste_fugas * 12).toFixed(2);
-
-
-    const importeMulta  = 200;
-    const tasaDenuncia  = 0.32;
-    const retardoMeses  = 6;
-    const adherencia    = 0.80;
-
-    const mesesVida       = Math.max(1, (vida_ajustada || 0) * 12);
-    const pBateriaInsuf   = Math.min(0.5, (retardoMeses * (1 - adherencia)) / mesesVida);
-    const pNoFunciona     = 1 - (1 - riesgo_final) * (1 - pBateriaInsuf);
+    // ======================================================
+    // MULTAS
+    // ======================================================
+    const importeMulta = 200;
+    const tasaDenuncia = 0.32;
 
     const pIncHoy = getFineProb(edad_vehiculo);
-    const coste_multas = +(importeMulta * tasaDenuncia * pIncHoy * pNoFunciona).toFixed(2);
+    const coste_multas = +(importeMulta * tasaDenuncia * pIncHoy).toFixed(2);
 
     const probAveria12 = Array.from({ length: 12 }, (_, k) =>
       getFineProb((parseInt(edad_vehiculo) || 0) + k)
     );
+
     const coste_multas_12 = +probAveria12
-      .map(pInc => importeMulta * tasaDenuncia * pInc * pNoFunciona)
+      .map(p => importeMulta * tasaDenuncia * p)
       .reduce((a, b) => a + b, 0)
       .toFixed(2);
 
-    const total12y = Number((coste_pilas + coste_fugas_12 + coste_multas_12).toFixed(2));
+    // ======================================================
+    // TOTALES
+    // ======================================================
+    const total12y = +(coste_pilas + coste_fugas_12 + coste_multas_12).toFixed(2);
 
     const resumen = {
       reposiciones,
@@ -1005,80 +970,37 @@ const coste_fugas_12 = +(coste_fugas * 12).toFixed(2);
       coste_multas,
       coste_multas_12,
       total12y,
-      medioAnual: Number((total12y / 12).toFixed(2))
+      medioAnual: +(total12y / 12).toFixed(2)
     };
 
     const pasos = {
-      vida_base:         uso,
+      vida_base: uso,
       valor_desconexion,
       factor_temp,
       factor_funda,
       vida_ajustada,
       precio_pack,
-      precio_fuente,
       reposiciones,
       coste_pilas,
-      tasa_anual,
-      fuente_sulfat,
-      dias_calidos,
-      factor_provincia: factor_prov,
-      fuente_temp,
-      fuente_dias,
       prob_fuga,
       riesgo_final,
       coste_fugas,
       coste_multas,
-	  mitigacion: mitigacionMult
+      mitigacion: mitigacionMult
     };
 
-    // Fallback de marca/modelo desde la baliza seleccionada (por si no vienen en el body)
-const marca_baliza_eff = (marca_baliza && String(marca_baliza).trim()) 
-  || beaconInfo?.marca_baliza || beaconInfo?.marca || 'Desconocida';
-const modelo_eff = (modelo && String(modelo).trim()) 
-  || beaconInfo?.modelo || beaconInfo?.model || beaconInfo?.modelo_baliza || 'Desconocido';
-
-const beacon = beacons.find(
-  b => Number(b.id) === Number(id_baliza)
-);
-const meta = {
-  marca_baliza: beacon?.marca || beacon?.brand || 'Desconocida',
-  modelo: beacon?.modelo || beacon?.name || 'Desconocido',
-  modelo_compra: beacon?.modelo_compra || '',
-  tipo,
-  marca_pilas: marca_pilas || beacon?.marca_pilas || 'Marca Blanca',
-  desconectable,
-  funda,
-  provincia,
-  coste_inicial,
-  edad_vehiculo
-};
-
- // === GUARDAR EN BD (opcional) ===
-try {
-  const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
-
-  if (pool) {
-    await pool.execute(
-      'INSERT INTO calculos_usuarios (user_email, user_hash, contexto, marca_baliza, modelo_baliza, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [email, userHash, contexto, marca_baliza, modelo, provincia, parseFloat(coste_inicial), total12y, JSON.stringify(req.body), JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })]
-    );
-    console.log('✅ Cálculo guardado en BD (directo)');
-} else {
-    console.log("ℹ️ Relay desactivado (save-calc.php eliminado)");
-}
-
-} catch (dbError) {
-  console.warn('⚠️ Error guardando cálculo (continuando):', dbError.message);
-}
-    if (DEBUG) {
-      console.log('— /api/calcula -> meta:', meta);
-      console.log('— /api/calcula -> resumen:', resumen);
-      console.log('— /api/calcula -> pasos.vida_ajustada / reposiciones / coste_pilas:', {
-        vida_ajustada: pasos.vida_ajustada,
-        reposiciones: pasos.reposiciones,
-        coste_pilas: pasos.coste_pilas
-      });
-    }
+    const meta = {
+      marca_baliza: beacon?.marca_baliza || beacon?.marca || beacon?.brand || 'Desconocida',
+      modelo: beacon?.modelo || beacon?.name || beacon?.modelo_baliza || 'Desconocido',
+      modelo_compra: beacon?.modelo_compra || '',
+      tipo,
+      marca_pilas,
+      desconectable,
+      funda,
+      provincia,
+      coste_inicial,
+      edad_vehiculo
+    };
 
     return res.json({
       meta,
@@ -1086,12 +1008,13 @@ try {
       resumen,
       htmlTable: generateTable({ pasos, resumen }, meta)
     });
-    
+
   } catch (err) {
     console.error('Error en /api/calcula:', err);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+
 
 // ===== Datos públicos (BEACONS saneado) =====
 app.get('/api/beacons', (req, res) => {
