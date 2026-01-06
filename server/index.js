@@ -863,6 +863,16 @@ if (!beacon && id_sales_point) {
     );
   }
 }
+// ======================================================
+// NORMALIZACIÓN DE MARCA DE PILAS (B y C)
+// ======================================================
+if (!marca_pilas) {
+  marca_pilas =
+    beacon?.marca_pilas ||
+    beacon?.brand_pilas ||
+    beacon?.battery_brand ||
+    'Marca Blanca';
+}
 
     const marca_pilas = marca;
 
