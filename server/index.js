@@ -847,8 +847,6 @@ app.post('/api/calcula', async (req, res) => {
 // ======================================================
 // RESOLUCIÓN DE BALIZA (FORMULARIOS B y C)
 // ======================================================
-let beacon = null;
-
 if (id_baliza) {
   beacon = beacons.find(b => Number(b.id) === Number(id_baliza));
 }
@@ -865,7 +863,7 @@ if (!beacon && id_sales_point) {
     );
   }
 }
-  
+
     const marca_pilas = marca;
 
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
