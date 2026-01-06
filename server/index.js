@@ -824,7 +824,7 @@ const hasModeloCompra =
   `;
 }
 
-// ====== ENDPOINT REAL: CALCULA (VERSIÓN LIMPIA Y FINAL) ======
+// ====== ENDPOINT REAL: CALCULA (VERSIÓN FINAL CERRADA) ======
 app.post('/api/calcula', async (req, res) => {
   try {
     const {
@@ -849,23 +849,23 @@ app.post('/api/calcula', async (req, res) => {
     }
 
     // ======================================================
-    // RESOLUCIÓN DE BALIZA (A / B / C)
+    // RESOLUCIÓN ÚNICA DE BALIZA (A / B / C)
     // ======================================================
     let beacon = null;
 
     if (id_baliza) {
-  const idBuscado = String(id_baliza).trim();
-  beacon = beacons.find(b =>
-    String(b.id_baliza).trim() === idBuscado
-  );
-}
+      const idBuscado = String(id_baliza).trim();
+      beacon = beacons.find(b => String(b.id_baliza).trim() === idBuscado);
+    }
 
     if (!beacon && id_sales_point) {
       const sp = salesPoints.find(s => Number(s.id_punto) === Number(id_sales_point));
       if (sp) {
         const shopBrand = String(sp.marca_baliza || '').toLowerCase();
         beacon = beacons.find(b => {
-          const bb = String(b.marca || b.marca_baliza || b.brand || '').toLowerCase();
+          const bb = String(
+            b.marca || b.marca_baliza || b.brand || b.fabricante || ''
+          ).toLowerCase();
           return bb.includes(shopBrand);
         });
       }
@@ -900,7 +900,7 @@ app.post('/api/calcula', async (req, res) => {
     );
 
     const factor_funda = getFundaFactor(funda);
-    let factor_temp = +(
+    const factor_temp = +(
       vida_ajustada && valor_desconexion
         ? vida_ajustada / (valor_desconexion * factor_funda)
         : 1
@@ -992,17 +992,28 @@ app.post('/api/calcula', async (req, res) => {
       mitigacion: mitigacionMult
     };
 
+    // ======================================================
+    // META FINAL (BALIZA YA RESUELTA)
+    // ======================================================
     const meta = {
-      marca_baliza: beacon?.marca_baliza || beacon?.marca || beacon?.brand || 'Desconocida',
-      modelo: beacon?.modelo || beacon?.name || beacon?.modelo_baliza || 'Desconocido',
+      marca_baliza:
+        beacon?.marca ||
+        beacon?.brand ||
+        beacon?.fabricante ||
+        'Desconocida',
+      modelo:
+        beacon?.modelo ||
+        beacon?.model ||
+        beacon?.name ||
+        'Desconocido',
       modelo_compra: beacon?.modelo_compra || '',
       tipo,
       marca_pilas,
       desconectable,
       funda,
       provincia,
-      coste_inicial,
-      edad_vehiculo
+      coste_inicial: Number(coste_inicial),
+      edad_vehiculo: Number(edad_vehiculo)
     };
 
     return res.json({
