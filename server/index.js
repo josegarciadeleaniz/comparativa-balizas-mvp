@@ -995,26 +995,34 @@ app.post('/api/calcula', async (req, res) => {
     // ======================================================
     // META FINAL (BALIZA YA RESUELTA)
     // ======================================================
-    const meta = {
-      marca_baliza:
-        beacon?.marca ||
-        beacon?.brand ||
-        beacon?.fabricante ||
-        'Desconocida',
-      modelo:
-        beacon?.modelo ||
-        beacon?.model ||
-        beacon?.name ||
-        'Desconocido',
-      modelo_compra: beacon?.modelo_compra || '',
-      tipo,
-      marca_pilas,
-      desconectable,
-      funda,
-      provincia,
-      coste_inicial: Number(coste_inicial),
-      edad_vehiculo: Number(edad_vehiculo)
-    };
+   const meta = {
+  marca_baliza:
+    beacon?.fabricante_comercial ||
+    beacon?.marca_comercial ||
+    beacon?.nombre_comercial ||
+    beacon?.fabricante ||
+    'Desconocida',
+
+  modelo:
+    beacon?.modelo_comercial ||
+    beacon?.modelo ||
+    beacon?.nombre ||
+    beacon?.version ||
+    'Desconocido',
+
+  modelo_compra:
+    beacon?.modelo_compra ||
+    beacon?.nombre_comercial ||
+    '',
+
+  tipo,
+  marca_pilas,
+  desconectable,
+  funda,
+  provincia,
+  coste_inicial: Number(coste_inicial),
+  edad_vehiculo: Number(edad_vehiculo)
+};
 
     return res.json({
       meta,
