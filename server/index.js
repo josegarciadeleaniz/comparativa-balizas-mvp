@@ -319,7 +319,8 @@ function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
   const precios = batteryData.precios_pilas;
   const marcaNorm = canonicalBrand(marca_pilas);
   const tipoBase  = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
-  const { tipoBase, numPilas } = parseTipo(tipo);
+  const parsedTipo = parseTipo(tipo);
+const numPilas = parsedTipo.numPilas;
 const cantidad = numPilas;
   const unit = precios[marcaNorm]?.[tipoBase]
     ?? precios['Sin marca']?.[tipoBase]
