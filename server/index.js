@@ -209,14 +209,20 @@ function getFundaFactor(tipoFunda) {
   if (v.includes('tela'))       return 1.01;
   return 1.00;
 }
-
-
 function getVidaBase(tipo, marca_pilas) {
-  const { tipoBase } = parseTipo(tipo);
-  const m = canonicalBrand(marca_pilas);
-  return batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin marca'];
-}
+  const tipoUpper = String(tipo || '').toUpperCase();
 
+  let tipoSimple = 'AA';
+  if (tipoUpper.includes('9V')) tipoSimple = '9V';
+  else if (tipoUpper.includes('AAA')) tipoSimple = 'AAA';
+
+  const marcaNorm = canonicalBrand(marca_pilas);
+
+  return (
+    batteryData?.vida_base?.[tipoSimple]?.[marcaNorm] ||
+    batteryData?.vida_base?.[tipoSimple]?.['Sin marca']
+  );
+}
 function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
   const { uso, shelf } = getVidaBase(tipo, marca_pilas);
   const baseYears = normalizarBooleano(desconectable) ? shelf : uso;
