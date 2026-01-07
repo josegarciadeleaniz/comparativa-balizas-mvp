@@ -924,7 +924,7 @@ const fuente_sulfat = 'battery_types.json';
   precio_pack,
   precio_fuente,
 
-  // Temperatura / provincia
+  // Provincia / temperatura
   dias_calidos,
   factor_provincia,
 
@@ -933,11 +933,11 @@ const fuente_sulfat = 'battery_types.json';
   fuente_sulfat,
   prob_fuga,
 
-  // Mitigaciones (CRÍTICO para generateTable)
+  // 🔥 MITIGACIONES (OBLIGATORIAS PARA generateTable)
   mitigacion: mitigacionPct,
   mitigacionMult,
 
-  // Riesgo final
+  // Resultado final
   riesgo_final,
 
   // Costes
