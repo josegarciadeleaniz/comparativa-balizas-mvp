@@ -5,23 +5,12 @@ const path = require("path");
 
 console.log('🔥 VERSION INDEX.JS:', new Date().toISOString());
 
-console.log('✅ shopBeaconAdapter cargado');
-const { findBeaconForShop } = require('./adapters/shopBeaconAdapter');
-
 const batteryData  = require("./battery_types.json");
 const provincias   = require("./provincias.json");
 const rawBeacons = require('./beacons.json');
-const { adaptBeacons } = require('./adapters/beaconsAdapter');
-
-const beacons = adaptBeacons(rawBeacons);
-
-const { adaptSalesPoints } = require('./adapters/salesPointsAdapter');
 const rawSalesPoints = require('./sales_points.json');
-const salesPoints = adaptSalesPoints(rawSalesPoints);
 
 console.log('DEBUG shops disponibles:', salesPoints.slice(0,3));
-
-
 // Dejamos PDFDocument aunque no se usa, para no “cambiar contenido”
 const PDFDocument  = require("pdfkit");
 
