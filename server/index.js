@@ -1,16 +1,13 @@
 // FORCE DEPLOY
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
 
-console.log('🔥 VERSION INDEX.JS:', new Date().toISOString());
+const beacons = JSON.parse(fs.readFileSync('./beacons.json'));
+const batteryData = JSON.parse(fs.readFileSync('./battery_types.json'));
+const provincias = JSON.parse(fs.readFileSync('./provincias.json'));
 
-const batteryData  = require("./battery_types.json");
-const provincias   = require("./provincias.json");
-const rawBeacons = require('./beacons.json');
-const rawSalesPoints = require('./sales_points.json');
 
-console.log('DEBUG shops disponibles:', salesPoints.slice(0,3));
 // Dejamos PDFDocument aunque no se usa, para no “cambiar contenido”
 const PDFDocument  = require("pdfkit");
 
