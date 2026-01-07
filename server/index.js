@@ -328,7 +328,14 @@ function getFineProb(edad) {
   const base = 0.015, max = 0.258;
   return Math.min(base + ((max - base) * (e / 15)), max);
 }
+console.log('🧮 ANTES DE GENERAR TABLA:', {
+  coste_pilas,
+  mantenimiento_12y,
+  total_12y
+});
+
 function generateTable({ pasos, resumen }, meta) {
+	console.log('📊 GENERATE TABLE EJECUTÁNDOSE');
 	console.log('=== GENERATE TABLE INPUT ===');
 console.log(JSON.stringify({
   ctx,
