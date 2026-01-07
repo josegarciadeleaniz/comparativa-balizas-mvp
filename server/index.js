@@ -794,6 +794,154 @@ const hasModeloCompra =
 }
 
 // ====== ENDPOINT REAL: CALCULA ======
+// ======================================================
+// MOTOR CANÓNICO DE CÁLCULO TCO
+// NO TOCAR UX / NO TOCAR generateTable
+// ======================================================
+function calcularPasosYResumen(meta, context) {
+  const {
+    batteryData,
+    provincias,
+    beacons,
+    salesPoints
+  } = context;
+
+  // =========================
+  // 1) Vida base de la pila
+  // =========================
+  const vidaBase = getVidaBase(meta.tipo, meta.marca_pilas);
+  const uso   = vidaBase.uso;
+  const shelf = vidaBase.shelf;
+
+  const esDesconectable = normalizarBooleano(meta.desconectable);
+  const valor_desconexion = esDesconectable ? shelf : uso;
+
+  // =========================
+  // 2) Vida ajustada (Arrhenius + funda)
+  // =========================
+  const vida_ajustada = lifeArrheniusYears(
+    meta.tipo,
+    meta.marca_pilas,
+    meta.provincia,
+    meta.desconectable,
+    meta.funda,
+    batteryData,
+    provincias
+  );
+
+  // Factor temperatura (para UI)
+  const factor_funda = getFundaFactor(meta.funda);
+  const factor_temp = vida_ajustada && valor_desconexion
+    ? +(vida_ajustada / (valor_desconexion * factor_funda)).toFixed(3)
+    : 1;
+
+  // =========================
+  // 3) Reposiciones
+  // =========================
+  const reposiciones = vida_ajustada > 0
+    ? +(12 / vida_ajustada).toFixed(2)
+    : 0;
+
+  // =========================
+  // 4) Precio pilas
+  // =========================
+  const pack = getBatteryPackPrice(meta.tipo, meta.marca_pilas, batteryData);
+  const precio_pack   = pack.precio;
+  const precio_fuente = pack.fuente;
+
+  const coste_pilas = +(reposiciones * precio_pack).toFixed(2);
+
+  // =========================
+  // 5) Riesgo de fuga
+  // =========================
+  const prov = provincias.find(
+    p => normalizarTexto(p.provincia) === normalizarTexto(meta.provincia)
+  ) || {};
+
+  const dias_calidos     = prov.dias_anuales_30grados ?? 0;
+  const factor_provincia = prov.factor_provincia ?? 1;
+
+  const leak = getBatteryLeak(meta.tipo, meta.marca_pilas, batteryData);
+  const tasa_anual   = leak.tasa_anual;
+  const fuente_sulfat = leak.fuente;
+
+  const prob_fuga = +(tasa_anual * factor_temp * factor_provincia).toFixed(4);
+
+  // Mitigación
+  const mitDescPct  = esDesconectable ? 0.30 : 0.00;
+  const fundaL = (meta.funda || '').toLowerCase();
+  const mitFundaPct = (fundaL.includes('silicona') || fundaL.includes('eva')) ? 0.40 : 0.00;
+
+  const mitigacionPct   = Math.min(1, mitDescPct + mitFundaPct);
+  const mitigacionMult  = 1 - mitigacionPct;
+  const riesgo_final    = +(prob_fuga * mitigacionMult).toFixed(4);
+
+  // =========================
+  // 6) Coste fugas
+  // =========================
+  const costeFugaAnual = +(meta.coste_inicial * riesgo_final).toFixed(2);
+  const coste_fugas    = +(costeFugaAnual * 12).toFixed(2);
+
+  // =========================
+  // 7) Multas (12 años)
+  // =========================
+  const pNuevo  = 0.015;
+  const p15     = 0.258;
+  const edad0   = meta.edad_vehiculo || 0;
+
+  const TASA_DENUNCIA = 0.32;
+  const IMPORTE_MULTA = 200;
+  const RETARDO_MESES = 6;
+  const ADHERENCIA    = 0.80;
+
+  const mesesVida = Math.max(1, vida_ajustada * 12);
+  const pBateriaInsuf = Math.min(
+    0.5,
+    (RETARDO_MESES * (1 - ADHERENCIA)) / mesesVida
+  );
+
+  const pNoFunciona = 1 - (1 - riesgo_final) * (1 - pBateriaInsuf);
+
+  const costesMultaPorAno = Array.from({ length: 12 }, (_, k) => {
+    const edad = Math.min(edad0 + k, 15);
+    const pAveria = pNuevo + (p15 - pNuevo) * (edad / 15);
+    return IMPORTE_MULTA * TASA_DENUNCIA * pAveria * pNoFunciona;
+  });
+
+  const coste_multas = +costesMultaPorAno
+    .reduce((a, b) => a + b, 0)
+    .toFixed(2);
+
+  // =========================
+  // 8) Salida CANÓNICA
+  // =========================
+  const pasos = {
+    valor_desconexion,
+    factor_temp,
+    factor_funda,
+    vida_ajustada,
+    reposiciones,
+    precio_pack,
+    precio_fuente,
+    tasa_anual,
+    fuente_sulfat,
+    dias_calidos,
+    factor_provincia,
+    prob_fuga,
+    riesgo_final,
+    coste_fugas,
+    coste_multas
+  };
+
+  const resumen = {
+    coste_pilas,
+    mantenimiento_12y: +(coste_pilas + coste_fugas + coste_multas).toFixed(2),
+    total_12y: +(meta.coste_inicial + coste_pilas + coste_fugas + coste_multas).toFixed(2)
+  };
+
+  return { pasos, resumen };
+}
+
 app.post('/api/calcula', async (req, res) => {
   try {
     const {
@@ -933,39 +1081,17 @@ const coste_fugas_12 = +(coste_fugas * 12).toFixed(2);
 
     const total12y = Number((coste_pilas + coste_fugas_12 + coste_multas_12).toFixed(2));
 
-    const resumen = {
-      reposiciones,
-      coste_pilas,
-      coste_fugas,
-      coste_fugas_12,
-      coste_multas,
-      coste_multas_12,
-      total12y,
-      medioAnual: Number((total12y / 12).toFixed(2))
-    };
+    const context = {
+  batteryData,
+  provincias,
+  beacons,
+  salesPoints
+};
 
-    const pasos = {
-      vida_base:         uso,
-      valor_desconexion,
-      factor_temp,
-      factor_funda,
-      vida_ajustada,
-      precio_pack,
-      precio_fuente,
-      reposiciones,
-      coste_pilas,
-      tasa_anual,
-      fuente_sulfat,
-      dias_calidos,
-      factor_provincia: factor_prov,
-      fuente_temp,
-      fuente_dias,
-      prob_fuga,
-      riesgo_final,
-      coste_fugas,
-      coste_multas,
-	  mitigacion: mitigacionMult
-    };
+const { pasos, resumen } = calcularPasosYResumen(meta, context);
+
+return res.json({ meta, pasos, resumen });
+
 
     // Fallback de marca/modelo desde la baliza seleccionada (por si no vienen en el body)
 const marca_baliza_eff = (marca_baliza && String(marca_baliza).trim()) 
