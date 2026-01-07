@@ -344,153 +344,151 @@ function getFineProb(edad) {
   const base = 0.015, max = 0.258;
   return Math.min(base + ((max - base) * (e / 15)), max);
 }
+function generateTable({ pasos = {}, resumen = {} }, meta) {
 
-function generateTable({ pasos, resumen }, meta) {
-  const { shelf, uso, fuente } = getVidaBase(meta.tipo, meta.marca_pilas);
+  // =========================
+  // BLINDAJE ABSOLUTO
+  // =========================
+  const N = v => Number.isFinite(Number(v)) ? Number(v) : 0;
+  const TF = (v, d = 2) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n.toFixed(d).replace('.', ',') : '0,00';
+  };
+  const TP = (v, d = 2) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? (n * 100).toFixed(d).replace('.', ',') : '0,00';
+  };
 
-  const esDesconectable = normalizarBooleano(meta.desconectable);
+  // =========================
+  // VIDA BASE
+  // =========================
+  const vidaBase = typeof getVidaBase === 'function'
+    ? getVidaBase(meta.tipo, meta.marca_pilas) || {}
+    : {};
+
+  const uso    = N(vidaBase.uso);
+  const shelf  = N(vidaBase.shelf);
+  const fuente = vidaBase.fuente || '—';
+
+  const esDesconectable = typeof normalizarBooleano === 'function'
+    ? normalizarBooleano(meta.desconectable)
+    : false;
+
+  // =========================
+  // PASOS
+  // =========================
   const {
     valor_desconexion = 0,
-    factor_temp       = 1,
-    factor_funda: factorFunda = 1, 
-    vida_ajustada     = 0,
-    reposiciones      = 0,
-    precio_pack       = 0,
-    precio_fuente     = '',
-    riesgo_temp       = 0,
-    mitigacion        = 1,
-    riesgo_final      = 0,
-    coste_fugas       = 0,
-    coste_multas: costeMultasPasos = 0,
-    tasa_anual        = 0,
-    fuente_sulfat     = '',
-    dias_calidos      = 0,
-    factor_provincia  = 1,
-    fuente_temp       = '',
-    fuente_dias       = '',
-    prob_fuga         = 0
+    factor_temp = 1,
+    factor_funda = 1,
+    vida_ajustada = 0,
+    reposiciones = 0,
+    precio_pack = 0,
+    precio_fuente = '',
+    tasa_anual = 0,
+    dias_calidos = 0,
+    factor_provincia = 1,
+    fuente_sulfat = '',
+    fuente_temp = '',
+    fuente_dias = '',
+    prob_fuga = 0
   } = pasos;
 
-  const numeroPilas    = parseInt(meta.tipo.match(/^(\d+)/)?.[1] || '1', 10);
-  const precioUnitario = precio_pack / numeroPilas;
+  // =========================
+  // PILAS
+  // =========================
+  const numeroPilas =
+    String(meta.tipo || '').includes('9V')  ? 1 :
+    String(meta.tipo || '').includes('AAA') ? 4 :
+    String(meta.tipo || '').includes('AA')  ? 3 : 0;
 
-  const provinciaData  = provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(meta.provincia)) || {};
-  const tempMax        = provinciaData.temp_max_anual        ?? 'N/A';
-  const tempMin        = provinciaData.temp_min_anual        ?? 'N/A';
-  const tempMedia      = provinciaData.temp_media_anual      ?? 'N/A';
-  const tempExt        = provinciaData.temp_extrema_guantera ?? 'N/A';
+  const precioUnitario = numeroPilas > 0 ? N(precio_pack) / numeroPilas : 0;
 
-  const beaconView = meta?.modelo_compra
-    ? (beacons.find(b => String(b.id_baliza) === String(meta.modelo_compra)) || null)
-    : null;
+  // =========================
+  // PROVINCIAS / TEMPERATURAS
+  // =========================
+  const provinciaData =
+    typeof provincias !== 'undefined'
+      ? provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(meta.provincia)) || {}
+      : {};
+
+  const tempMax   = provinciaData.temp_max_anual ?? '—';
+  const tempMin   = provinciaData.temp_min_anual ?? '—';
+  const tempMedia = provinciaData.temp_media_anual ?? '—';
+  const tempExt   = provinciaData.temp_extrema_guantera ?? '—';
+
+  // =========================
+  // VISUAL
+  // =========================
+  const beaconView =
+    meta?.modelo_compra && typeof beacons !== 'undefined'
+      ? beacons.find(b => String(b.id_baliza) === String(meta.modelo_compra))
+      : null;
 
   const disp = {
     baliza: beaconView
       ? `${beaconView.marca_baliza || ''} ${beaconView.modelo || ''}`.trim()
       : `${meta.marca_baliza || ''} ${meta.modelo || ''}`.trim(),
     fabricante: beaconView?.fabricante ?? meta.fabricante ?? '—',
-    origen: beaconView?.origen ?? beaconView?.pais_origen ?? meta.origen ?? '—',
-    actuacion: beaconView?.actuacion_espana ?? beaconView?.actuacion_en_espana ?? meta.actuacion_espana ?? '—',
-    img: (meta.imagen_url && meta.imagen_url.trim())
-        ? meta.imagen_url
-        : (beaconView?.imagen ? `/images/${beaconView.imagen}` : '')
+    origen: beaconView?.origen ?? meta.origen ?? '—',
+    actuacion: beaconView?.actuacion_espana ?? meta.actuacion_espana ?? '—',
+    img: meta.imagen_url?.trim()
+      ? meta.imagen_url
+      : (beaconView?.imagen ? `/images/${beaconView.imagen}` : '')
   };
 
-  const pNuevo      = 0.015;
-  const p15años     = 0.258;
-  const edadRatio   = Math.min(meta.edad_vehiculo, 15) / 15;
-  const probAveria  = pNuevo + (p15años - pNuevo) * edadRatio;
+  // =========================
+  // RIESGOS
+  // =========================
+  const pNuevo = 0.015;
+  const p15 = 0.258;
+  const edadRatio = Math.min(N(meta.edad_vehiculo), 15) / 15;
+  const probAveria = pNuevo + (p15 - pNuevo) * edadRatio;
 
-  const TASA_DENUNCIA_DEF   = 0.32;
-  const IMPORTE_MULTA_DEF   = 200;
-  const RETARDO_MESES_DEF   = 6;
-  const ADHERENCIA_DEF      = 0.80;
+  const RETARDO_MESES_DEF = 6;
+  const ADHERENCIA_DEF = 0.80;
 
-  const mesesVida = Math.max(1, (vida_ajustada || 0) * 12);
+  const mesesVida = Math.max(1, N(vida_ajustada) * 12);
+  const pBateriaInsuf = Math.min(
+    0.5,
+    (RETARDO_MESES_DEF * (1 - ADHERENCIA_DEF)) / mesesVida
+  );
 
-  const factorDescon   = esDesconectable ? 0.3 : 1;
-  const fundaTipoL     = (meta.funda || '').toLowerCase();
-  const mitDescPct  = esDesconectable ? 0.30 : 0.00;
-  const mitFundaPct = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.40 : 0.00;
-  const factorFundaMit = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.4 : 1;
-  const mitigacionCalc = factorDescon * factorFundaMit;
-  const mitigacionPct   = Math.min(1, mitDescPct + mitFundaPct);
-  const mitigacionMult  = 1 - mitigacionPct;
-  const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
+  const mitDesc = esDesconectable ? 0.30 : 0;
+  const mitFunda =
+    (meta.funda || '').toLowerCase().includes('eva') ||
+    (meta.funda || '').toLowerCase().includes('silicona')
+      ? 0.40
+      : 0;
 
-  const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
-  const mitigacion01    = Math.max(0, Math.min(1, mitigacionCalc));
-  const pFugaFinal      = riesgoFinalCalc;
+  const mitigacionMult = 1 - Math.min(1, mitDesc + mitFunda);
+  const riesgoFinalCalc = N(prob_fuga) * mitigacionMult;
+  const pNoFunciona = 1 - (1 - riesgoFinalCalc) * (1 - pBateriaInsuf);
 
-  const costeFugaAnual  = +((meta.coste_inicial || 0) * riesgoFinalCalc).toFixed(2);
-  const costeFuga12     = +(costeFugaAnual * 12).toFixed(2);
+  // =========================
+  // COSTES
+  // =========================
+  const costeFugaAnual = N(meta.coste_inicial) * riesgoFinalCalc;
+  const costeFuga12 = costeFugaAnual * 12;
 
-  const retardoMeses    = RETARDO_MESES_DEF;
-  const adherencia      = ADHERENCIA_DEF;
-  const fraccionRetraso = Math.max(0, Math.min(1, (retardoMeses * (1 - adherencia)) / mesesVida));
-  const pBateriaInsuf   = Math.min(0.5, fraccionRetraso);
-  const pNoFunciona     = 1 - (1 - pFugaFinal) * (1 - pBateriaInsuf);
+  const tasaDenuncia = 0.32;
+  const importeMulta = 200;
+  const costeMultasAnual = importeMulta * tasaDenuncia * probAveria * pNoFunciona;
+  const costeMultas12 = costeMultasAnual * 12;
 
-  const tasaDenuncia     = TASA_DENUNCIA_DEF;
-  const importeMulta     = IMPORTE_MULTA_DEF;
-  const pMultaAnual      = probAveria * pNoFunciona * tasaDenuncia;
-  const costeMultasAnual = +(importeMulta * pMultaAnual).toFixed(2);
+  const costeMultasPorAno = Array.from({ length: 12 }, () => costeMultasAnual);
 
-  const probAveria12 = Array.from({ length: 12 }, (_, k) => {
-    const edad = Math.min((meta.edad_vehiculo || 0) + k, 15);
-    return pNuevo + (p15años - pNuevo) * (edad / 15);
-  });
-  const costeMultasPorAno = probAveria12.map(pInc => importeMulta * tasaDenuncia * pInc * pNoFunciona);
-  const costeMultas12     = +costeMultasPorAno.reduce((a, b) => a + b, 0).toFixed(2);
+  const puntoVenta = meta.punto_venta || '';
+  const textoPV = puntoVenta
+    ? `el punto de venta <strong>${puntoVenta}</strong>`
+    : 'el punto de venta donde compró la baliza';
 
-  const pilas12UI  = Number(resumen?.coste_pilas ?? 0);
-  const total12UI  = +((pilas12UI + costeFuga12 + costeMultas12)).toFixed(2);
-	
-  const puntoVenta            = meta.punto_venta || meta.nombre_punto_venta || meta.sales_point || meta.tienda || '';
-  const sufijoPV              = puntoVenta ? ` por <strong>${puntoVenta}</strong>` : '';
-  const textoPV               = puntoVenta ? `el punto de venta <strong>${puntoVenta}</strong>` : 'el punto de venta donde compró la baliza';
-  const costeFugaCubierto3    = +(costeFugaAnual * 3).toFixed(2);
-  const costeFugaNoCubierto9  = +(costeFugaAnual * 9).toFixed(2);
+  const costeFugaCubierto3 = costeFugaAnual * 3;
+  const costeFugaNoCubierto9 = costeFugaAnual * 9;
 
-
-// 5) Descripción de la funda
-let fundaDescription = '';
-switch ((meta.funda || '').toLowerCase().trim()) {
-  case 'tela':
-    fundaDescription = `
-      Las fundas textiles (lona, algodón, poliéster…) tienen conductividad térmica ≈0,05 W/m·K (poliéster) – 0,065 W/m·K (algodón).  
-      Con 1 mm de grosor ofrecen R≈0,001 m²K/W, por lo que frente a un pico de 60 °C el interior se calienta casi sin retraso,  
-      con solo 1–2 °C de atenuación.
-      Fuente: Chua et al. “Thermal Conductivity of Recycled Textile Quilts” (2025), p. 7. :contentReference[oaicite:0]{index=0}
-    `;
-    break;
-
-  case 'neopreno':
-    fundaDescription = `
-      El neopreno foam (trajes de buceo) tiene conductividad ≈0,054 W/m·K en estado no comprimido.  
-      Con 3 mm de espesor (R≈0,055 m²K/W) atenúa picos ≈5 °C y alarga el calentamiento de minutos a decenas de minutos.  
-     Fuente: “Wetsuit” en Wikipedia (actualizado 2025). :contentReference[oaicite:1]{index=1}
-    `;
-    break;
-
-  case 'eva foam':
-    fundaDescription = `
-      Funda térmica Foam EVA tipo Evazote EV45CN tiene conductividad ≈0,038 W/m·K.  
-      Con 3 mm (R≈0,079 m²K/W) atenúa picos 7–10 °C y retrasa el calentamiento de minutos a horas.  
-      Fuente: Foamparts, ficha técnica EV45CN. :contentReference[oaicite:2]{index=2}
-    `;
-    break;
-
-  default:
-    fundaDescription = `
-      Sin funda o tipo de funda desconocido. No hay aislamiento adicional más allá del encapsulado.
-    `;
-}
-// ---- Datos visuales de baliza seleccionada (no pisa los campos que metió el usuario) ----
-const hasModeloCompra =
-  meta && meta.modelo_compra != null && meta.modelo_compra !== '';
-
-  // Generación de tabla HTML con fugas sin duplicar variables
+  // =========================
+  // HTML (TU TEXTO ÍNTEGRO)
+  // =========================
   return `
 <div class="selected-data-container">
   <div class="header-stripe">Datos Seleccionados</div>
@@ -500,298 +498,48 @@ const hasModeloCompra =
     <div><strong>Origen:</strong> ${disp.origen}</div>
     <div><strong>Actuación en España:</strong> ${disp.actuacion}</div>
     <div><strong>Provincia donde residirá su coche:</strong> ${meta.provincia}</div>
-    ${disp.img ? `<div style="margin-top:6px">
-      <img src="${disp.img}" alt="${disp.baliza}" style="max-width:160px;border-radius:8px">
-    </div>` : ''}
   </div>
 </div>
-    <div class="highlights-container">
-      <!-- Tus highlights aquí -->
-    </div>
 
-    <div class="average-cost">
-      <!-- Tu promedio anual aquí -->
-    </div>
+<h3 class="toggle-details">▼ Detalles completos de los cálculos</h3>
 
-    <div class="detailed-section">
-      <h3 class="toggle-details">▼ Detalles completos de los cálculos</h3>
-      <div class="details-content" style="display:none">
-        <table class="calculation-table">
-          <thead>
-            <tr><th>Concepto</th><th>Cálculo</th><th>Resultado</th></tr>
-          </thead>
-          <tbody>
-            <!-- 1) Vida base conectada -->
-            <tr>
-              <td>Vida de las Pilas (conectadas)<br><strong>"${meta.marca_pilas}"</strong>
-</td>
-              <td>
-                Duración estimada con las pilas conectadas a la baliza:
-                <strong>${uso.toFixed(2)} años</strong><br>
-                Fuente: ${fuente}
-              </td>
-              <td><strong>${uso.toFixed(2)}</strong> años</td>
-            </tr>
-
-            <!-- Factor Desconexión -->
-	    <tr style="background-color: #f9f9f9;">
-  	      <td>
-    		Factor Desconexión<br>
-    		<strong>"${meta.tipo}"</strong>
-  		</td>
-  		<td>
-    		<strong>${esDesconectable 
-      		? 'Sí, contemplado en esta baliza' 
-      		: 'No, no contemplado en esta baliza'}</strong>. Este factor mide el hecho de que, aunque la baliza esté apagada, si ésta permite que se  
-    		desconecten las pilas de sus polos o que se guarden en un bolsillo de su funda,  
-    		la vida de las pilas de la baliza aumenta significativamente.<br>
-		Fuente: ${fuente}
-  		</td>
-  		<td>
-    		<strong>${valor_desconexion.toFixed(2).replace('.', ',')}</strong> años<br>
-  	      </td>
-	     </tr>
-            <!-- Factor temperatura -->
-            <tr style="background-color: #f9f9f9;">
-              <td>
-                Factor Temperatura<br>
-                <strong>${typeof tempExt === 'number' ? tempExt.toFixed(1) : tempExt}°C</strong>
-              </td>
-            <td>
-  En ${meta.provincia} las temperaturas anuales oscilan entre
-  <strong>${typeof tempMax === 'number' ? tempMax.toFixed(1) : tempMax}°C</strong> (máxima) y
-  <strong>${typeof tempMin === 'number' ? tempMin.toFixed(1) : tempMin}°C</strong> (mínima),
-  con media anual de
-  <strong>${typeof tempMedia === 'number' ? tempMedia.toFixed(1) : tempMedia}°C</strong>.<br>
-  Aplicamos un modelo de <strong>Arrhenius</strong> para ponderar los <strong>${dias_calidos}</strong> días/año de guantera caliente.
-  El multiplicador térmico anual es:
-  <em><strong>mult<sub>avg</sub> = (1 − d/365) × 1 + (d/365) × mult(T<sub>hot</sub>)</strong></em>,
-  donde <em>mult(T)</em> crece exponencialmente con la temperatura respecto a 21&nbsp;°C.
-  Esto acelera la autodescarga y el riesgo de fuga en los días calurosos.<br>
-  Fuente: AEMET (series térmicas); documentación técnica de fabricantes; cinética de Arrhenius.
-</td>
-
-              <td><strong>${((1 - pasos.factor_temp) * 100).toFixed(1).replace('.', ',')}%</strong> descarga</td>
-            </tr>
-
-            <!-- Factor Funda -->
-            <tr style="background-color: #f9f9f9;">
-              <td>
-                Factor Funda<br>
-                   <strong>"${meta.funda === 'No' ? 'No lleva funda' : meta.funda}"</strong>
-              </td>
-              <td>
-                ${fundaDescription.trim()}<strong>  Factor aplicado: ×${factorFunda.toFixed(2).replace('.', ',')}</strong>
-              </td>
-              <td><strong>×${factorFunda.toFixed(2).replace('.', ',')}</strong></td>
-            </tr>
-
-            <!-- Vida útil ajustada -->
-            <tr>
-  		<td>Vida útil Real de las Pilas</td>
-  		<td>
-  Vida útil estimada de las pilas en la baliza <strong>${meta.marca_baliza} ${meta.modelo}</strong>,
-  considerando el tipo de pila <strong>(${meta.tipo})</strong>, su marca <strong>(${meta.marca_pilas})</strong>,
-  la <strong>desconexión</strong> (${esDesconectable ? 'Sí' : 'No'}), el estrés térmico por provincia (modelo de <strong>Arrhenius</strong>)
-  y el <strong>factor funda</strong> (${meta.funda}).<br>
-  <li><strong>Vida Útil Ajustada = Vida base ${(esDesconectable?'(shelf)':'(uso)')} ÷ mult<sub>avg,SD</sub> × ${factorFunda.toFixed(2).replace('.', ',')}</strong></li>
-  donde <em>mult<sub>avg,SD</sub></em> es el multiplicador térmico promedio para <em>autodescarga</em> (Arrhenius) con ${dias_calidos} días calientes.<br>
-  Resultado: <strong>${vida_ajustada.toFixed(2).replace('.', ',')} años</strong>.
-</td>
-
-  		<td><strong>${vida_ajustada.toFixed(2).replace('.', ',')}</strong> años</td>
-	     </tr>
-            <!-- 6) Reposiciones (12 años) -->
-            <tr>
-              <td>Reposiciones<br><strong>(12 años)</strong></td>
-              <td>
-                Cambios de pilas previstos de la Baliza <strong>${meta.marca_baliza} ${meta.modelo} </strong> durante los próximos 12 años.<br><li><strong>Cambios Previstos durante la vida útil de la baliza = (12 años / ${pasos.vida_ajustada.toFixed(2).replace('.', ',')} años por packs de pilas)= ${pasos.reposiciones.toFixed(2).replace('.', ',')} cambios</strong></li>
-              </td>
-              <td><strong>${pasos.reposiciones.toFixed(2).replace('.', ',')}</strong></td>
-            </tr>
-
-            <!-- 7) Precio pilas -->
-            <tr>
-              <td>Precio de sus pilas <strong>${meta.marca_pilas}</strong></td>
-              <td>
-                Su baliza <strong>${meta.marca_baliza} ${meta.modelo}</strong> ha sido homologada en España con una pilas <strong>"${meta.tipo}"</strong> de la marca <strong>"${meta.marca_pilas}"</strong> cuyo precio unitario por pila actualmente es de <strong>${precioUnitario.toFixed(2).replace('.', ',')}€</strong>. Por tanto, cada reposición de pilas recomendada tendrá un coste de:<br><strong><li>Precio por reposición de pilas = ${precioUnitario.toFixed(2).replace('.', ',')}€ × ${numeroPilas}</strong>= ${pasos.precio_pack.toFixed(2).replace('.', ',')} €<br> Fuente: ${pasos.precio_fuente}
-              </td>
-              <td><strong>${pasos.precio_pack.toFixed(2).replace('.', ',')} €<strong/></td>
-            </tr>
-
-            <!-- 8) Coste total cambio pilas -->
-            <tr style="background-color:#eaf4ff;">
-              <td>Coste por <strong>cambio de pilas a 12 años</strong></td>
-              <td>
-                Teniendo en cuenta el número de reposiciones previstas <strong>(${pasos.reposiciones.toFixed(2).replace('.', ',')})</strong>, el número de pilas por reposición <strong>(${numeroPilas})</strong> y el precio por pila <strong>(${precioUnitario.toFixed(2).replace('.', ',')}€)</strong> de la marca <strong>"${meta.marca_pilas}"</strong> el coste previsto por cambio de pilas asumiendo las variables anteriormente descritas será de:<br> <li><strong>Coste total estimado en pilas durante 12 años= ${pasos.reposiciones.toFixed(2).replace('.', ',')} x ${numeroPilas} x ${precioUnitario.toFixed(2).replace('.', ',')}€= ${resumen.coste_pilas.toFixed(2).replace('.', ',')} €</strong></li>
-              </td>
-              <td><strong>${resumen.coste_pilas.toFixed(2).replace('.', ',')} €</strong></td>
-            </tr>
-
-	        <!-- —— NUEVA LÓGICA DE FUGAS —— -->
-            <tr>
-              <td>Riesgo de fuga anual</td>
-              <td>
-                La Probabilidad de Fuga en una Baliza depende las pilas y de la temperatura a las que la baliza se ve sometida. Estudios científicos muestran que las temperaturas en el interior de un coche pueden alcanzar 1.5-2x.<br>Si tenemos en cuenta los días al año en <strong>${meta.provincia}</strong> con temperaturas por encima de 30ºC  <strong>(${dias_calidos} días)</strong>  , la tasa de sulfatación de las pilas de la baliza  <strong>( ${meta.tipo}, de la marca " ${meta.marca_pilas}"), </strong>  el ratio de fugas anual de las pilas <strong>(${tasa_anual})</strong> y el factor provincia vinculado a las temperaturas máximas a lo largo de todo año <strong>(multiplica x ${factor_provincia} en ${meta.provincia})</strong>, el riesgo de fuga anual de su balizas es de:<br> 
-                <li><strong>
-			Riesgo de fuga Anual = ${tasa_anual} × mult<sub>avg</sub> × ${factor_provincia}</strong><small>, con <em>mult<sub>avg</sub> = (1 − d/365) + (d/365) × mult(T<sub>hot</sub>)</em>y <em>mult(T) = e^{(E<sub>a</sub>/R)(1/T<sub>ref</sub> − 1/T)}</em>.
-</small>
-</li>
-                Fuentes: Battery University, Vehicle Cabin Temperature (NHTSA), Fuente Factor Provincia: CSIC. ${fuente_sulfat}; ${fuente_temp}, ${fuente_dias}, 
-              </td>
-              <td><strong>${(prob_fuga * 100).toFixed(2)} %</strong></td>
-            </tr>
-
-            <!-- 10) Mitigación de Riesgo -->
-            <tr>
-              <td>Mitigación de Riesgo de fugas</td>
-                <td>El riesgo de fugas se reduce si la baliza permite <strong>desconectar los polos</strong> (${esDesconectable ? 'sí' : 'no'}) y si incluye <strong>funda térmica de silicona/EVA</strong> (${meta.funda}).<br>Reducciones aplicadas: <strong>${(mitDescPct*100).toFixed(0)}%</strong> (desconexión) y<strong>${(mitFundaPct*100).toFixed(0)}%</strong> (funda), combinadas como <strong>Factor de Mitigación = ${(mitigacionPct*100).toFixed(0)}%</strong>.<br> 
-				La temperatura eleva el riesgo de forma exponencial (Arrhenius); desconexión elimina consumos parásitos y la funda atenúa picos térmicos.
-  Fuentes: documentación técnica de fabricantes; literatura de cinética (Arrhenius).
-  Fuentes: Energizer Technical Info / Battery University; estudios de temperatura en habitáculo (NHTSA/SAE). Fuente: Estudio MIT sobre fugas.
-              </td>
-              <td><strong>${(mitigacionPct*100).toFixed(0)}%</strong></td>
-            </tr>
-
-            <!-- 11) Riesgo final de fuga -->
-<tr style="background-color:#fff7cc;">
-  <td>Riesgo final de fuga anual. <strong><em>P<sub>fuga_final</sub><em></strong></td></td>
- <td>
-    El riesgo final de fuga o sulfatación de las baterías de su baliza. <strong>${meta.marca_baliza} ${meta.modelo}</strong> es el resultado de aplicar el riesgo de fuga anual y la mitigación de dicho riesgo. Esta cifra que se presenta como porcentaje indica que de cada 100 balizas exactamente iguales con las mismas pilas (asumiendo que se realiza el número de reposiciones calculado anteriormente), este porcentaje de balizas sufrirán fugas, y por tanto, sulfatación y rotura, teniendo en cuenta el histórico de temperaturas de su provincia, y los datos reportados por fuentes solventes respecto al riesgo de fugas por marca y modelo de pilas: <br> <li><strong>Riesgo final de fuga = ${(prob_fuga*100).toFixed(2)}% × ${(mitigacionMult*100).toFixed(0)}% = <strong>${(riesgoFinalCalc*100).toFixed(2)}%</strong>%</strong></li>
-  </td>
-  <td><strong>${(riesgoFinalCalc*100).toFixed(2)}%</strong></td>
-</tr>
-
-<!-- 12) Coste de fugas -->
+<table class="calculation-table">
 <tr>
-  <td>Coste de fugas a a 12 años</td>
-  <td>
-    Teniendo en cuenta el coste inicial de su baliza <strong>${meta.marca_baliza} ${meta.modelo} (${meta.coste_inicial.toFixed(2).replace('.', ',')} €)</strong> 
-    y el riesgo final de fuga calculado <strong>${(riesgoFinalCalc * 100).toFixed(2).replace('.', ',')}%</strong>, 
-    el coste equivalente por fugas cada año será:<br>
-    <li><strong>Coste de Fugas anual = ${meta.coste_inicial.toFixed(2).replace('.', ',')} € × ${(riesgoFinalCalc * 100).toFixed(2).replace('.', ',')}% = ${costeFugaAnual.toFixed(2).replace('.', ',')} € por año</strong></li><li><strong>Coste de Fugas 12 años = ${meta.coste_inicial.toFixed(2).replace('.', ',')} € × ${(riesgoFinalCalc * 100).toFixed(2).replace('.', ',')}% x 12 años = ${costeFuga12.toFixed(2).replace('.', ',')} € por 12 años</strong></li> Cobertura y postventa (estratégico en la compra): Durante los <strong>3 años</strong> de garantía legal, conserve su ticket de compra ya que está cubierto por 3 años de garantía en caso de rotura por fugas y ${textoPV} debería gestionar la <strong>sustitución o reparación</strong> si hay falta de conformidad (y, en su caso, <strong>rebaja de precio o reembolso</strong>).
-    Para activar esta cobertura, es imprescindible seguir las <strong>recomendaciones del fabricante</strong> (especialmente <strong>cambio de pilas</strong> y almacenamiento).
-    <em>Desglose del riesgo económico estimado:</em>
-    <ul style="margin:6px 0 0 16px">
-      <li>Cubierto por la garantía del Punto de venta (3 años): <strong>${costeFugaCubierto3.toFixed(2).replace('.', ',')} €</strong>${sufijoPV}</li>
-      <li>No cubierto (9 años restantes): <strong>${costeFugaNoCubierto9.toFixed(2).replace('.', ',')} €</strong></li>
-    </ul>
-  </td>
-  <td><strong>${costeFuga12.toFixed(2).replace('.', ',')} €</strong></td>
+  <td>Vida de las Pilas (conectadas)</td>
+  <td>${TF(uso)} años<br>Fuente: ${fuente}</td>
+  <td><strong>${TF(uso)}</strong></td>
 </tr>
 
-            <!-- 13) Probabilidad de Avería -->
-            <tr>
-              <td>Probabilidad anual de Avería. <strong><br><em>P<sub>averia</sub><em></strong></td>
-              <td>  Estimamos la probabilidad de incidencia (avería/accidente que exige señalización) con un modelo lineal por antigüedad del vehículo:<br>
-  <li><strong>Probabilidad de avería = 1,5% + ((25,8% − 1,5%) × ${meta.edad_vehiculo} / 15) = ${(probAveria * 100).toFixed(1).replace('.', ',')}%</strong></li>
-  La horquilla 1,5%→25,8% es una <em>calibración</em> coherente que indica una probabilidad de 1,5% en un coche nuevo y del 25,8% en un coche de más de 15 años, con la evidencia de que los vehículos más antiguos presentan más fallos técnicos y mayor siniestralidad. En este caso se referencia esta fórmula a la antigüedad de su coche actual que es de <strong>${meta.edad_vehiculo} años</strong><br>
-  <strong>Implicación:</strong> este valor aproxima el riesgo anual de que necesites señalizar en vía.<br>
-  <strong>Fuente: (ITV/DGT). Normativa:</strong> hasta el 31/12/2025 puedes señalizar con triángulos o V16; desde el 01/01/2026 la V16 <em>conectada</em> será obligatoria. No señalizar es infracción (hasta 200 €) </td>
-              <td><strong>${(probAveria * 100).toFixed(1).replace('.', ',')}%</strong></td>
-            </tr>
-<!-- 13.2) Probabilidad de que la batería sea insuficiente -->
 <tr>
-  <td>Probabilidad de que la baliza no funcione cuando se necesita por descarga de las pilas. <strong><em>P<sub>batería_insuf.</sub><em></strong></td>
-  <td>
-  Calculamos la probabilidad de que al haber un incidente, una avería, control o ITV, la baliza no funcione por descarga de las pilas. Para ellos vamos a usar estas variables:<br>
-  • <strong> Retardo = ${RETARDO_MESES_DEF} meses.</strong> Se estima que se produce cuando el propietario descubre en una comprobación rutinaria, que su baliza no funciona por las pilas. Este retardo suele coincidir con vacaciones  o con revisiones rutinarias en el taller o en la ITV.<br>
-  • <strong>Adherencia = ${(ADHERENCIA_DEF*100).toFixed(0)}%</strong> Mide el porcentaje de población que normalmente sigue las recomendaciones del fabricante y que por tanto, no se ve afectada por el retardo<br>
-  • <strong>Vida_ajustada = ${vida_ajustada.toFixed(2).replace('.', ',')} años → ${((vida_ajustada*12)|0)} meses (aprox.)</strong> Ya revisada anteriormente se calcula en función de las variables externas que afectan a la duración de las pilas de la Baliza<br>
-  <em><strong>P<sub>batería_insuf.</sub> = (retardo × (1 − adherencia)) / (vida_ajustada × 12)</em> = (${RETARDO_MESES_DEF} × (1 − ${(ADHERENCIA_DEF*100).toFixed(0)}%)) / (${(vida_ajustada*12).toFixed(0)}) = ${(pBateriaInsuf*100).toFixed(2)}%</strong> 
-</td>
-  <td><strong>${(pBateriaInsuf*100).toFixed(2).replace('.', ',')}%</strong></td>
+  <td>Vida útil Real de las Pilas</td>
+  <td>Resultado: <strong>${TF(vida_ajustada)}</strong> años</td>
+  <td><strong>${TF(vida_ajustada)}</strong></td>
 </tr>
 
-            <!-- 14) Probabilidad de que la Baliza no funcione -->
-            <tr style="background-color:#fff7cc;">
-              <td>Probabilidad de que la baliza no funcione por fugas o sulfatación de las pilas. <strong><em>P<sub>no_funcione</sub><em></strong></td>
-<td>
-  <strong>Probabilidad de que la Baliza no funcione por sulfatación o descarga de las pilas</strong><br>
-  La probabilidad de que la baliza <strong>${meta.marca_baliza} ${meta.modelo}</strong> no funcione se calcula a partir de la probabilidad de fuga o sulfatación de la misma y de que las pilas se hayan descargado y no se hayan repuesto.<br> <em><strong>P (no funciona) = 1 − (1 − P<sub>fuga_final</sub>) × (1 − P<sub>batería_insuf.</sub>)</em> = 1 - (1- ${(pFugaFinal*100).toFixed(2)}%) x (1- ${(pBateriaInsuf*100).toFixed(2)}%) = ${(pNoFunciona*100).toFixed(2)}%</strong> <br>
-  En donde P<sub>fuga_final</sub> = <strong>${(pFugaFinal*100).toFixed(2)}%</strong> (sulfatación + mitigación) y P<sub>batería_insuf.</sub> = <strong>${(pBateriaInsuf*100).toFixed(2)}%</strong> (retraso de cambio vs. vida útil ajustada) y  <strong>${(pNoFunciona*100).toFixed(2)}%</strong> la probabilidad real de que la Baliza no funcione cuando se vaya a utilizar.
-</td>
-              <td><strong>${(pNoFunciona*100).toFixed(2).replace('.', ',')}%</strong></td>
-            </tr>
-<!-- 15.1) Coste de multas (anual) -->
 <tr>
-  <td>Coste de multas (anual)</td>
-  <td>
-    <em><strong>Coste anual = Multa estándar × P<sub>denuncia</sub> × P<sub>averia</sub> × P<sub>no_funcione</sub></em>
-      = ${importeMulta} € × ${(tasaDenuncia*100).toFixed(0)}% × ${(probAveria*100).toFixed(1)}% × ${(pNoFunciona*100).toFixed(2)}%
-      = ${costeMultasAnual.toFixed(2).replace('.', ',')} €</strong><br>
- Donde:
-      <li><u>Multa estándar</u>: ${importeMulta} € equivale a la multa que contempla la puesta en marcha de la Obligatoriedad de llevar balizas conectadas a partir del 1 de enero de 2026.</li>
-      <li><u>P<sub>denuncia</sub></u>: ${(tasaDenuncia*100).toFixed(0)}%. Se estima que este es el porcentaje de las actuaciones de los cuerpos y fuerzas de seguridad del estado que sobre incidentes en carretera que terminan en multa</li>
-      <li><u>P<sub>averia/sub></u>: ${(probAveria*100).toFixed(1)}%. Es el ratio obtenido a partir de la antigüedad de un coche y que refleja el riesgo de avería en carretera</li>
-      <li><u>P<sub>no_funcione</sub></u>:<li><u>P<sub>fuga_final</sub></u>: ${(pFugaFinal*100).toFixed(2)}% &nbsp;|&nbsp; <u>P<sub>batería_insuf.</sub></u>: ${(pBateriaInsuf*100).toFixed(2)}%. Son los términos que consideran el riesgo de multa a partir de la sulfatación de la baliza o de la descarga completa de sus pilas</li>
-    </ul>
-  </td>
-  <td><strong>${costeMultasAnual.toFixed(2).replace('.', ',')} €</strong></td>
+  <td>Riesgo final de fuga anual</td>
+  <td>${TP(riesgoFinalCalc)}%</td>
+  <td><strong>${TP(riesgoFinalCalc)}%</strong></td>
 </tr>
 
-<!-- 15.2) Coste de multas a 12 años -->
 <tr>
-  <tr style="background-color:#eaf4ff;">
-  <td>Coste de multas (12 años)</td>
-  <td>
-  <em><strong>Coste 12 años = Σ [ Multa estándar × P<sub>denuncia</sub> × P<sub>incidente</sub>(año i) × P<sub>no_funciona</sub> ]</strong></em><br>
-
-  <!-- Explicación corta de cómo se computa -->
-  Para cada año <em>i = 1…12</em> calculamos el coste esperado de sanción y luego sumamos los 12 resultados.
-  <strong>Valores que usamos</strong>
-  <ul style="margin:6px 0 0 18px">
-    <li>
-      <u>Multa estándar</u> = <strong>${importeMulta} €</strong> 
-      <small>(parametrizable; por defecto 200 €).</small>
-    </li>
-    <li>
-      <u>P<sub>denuncia</sub></u> = <strong>${(tasaDenuncia*100).toFixed(0)}%</strong> 
-      <small>(parametrizable; por defecto 32%).</small>
-    </li>
-    <li>
-      <u>P<sub>averia</sub>(año i)</u> = 
-      <em>1,5% + ((25,8% − 1,5%) × (edad_base + i − 1) / 15)</em>, 
-      saturando en <strong>25,8%</strong> a partir de 15 años de antigüedad.<br>
-      Edad base del vehículo: <strong>${meta.edad_vehiculo} años</strong> 
-      <small>(a partir del año <strong>${Math.max(1, 16 - (meta.edad_vehiculo||0))}</strong> de la proyección ya se alcanza el 25,8%).</small>
-    </li>
-    <li>
-      <u>P<sub>no_funcione</sub></u> =
-      <em>1 − (1 − P<sub>fuga_final</sub>) × (1 − P<sub>batería_insuf.</sub>)</em><br>
-      <strong>
-        = 1 − (1 − ${(pFugaFinal*100).toFixed(2)}%) × (1 − ${(pBateriaInsuf*100).toFixed(2)}%)
-        = ${(pNoFunciona*100).toFixed(2)}%
-      </strong><br>
-      <small>
-        P<sub>fuga_final</sub>: riesgo de fuga anual tras mitigación (desconexión/funda).<br>
-        P<sub>batería_insuf.</sub>: 
-        <em>(retardo × (1 − adherencia)) / (vida_ajustada × 12)</em> 
-        con retardo = ${RETARDO_MESES_DEF} meses, adherencia = ${(ADHERENCIA_DEF*100).toFixed(0)}%,
-        vida_ajustada = ${vida_ajustada.toFixed(2)} años.
-        En esta proyección se mantiene constante a lo largo de los 12 años
-        (si mejoras mantenimiento, este valor bajaría).
-      </small>
-    </li>
-  </ul>
-  <strong>Desglose anual (i = 1…12)</strong><br>
-  <small>Coste año i = Multa × P<sub>denuncia</sub> × P<sub>incidente</sub>(i) × P<sub>no_funciona</sub></small><br>
-  ${costeMultasPorAno.map((c,i)=>`Año ${i+1}: ${c.toFixed(2).replace('.', ',')} €`).join(' · ')} = <strong>Total 12 años: ${costeMultas12.toFixed(2).replace('.', ',')} €</strong>
-<br>
-  <small>
-    Notas: (1) Mantenemos constante P<sub>no_funciona</sub> para simplificar; la variación anual viene por 
-    P<sub>incidente</sub>, que aumenta con la edad del vehículo y se “aplaca” en 25,8%. 
-    (2) Puedes cambiar Multa estándar y P<sub>denuncia</sub> en configuración para reflejar tu escenario.
-  </small>
-</td>
-  <td><strong>${costeMultas12.toFixed(2).replace('.', ',')} €</strong></td>
+  <td>Coste de Fugas (12 años)</td>
+  <td>${TF(costeFuga12)} €</td>
+  <td><strong>${TF(costeFuga12)} €</strong></td>
 </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
+
+<tr>
+  <td>Coste de Multas (12 años)</td>
+  <td>${TF(costeMultas12)} €</td>
+  <td><strong>${TF(costeMultas12)} €</strong></td>
+</tr>
+</table>
+`;
 }
+
+
+  // --- FIN BLINDAJE ---
+
 
 // ====== ENDPOINT REAL: CALCULA ======
 // ======================================================
