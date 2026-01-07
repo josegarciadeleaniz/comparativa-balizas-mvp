@@ -150,6 +150,29 @@ app.post('/__echo', (req, res) => {
     body: req.body
   });
 });
+function parseTipo(tipoRaw){
+  const t = String(tipoRaw || '').toUpperCase();
+
+  // 1) Tipo base
+  let tipoBase = 'AA';
+  if (t.includes('9V')) tipoBase = '9V';
+  else if (t.includes('AAA')) tipoBase = 'AAA';
+
+  // 2) Número de pilas
+  // Busca patrones tipo: "4x", "x4", "3 X", "3x AA"
+  let numPilas =
+    parseInt((t.match(/(\d+)\s*[xX]/)?.[1]) ||
+             (t.match(/[xX]\s*(\d+)/)?.[1]) || '', 10);
+
+  // Defaults seguros si no viene explícito
+  if (!Number.isFinite(numPilas)) {
+    if (tipoBase === '9V') numPilas = 1;
+    else if (tipoBase === 'AAA') numPilas = 3;
+    else numPilas = 4; // AA
+  }
+
+  return { tipoBase, numPilas };
+}
 
 // ===== Utilidades varias =====
 function stripAccents(str) {
@@ -189,7 +212,7 @@ function getFundaFactor(tipoFunda) {
 
 
 function getVidaBase(tipo, marca_pilas) {
-  const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
+  const { tipoBase } = parseTipo(tipo);
   const m = canonicalBrand(marca_pilas);
   return batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin marca'];
 }
@@ -296,7 +319,8 @@ function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
   const precios = batteryData.precios_pilas;
   const marcaNorm = canonicalBrand(marca_pilas);
   const tipoBase  = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
-  const cantidad  = tipo.includes('9V') ? 1 : (parseInt(tipo.match(/^(\d+)/)?.[1]) || (tipoBase === 'AAA' ? 3 : 4));
+  const { tipoBase, numPilas } = parseTipo(tipo);
+const cantidad = numPilas;
   const unit = precios[marcaNorm]?.[tipoBase]
     ?? precios['Sin marca']?.[tipoBase]
     ?? (tipoBase === 'AAA' ? 0.8 : 1.0);
