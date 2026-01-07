@@ -344,7 +344,6 @@ function getFineProb(edad) {
   const base = 0.015, max = 0.258;
   return Math.min(base + ((max - base) * (e / 15)), max);
 }
-console.log('>>> resumen completo:', resumen);
 
 function generateTable({ pasos, resumen }, meta) {
   const { shelf, uso, fuente } = getVidaBase(meta.tipo, meta.marca_pilas);
@@ -967,15 +966,8 @@ const resumen = {
 
 app.post('/api/calcula', async (req, res) => {
   try {
-	  console.log('>>> /api/calcula BODY:', req.body);
     const meta = req.body;
 
-    // === VALIDACIÓN MÍNIMA ===
-    if (!meta || !meta.provincia || meta.edad_vehiculo == null) {
-      return res.status(400).json({ error: 'Datos incompletos' });
-    }
-
-    // === CONTEXTO GLOBAL (OBLIGATORIO) ===
     const context = {
       batteryData,
       provincias,
@@ -983,20 +975,13 @@ app.post('/api/calcula', async (req, res) => {
       salesPoints
     };
 
-    // === CÁLCULO CENTRAL (TU FUNCIÓN REAL) ===
-	  console.log('>>> calcularPasosYResumen exists?', typeof calcularPasosYResumen);
     const { pasos, resumen } = calcularPasosYResumen(meta, context);
 
-    // === HTML EXPLICATIVO (NO SE TOCA) ===
-	  console.log('>>> generateTable exists?', typeof generateTable);
-	  console.log('>>> pasos keys:', pasos && Object.keys(pasos));
-	  console.log('>>> resumen keys:', resumen && Object.keys(resumen));
+    console.log('>>> resumen completo:', resumen); // ✅ AQUÍ SÍ
+
     const html = generateTable({ pasos, resumen }, meta);
 
-    return res.json({
-      html,
-      resumen
-    });
+    return res.json({ html, resumen });
 
   } catch (err) {
     console.error('Error en /api/calcula:', err);
