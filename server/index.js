@@ -167,15 +167,16 @@ function normalizarBooleano(valor) {
 }
 function canonicalBrand(s){
   const v = String(s || '').trim().toLowerCase();
+
+  if (['sin marca', 'no', 'generic'].includes(v)) return 'Sin Marca';
   if (v === 'marca blanca') return 'Marca Blanca';
-  if (v === 'sin marca' || v === 'no') return 'Sin marca';
-  if (v === 'china') return 'China';
-  if (v === 'generalista' || v === 'marca generalista') return 'Generalista';
   if (v === 'duracell') return 'Duracell';
   if (v === 'energizer') return 'Energizer';
   if (v === 'varta') return 'Varta';
   if (v === 'maxell') return 'Maxell';
-  return s;
+
+  // fallback duro y explícito
+  return 'Sin Marca';
 }
 
 function getFundaFactor(tipoFunda) {
@@ -265,6 +266,7 @@ function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, 
 }
 // Riesgo anual de FUGA por Arrhenius (no incluye mitigaciones)
 function leakRiskArrhenius(tipo, marca_pilas, provincia, batteryData, provincias){
+marca_pilas = canonicalBrand(marca_pilas);	
   const tasaBase = getLeakRisk(tipo, marca_pilas);
 
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia)) || {};
@@ -878,10 +880,7 @@ factor_temp = 1 / multAvgClamped_SD; // ⇒ reduce años si el estrés térmico 
     const fuenteData = beacons.find(b => b.id_baliza === id_baliza)
                        || salesPoints.find(s => s.id_punto === id_sales_point)
                        || {};
-    console.log('fuenteData.factor_sulfatacion:', fuenteData.factor_sulfatacion);
-    const tasa_anual     = fuenteData.factor_sulfatacion?.tasa_anual ?? getLeakRisk(tipo, marca_pilas);
-    const fuente_sulfat  = fuenteData.factor_sulfatacion?.fuente     ?? 'battery_types.json';
-
+    
     const pData          = provincias.find(p=>normalizarTexto(p.provincia)===normalizarTexto(provincia))||{};
     console.log('pData.dias_anuales_30grados, factor_provincia:', pData.dias_anuales_30grados, pData.factor_provincia);
     const dias_calidos   = pData.dias_anuales_30grados ?? 0;
