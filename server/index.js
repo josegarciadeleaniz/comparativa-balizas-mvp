@@ -915,22 +915,36 @@ const fuente_sulfat = 'battery_types.json';
   // 8) Salida CANÓNICA
   // =========================
   const pasos = {
-    valor_desconexion,
-    factor_temp,
-    factor_funda,
-    vida_ajustada,
-    reposiciones,
-    precio_pack,
-    precio_fuente,
-    tasa_anual,
-    fuente_sulfat,
-    dias_calidos,
-    factor_provincia,
-    prob_fuga,
-    riesgo_final,
-    coste_fugas,
-    coste_multas
-  };
+  // Vida y pilas
+  valor_desconexion,
+  factor_temp,
+  factor_funda,
+  vida_ajustada,
+  reposiciones,
+  precio_pack,
+  precio_fuente,
+
+  // Temperatura / provincia
+  dias_calidos,
+  factor_provincia,
+
+  // Sulfatación
+  tasa_anual,
+  fuente_sulfat,
+  prob_fuga,
+
+  // Mitigaciones (CRÍTICO para generateTable)
+  mitigacion: mitigacionPct,
+  mitigacionMult,
+
+  // Riesgo final
+  riesgo_final,
+
+  // Costes
+  coste_fugas,
+  coste_multas
+};
+
 
   const resumen = {
     coste_pilas,
