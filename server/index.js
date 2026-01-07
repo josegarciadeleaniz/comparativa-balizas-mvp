@@ -69,7 +69,6 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
     return res.sendStatus(204);
   }
-
   next();
 });
 // ===== DEBUG SWITCH =====
@@ -127,8 +126,6 @@ app.get('/api/__corsinfo', (req, res) => {
     }
   });
 });
-
-
 app.get('/__db', async (req, res) => {
   if (!pool) return res.json({ ok: false, note: 'Sin pool (DB no configurada en este entorno)' });
   try {
@@ -147,7 +144,6 @@ app.post('/__echo', (req, res) => {
     body: req.body
   });
 });
-
 // ===== Utilidades varias =====
 function stripAccents(str) {
   return str
@@ -174,7 +170,6 @@ function canonicalBrand(s){
   if (v === 'maxell') return 'Maxell';
   return s;
 }
-
 function getFundaFactor(tipoFunda) {
   const v = String(tipoFunda || '').toLowerCase().trim();
   if (v.includes('eva'))        return 1.15; // EVA Foam / silicona térmica buena
@@ -182,8 +177,6 @@ function getFundaFactor(tipoFunda) {
   if (v.includes('tela'))       return 1.01;
   return 1.00;
 }
-
-
 function getVidaBase(tipo, marca_pilas) {
   const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
   const m = canonicalBrand(marca_pilas);
@@ -198,7 +191,6 @@ function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
   const dias = p?.dias_anuales_30grados ?? 0; // <<< mismo nombre que en /api/calcula
   const fp   = p?.factor_provincia ?? 1;
-
 
   // Arrhenius autodescarga
   const TrefC = batteryData?.arrhenius?.TrefC ?? 21;
@@ -215,7 +207,6 @@ function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
 
   return +vidaAjustada.toFixed(2);
 }
-
 // ===== Arrhenius (común vida y fugas) =====
 function K(c){ return c + 273.15; }
 function arrheniusMult(TC, Ea_kJ, TrefC=21){
@@ -279,8 +270,6 @@ function leakRiskArrhenius(tipo, marca_pilas, provincia, batteryData, provincias
   // Riesgo anual (SIN mitigaciones)
   return +(tasaBase * multAvgClamped * fp).toFixed(4);
 }
-
-
 function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
   if (sourceData?.precio_por_pila) {
     const unit = sourceData.precio_por_pila.precio;
@@ -297,8 +286,6 @@ function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
     ?? (tipoBase === 'AAA' ? 0.8 : 1.0);
   return parseFloat((unit * cantidad).toFixed(2));
 }
-
-
 function getTempFactor(provincia) {
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
   if (!p) return 1;
@@ -316,7 +303,6 @@ function getTempFactor(provincia) {
   if (t >= 35) return 0.9;
   return 1;
 }
-
 function getLeakRisk(tipo, marca_pilas) {
   const map = {
     "Duracell":     0.0055,
@@ -330,8 +316,6 @@ function getLeakRisk(tipo, marca_pilas) {
   };
   return map[canonicalBrand(marca_pilas)] ?? 0.0075;
 }
-
-
 // DEPRECATED: mantener solo si aún es invocada por código antiguo.
 function getLeakFinalRisk(tipo, marca_pilas, desconectable, funda) {
   const mit = (normalizarBooleano(desconectable) ? 0.6 : 1) * (normalizarBooleano(funda) ? 0.6 : 1);
@@ -346,7 +330,6 @@ function getFineProb(edad) {
 }
 function generateTable({ pasos, resumen }, meta) {
   const { shelf, uso, fuente } = getVidaBase(meta.tipo, meta.marca_pilas);
-
   const esDesconectable = normalizarBooleano(meta.desconectable);
   const {
     valor_desconexion = 0,
