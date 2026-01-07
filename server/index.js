@@ -861,9 +861,8 @@ function calcularPasosYResumen(meta, context) {
   const dias_calidos     = prov.dias_anuales_30grados ?? 0;
   const factor_provincia = prov.factor_provincia ?? 1;
 
-  const leak = getBatteryLeak(meta.tipo, meta.marca_pilas, batteryData);
-  const tasa_anual   = leak.tasa_anual;
-  const fuente_sulfat = leak.fuente;
+const tasa_anual = getLeakRisk(meta.tipo, meta.marca_pilas);
+const fuente_sulfat = 'battery_types.json';
 
   const prob_fuga = +(tasa_anual * factor_temp * factor_provincia).toFixed(4);
 
