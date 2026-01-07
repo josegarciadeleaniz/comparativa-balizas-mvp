@@ -944,6 +944,7 @@ function calcularPasosYResumen(meta, context) {
 
 app.post('/api/calcula', async (req, res) => {
   try {
+	  console.log('>>> /api/calcula BODY:', req.body);
     const meta = req.body;
 
     // === VALIDACIÓN MÍNIMA ===
@@ -960,9 +961,13 @@ app.post('/api/calcula', async (req, res) => {
     };
 
     // === CÁLCULO CENTRAL (TU FUNCIÓN REAL) ===
+	  console.log('>>> calcularPasosYResumen exists?', typeof calcularPasosYResumen);
     const { pasos, resumen } = calcularPasosYResumen(meta, context);
 
     // === HTML EXPLICATIVO (NO SE TOCA) ===
+	  console.log('>>> generateTable exists?', typeof generateTable);
+	  console.log('>>> pasos keys:', pasos && Object.keys(pasos));
+	  console.log('>>> resumen keys:', resumen && Object.keys(resumen));
     const html = generateTable({ pasos, resumen }, meta);
 
     return res.json({
