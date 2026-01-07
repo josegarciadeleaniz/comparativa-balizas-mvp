@@ -968,6 +968,8 @@ const resumen = {
 }
 
 app.post('/api/calcula', async (req, res) => {
+	console.log('🔥🔥🔥 ENTRO EN ENDPOINT DE CALCULO 🔥🔥🔥');
+
   try {
     const meta = req.body;
 
