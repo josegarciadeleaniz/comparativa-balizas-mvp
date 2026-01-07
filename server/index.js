@@ -42,17 +42,15 @@ try {
 const app = express();
 app.disable("x-powered-by");
 
+// ===== CORS UNIVERSAL (para widget/app/*.comparativabalizas.es) =====
 const ALLOWED_ORIGINS = new Set([
   'https://widget.comparativabalizas.es',
-  'https://balizas.pro',
-  'https://www.balizas.pro',
   'https://comparativabalizas.es',
   'https://www.comparativabalizas.es',
   'https://app.comparativabalizas.es',
-  'https://comparativa-balizas-mvp.onrender.com'
+  'https://comparativa-balizas-mvp.onrender.com' // pruebas
 ]);
 console.log('✅ Whitelist cargada:', Array.from(ALLOWED_ORIGINS));
-
 
 app.use((req, res, next) => {
   const origin = req.headers.origin || '';
