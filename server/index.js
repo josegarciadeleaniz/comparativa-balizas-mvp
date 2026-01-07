@@ -69,6 +69,7 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
     return res.sendStatus(204);
   }
+
   next();
 });
 // ===== DEBUG SWITCH =====
@@ -126,6 +127,8 @@ app.get('/api/__corsinfo', (req, res) => {
     }
   });
 });
+
+
 app.get('/__db', async (req, res) => {
   if (!pool) return res.json({ ok: false, note: 'Sin pool (DB no configurada en este entorno)' });
   try {
@@ -144,6 +147,7 @@ app.post('/__echo', (req, res) => {
     body: req.body
   });
 });
+
 // ===== Utilidades varias =====
 function stripAccents(str) {
   return str
@@ -170,6 +174,7 @@ function canonicalBrand(s){
   if (v === 'maxell') return 'Maxell';
   return s;
 }
+
 function getFundaFactor(tipoFunda) {
   const v = String(tipoFunda || '').toLowerCase().trim();
   if (v.includes('eva'))        return 1.15; // EVA Foam / silicona térmica buena
@@ -177,6 +182,8 @@ function getFundaFactor(tipoFunda) {
   if (v.includes('tela'))       return 1.01;
   return 1.00;
 }
+
+
 function getVidaBase(tipo, marca_pilas) {
   const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
   const m = canonicalBrand(marca_pilas);
@@ -191,6 +198,7 @@ function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
   const dias = p?.dias_anuales_30grados ?? 0; // <<< mismo nombre que en /api/calcula
   const fp   = p?.factor_provincia ?? 1;
+
 
   // Arrhenius autodescarga
   const TrefC = batteryData?.arrhenius?.TrefC ?? 21;
@@ -207,6 +215,7 @@ function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
 
   return +vidaAjustada.toFixed(2);
 }
+
 // ===== Arrhenius (común vida y fugas) =====
 function K(c){ return c + 273.15; }
 function arrheniusMult(TC, Ea_kJ, TrefC=21){
@@ -270,6 +279,8 @@ function leakRiskArrhenius(tipo, marca_pilas, provincia, batteryData, provincias
   // Riesgo anual (SIN mitigaciones)
   return +(tasaBase * multAvgClamped * fp).toFixed(4);
 }
+
+
 function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
   if (sourceData?.precio_por_pila) {
     const unit = sourceData.precio_por_pila.precio;
@@ -286,6 +297,8 @@ function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
     ?? (tipoBase === 'AAA' ? 0.8 : 1.0);
   return parseFloat((unit * cantidad).toFixed(2));
 }
+
+
 function getTempFactor(provincia) {
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
   if (!p) return 1;
@@ -303,6 +316,7 @@ function getTempFactor(provincia) {
   if (t >= 35) return 0.9;
   return 1;
 }
+
 function getLeakRisk(tipo, marca_pilas) {
   const map = {
     "Duracell":     0.0055,
@@ -316,6 +330,8 @@ function getLeakRisk(tipo, marca_pilas) {
   };
   return map[canonicalBrand(marca_pilas)] ?? 0.0075;
 }
+
+
 // DEPRECATED: mantener solo si aún es invocada por código antiguo.
 function getLeakFinalRisk(tipo, marca_pilas, desconectable, funda) {
   const mit = (normalizarBooleano(desconectable) ? 0.6 : 1) * (normalizarBooleano(funda) ? 0.6 : 1);
@@ -330,16 +346,8 @@ function getFineProb(edad) {
 }
 
 function generateTable({ pasos, resumen }, meta) {
-	console.log('📊 GENERATE TABLE EJECUTÁNDOSE');
-	console.log('=== GENERATE TABLE INPUT ===');
-console.log(JSON.stringify({
-  ctx,
-  resumen,
-  detalle
-}, null, 2));
-console.log('============================');
-
   const { shelf, uso, fuente } = getVidaBase(meta.tipo, meta.marca_pilas);
+
   const esDesconectable = normalizarBooleano(meta.desconectable);
   const {
     valor_desconexion = 0,
@@ -408,14 +416,6 @@ console.log('============================');
   const mitigacionCalc = factorDescon * factorFundaMit;
   const mitigacionPct   = Math.min(1, mitDescPct + mitFundaPct);
   const mitigacionMult  = 1 - mitigacionPct;
-	console.log('VALORES CRÍTICOS ANTES DE toFixed:', {
-  coste_pilas: resumen?.coste_pilas,
-  mantenimiento_12y: resumen?.mantenimiento_12y,
-  total_12y: resumen?.total_12y,
-  riesgo_multas: resumen?.riesgo_multas,
-  riesgo_fugas: resumen?.riesgo_fugas
-});
-
   const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
 
   const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
@@ -793,212 +793,237 @@ const hasModeloCompra =
   `;
 }
 
-
-
-  // --- FIN BLINDAJE ---
-
-
 // ====== ENDPOINT REAL: CALCULA ======
-// ======================================================
-// MOTOR CANÓNICO DE CÁLCULO TCO
-// NO TOCAR UX / NO TOCAR generateTable
-// ======================================================
-function calcularPasosYResumen(meta, context) {
-  const {
-    batteryData,
-    provincias,
-    beacons,
-    salesPoints
-  } = context;
-
-  // =========================
-  // 1) Vida base de la pila
-  // =========================
-  const vidaBase = getVidaBase(meta.tipo, meta.marca_pilas);
-  const uso   = vidaBase.uso;
-  const shelf = vidaBase.shelf;
-
-  const esDesconectable = normalizarBooleano(meta.desconectable);
-  const valor_desconexion = esDesconectable ? shelf : uso;
-
-  // =========================
-  // 2) Vida ajustada (Arrhenius + funda)
-  // =========================
-  const vida_ajustada = lifeArrheniusYears(
-    meta.tipo,
-    meta.marca_pilas,
-    meta.provincia,
-    meta.desconectable,
-    meta.funda,
-    batteryData,
-    provincias
-  );
-
-  // Factor temperatura (para UI)
-  const factor_funda = getFundaFactor(meta.funda);
-  const factor_temp = vida_ajustada && valor_desconexion
-    ? +(vida_ajustada / (valor_desconexion * factor_funda)).toFixed(3)
-    : 1;
-
-  // =========================
-  // 3) Reposiciones
-  // =========================
-  const reposiciones = vida_ajustada > 0
-    ? +(12 / vida_ajustada).toFixed(2)
-    : 0;
-
-  // =========================
-  // 4) Precio pilas
-  // =========================
-  const pack = getBatteryPackPrice(meta.tipo, meta.marca_pilas, batteryData);
-  const precio_pack   = pack.precio;
-  const precio_fuente = pack.fuente;
-
-  const coste_pilas = +(reposiciones * precio_pack).toFixed(2);
-
-  // =========================
-  // 5) Riesgo de fuga
-  // =========================
-  const prov = provincias.find(
-    p => normalizarTexto(p.provincia) === normalizarTexto(meta.provincia)
-  ) || {};
-
-  const dias_calidos     = prov.dias_anuales_30grados ?? 0;
-  const factor_provincia = prov.factor_provincia ?? 1;
-
-const tasa_anual = getLeakRisk(meta.tipo, meta.marca_pilas);
-const fuente_sulfat = 'battery_types.json';
-
-  const prob_fuga = +(tasa_anual * factor_temp * factor_provincia).toFixed(4);
-
-  // Mitigación
-  const mitDescPct  = esDesconectable ? 0.30 : 0.00;
-  const fundaL = (meta.funda || '').toLowerCase();
-  const mitFundaPct = (fundaL.includes('silicona') || fundaL.includes('eva')) ? 0.40 : 0.00;
-
-  const mitigacionPct   = Math.min(1, mitDescPct + mitFundaPct);
-  const mitigacionMult  = 1 - mitigacionPct;
-  const riesgo_final    = +(prob_fuga * mitigacionMult).toFixed(4);
-
-  // =========================
-  // 6) Coste fugas
-  // =========================
-  const costeFugaAnual = +(meta.coste_inicial * riesgo_final).toFixed(2);
-  const coste_fugas    = +(costeFugaAnual * 12).toFixed(2);
-
-  // =========================
-  // 7) Multas (12 años)
-  // =========================
-  const pNuevo  = 0.015;
-  const p15     = 0.258;
-  const edad0   = meta.edad_vehiculo || 0;
-
-  const TASA_DENUNCIA = 0.32;
-  const IMPORTE_MULTA = 200;
-  const RETARDO_MESES = 6;
-  const ADHERENCIA    = 0.80;
-
-  const mesesVida = Math.max(1, vida_ajustada * 12);
-  const pBateriaInsuf = Math.min(
-    0.5,
-    (RETARDO_MESES * (1 - ADHERENCIA)) / mesesVida
-  );
-
-  const pNoFunciona = 1 - (1 - riesgo_final) * (1 - pBateriaInsuf);
-
-  const costesMultaPorAno = Array.from({ length: 12 }, (_, k) => {
-    const edad = Math.min(edad0 + k, 15);
-    const pAveria = pNuevo + (p15 - pNuevo) * (edad / 15);
-    return IMPORTE_MULTA * TASA_DENUNCIA * pAveria * pNoFunciona;
-  });
-
-  const coste_multas = +costesMultaPorAno
-    .reduce((a, b) => a + b, 0)
-    .toFixed(2);
-
-  // =========================
-  // 8) Salida CANÓNICA
-  // =========================
-  const pasos = {
-  // Vida y pilas
-  valor_desconexion,
-  factor_temp,
-  factor_funda,
-  vida_ajustada,
-  reposiciones,
-  precio_pack,
-  precio_fuente,
-
-  // Provincia / temperatura
-  dias_calidos,
-  factor_provincia,
-
-  // Sulfatación
-  tasa_anual,
-  fuente_sulfat,
-  prob_fuga,
-
-  // 🔥 MITIGACIONES (OBLIGATORIAS PARA generateTable)
-  mitigacion: mitigacionPct,
-  mitigacionMult,
-
-  // Resultado final
-  riesgo_final,
-
-  // Costes
-  coste_fugas,
-  coste_multas
-};
-
-
-  const mantenimiento_12y = +(coste_pilas + coste_fugas + coste_multas).toFixed(2);
-const total_12y = +(meta.coste_inicial + mantenimiento_12y).toFixed(2);
-
-const resumen = {
-  // nombres NUEVOS
-  coste_pilas,
-  mantenimiento_12y,
-  total_12y,
-
-  // 🔥 NOMBRES LEGADOS que generateTable USA
-  mantenimiento: mantenimiento_12y,
-  total_12_anios: total_12y,
-  total: total_12y
-};
-
-  return { pasos, resumen };
-}
-
 app.post('/api/calcula', async (req, res) => {
-	console.log('🔥🔥🔥 ENTRO EN ENDPOINT DE CALCULO 🔥🔥🔥');
-
   try {
-    const meta = req.body;
+    const {
+      id_baliza,
+      id_sales_point,
+      marca,
+      tipo = '3x AA',
+      desconectable = 'no',
+      funda = 'no',
+      provincia = 'Madrid',
+      coste_inicial = 0,
+      edad_vehiculo = 5,
+      marca_baliza = 'Desconocida',
+      modelo = 'Desconocido',
+      modelo_compra = '',
+      email = '',
+      contexto = 'A'
+    } = req.body;
 
-    const context = {
-      batteryData,
-      provincias,
-      beacons,
-      salesPoints
+    const marca_pilas = marca;
+
+    if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
+      return res.status(400).json({ error: 'Datos numéricos inválidos' });
+    }
+
+    const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
+    const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point)
+    const sourceData     = beaconInfo || salesPointInfo || {};
+
+    const baseData = getVidaBase(tipo, marca_pilas);
+const uso  = baseData.uso;
+const shelf = baseData.shelf;
+
+const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
+
+// Vida ajustada por Arrhenius + funda (vida)
+const vida_ajustada = lifeArrheniusYears(
+  tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias
+);
+
+// Para mostrar “factor temperatura” en la tabla (explicativo):
+// factor_temp ≈  1 / multAvgClamped  (se deduce de la vida calculada)
+const factor_funda = getFundaFactor(funda);
+let factor_temp  = +(
+  vida_ajustada && valor_desconexion
+    ? vida_ajustada / (valor_desconexion * factor_funda)
+    : 1
+).toFixed(3);
+
+
+// ——— Arrhenius (autodescarga) para la vida útil ———
+const pTemp = provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(provincia)) || {};
+const dias_calidos_SD = pTemp.dias_anuales_30grados ?? 0;
+const factor_prov_SD  = pTemp.factor_provincia ?? 1;
+
+const TrefC_SD = batteryData?.arrhenius?.TrefC ?? 21;
+const EaSD_kJ  = batteryData?.arrhenius?.Ea_kJ?.self_discharge ?? 40;
+
+const wHot_SD  = Math.max(0, Math.min(1, dias_calidos_SD / 365));
+const Thot_SD  = estimateHotBinTemp(factor_prov_SD);
+const multHot_SD = arrheniusMult(Thot_SD, EaSD_kJ, TrefC_SD);
+const multAvg_SD = (1 - wHot_SD) + wHot_SD * multHot_SD;
+const multAvgClamped_SD = Math.min(multAvg_SD, 5); // cap prudente
+
+factor_temp = 1 / multAvgClamped_SD; // ⇒ reduce años si el estrés térmico es alto
+// Vida ajustada por Arrhenius + funda (vida)
+
+
+
+    const reposiciones = Math.ceil(12 / vida_ajustada);
+    const precio_pack = getBatteryPackPrice(tipo, marca_pilas, sourceData);
+    let precio_fuente = sourceData.precio_por_pila ? sourceData.precio_por_pila.fuente : 'battery_types.json';
+    const coste_pilas  = parseFloat((reposiciones * precio_pack).toFixed(2));
+
+    console.log('--- Sulfatación: datos de entrada ---', {
+      id_baliza, id_sales_point, tipo, marca_pilas
+    });
+
+    const fuenteData = beacons.find(b => b.id_baliza === id_baliza)
+                       || salesPoints.find(s => s.id_punto === id_sales_point)
+                       || {};
+    console.log('fuenteData.factor_sulfatacion:', fuenteData.factor_sulfatacion);
+    const tasa_anual     = fuenteData.factor_sulfatacion?.tasa_anual ?? getLeakRisk(tipo, marca_pilas);
+    const fuente_sulfat  = fuenteData.factor_sulfatacion?.fuente     ?? 'battery_types.json';
+
+    const pData          = provincias.find(p=>normalizarTexto(p.provincia)===normalizarTexto(provincia))||{};
+    console.log('pData.dias_anuales_30grados, factor_provincia:', pData.dias_anuales_30grados, pData.factor_provincia);
+    const dias_calidos   = pData.dias_anuales_30grados ?? 0;
+    const factor_prov    = pData.factor_provincia        ?? 1;
+    const fuente_temp    = pData.fuente_temp_extrema     ?? 'provincias.json';
+    const fuente_dias    = pData.fuente_dias_calidos     ?? 'provincias.json';
+
+// === Riesgo anual de fuga (Arrhenius, sin mitigaciones aún) ===
+const prob_fuga = leakRiskArrhenius(
+  tipo, marca_pilas, provincia, batteryData, provincias
+);
+
+// === Mitigaciones ===
+// Desconexión: -30%  → multiplicador 0.70
+// Funda (silicona/EVA): -40% → multiplicador 0.60
+const tieneDescon   = normalizarBooleano(desconectable);
+const fundaLower    = String(funda || '').toLowerCase();
+const multDesc      = tieneDescon ? 0.70 : 1.00;
+const multFunda     = (fundaLower.includes('eva') || fundaLower.includes('silicona')) ? 0.60
+                    : (fundaLower.includes('neopreno') ? 0.75
+                    : (fundaLower.includes('tela') ? 0.90 : 1.00));
+const mitigacionMult = +(multDesc * multFunda).toFixed(2);
+const mitigacionPct  = +(1 - mitigacionMult).toFixed(2); // para mostrar en %
+
+const riesgo_final   = +(
+  Math.max(0, Math.min(1, prob_fuga)) * mitigacionMult
+).toFixed(4);
+
+const coste_fugas    = +((parseFloat(coste_inicial) || 0) * riesgo_final).toFixed(2);
+const coste_fugas_12 = +(coste_fugas * 12).toFixed(2);
+
+
+    const importeMulta  = 200;
+    const tasaDenuncia  = 0.32;
+    const retardoMeses  = 6;
+    const adherencia    = 0.80;
+
+    const mesesVida       = Math.max(1, (vida_ajustada || 0) * 12);
+    const pBateriaInsuf   = Math.min(0.5, (retardoMeses * (1 - adherencia)) / mesesVida);
+    const pNoFunciona     = 1 - (1 - riesgo_final) * (1 - pBateriaInsuf);
+
+    const pIncHoy = getFineProb(edad_vehiculo);
+    const coste_multas = +(importeMulta * tasaDenuncia * pIncHoy * pNoFunciona).toFixed(2);
+
+    const probAveria12 = Array.from({ length: 12 }, (_, k) =>
+      getFineProb((parseInt(edad_vehiculo) || 0) + k)
+    );
+    const coste_multas_12 = +probAveria12
+      .map(pInc => importeMulta * tasaDenuncia * pInc * pNoFunciona)
+      .reduce((a, b) => a + b, 0)
+      .toFixed(2);
+
+    const total12y = Number((coste_pilas + coste_fugas_12 + coste_multas_12).toFixed(2));
+
+    const resumen = {
+      reposiciones,
+      coste_pilas,
+      coste_fugas,
+      coste_fugas_12,
+      coste_multas,
+      coste_multas_12,
+      total12y,
+      medioAnual: Number((total12y / 12).toFixed(2))
     };
 
-    const { pasos, resumen } = calcularPasosYResumen(meta, context);
+    const pasos = {
+      vida_base:         uso,
+      valor_desconexion,
+      factor_temp,
+      factor_funda,
+      vida_ajustada,
+      precio_pack,
+      precio_fuente,
+      reposiciones,
+      coste_pilas,
+      tasa_anual,
+      fuente_sulfat,
+      dias_calidos,
+      factor_provincia: factor_prov,
+      fuente_temp,
+      fuente_dias,
+      prob_fuga,
+      riesgo_final,
+      coste_fugas,
+      coste_multas,
+	  mitigacion: mitigacionMult
+    };
 
-    console.log('>>> resumen completo:', resumen); // ✅ AQUÍ SÍ
+    // Fallback de marca/modelo desde la baliza seleccionada (por si no vienen en el body)
+const marca_baliza_eff = (marca_baliza && String(marca_baliza).trim()) 
+  || beaconInfo?.marca_baliza || beaconInfo?.marca || 'Desconocida';
+const modelo_eff = (modelo && String(modelo).trim()) 
+  || beaconInfo?.modelo || beaconInfo?.model || beaconInfo?.modelo_baliza || 'Desconocido';
 
-    const html = generateTable({ pasos, resumen }, meta);
+const meta = {
+  marca_baliza: String(marca_baliza_eff),
+  modelo: String(modelo_eff),
+  modelo_compra,
+  tipo,
+  marca_pilas,
+  desconectable,
+  funda,
+  provincia,
+  coste_inicial: parseFloat(coste_inicial),
+  edad_vehiculo: parseInt(edad_vehiculo)
+};
+ // === GUARDAR EN BD (opcional) ===
+try {
+  const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
 
-    return res.json({ html, resumen });
+  if (pool) {
+    await pool.execute(
+      'INSERT INTO calculos_usuarios (user_email, user_hash, contexto, marca_baliza, modelo_baliza, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [email, userHash, contexto, marca_baliza, modelo, provincia, parseFloat(coste_inicial), total12y, JSON.stringify(req.body), JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })]
+    );
+    console.log('✅ Cálculo guardado en BD (directo)');
+} else {
+    console.log("ℹ️ Relay desactivado (save-calc.php eliminado)");
+}
 
+} catch (dbError) {
+  console.warn('⚠️ Error guardando cálculo (continuando):', dbError.message);
+}
+    if (DEBUG) {
+      console.log('— /api/calcula -> meta:', meta);
+      console.log('— /api/calcula -> resumen:', resumen);
+      console.log('— /api/calcula -> pasos.vida_ajustada / reposiciones / coste_pilas:', {
+        vida_ajustada: pasos.vida_ajustada,
+        reposiciones: pasos.reposiciones,
+        coste_pilas: pasos.coste_pilas
+      });
+    }
+
+    return res.json({
+      meta,
+      pasos,
+      resumen,
+      htmlTable: generateTable({ pasos, resumen }, meta)
+    });
+    
   } catch (err) {
     console.error('Error en /api/calcula:', err);
-    return res.status(500).json({
-      error: 'Error interno del servidor',
-      detalle: err.message
-    });
+    return res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
-
 
 // ===== Datos públicos (BEACONS saneado) =====
 app.get('/api/beacons', (req, res) => {
