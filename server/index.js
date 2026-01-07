@@ -995,30 +995,19 @@ app.post('/api/calcula', async (req, res) => {
     // ======================================================
     // META FINAL (BALIZA YA RESUELTA)
     // ======================================================
-   const meta = {
-  marca_baliza:
-    beacon?.fabricante_comercial ||
-    beacon?.marca_comercial ||
-    beacon?.nombre_comercial ||
-    beacon?.fabricante ||
-    'Desconocida',
-
-  modelo:
-    beacon?.modelo_comercial ||
-    beacon?.modelo ||
-    beacon?.nombre ||
-    beacon?.version ||
-    'Desconocido',
-
-  modelo_compra:
-    beacon?.modelo_compra ||
-    beacon?.nombre_comercial ||
-    '',
+ const meta = {
+  marca_baliza: beacon?.marca_baliza || 'Desconocida',
+  modelo: beacon?.modelo || 'Desconocido',
+  fabricante: beacon?.Fabricante || 'Desconocido',
+  origen: beacon?.Origen || '',
+  homologacion: beacon?.homologacion_dgt || '',
 
   tipo,
-  marca_pilas,
+  marca_pilas: marca_pilas || beacon?.marca_pilas || 'Marca Blanca',
+  tipo_pila: beacon?.tipo_pila || '',
   desconectable,
-  funda,
+  funda: beacon?.funda_termica || funda,
+
   provincia,
   coste_inicial: Number(coste_inicial),
   edad_vehiculo: Number(edad_vehiculo)
