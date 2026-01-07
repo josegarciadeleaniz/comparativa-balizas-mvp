@@ -329,6 +329,14 @@ function getFineProb(edad) {
   return Math.min(base + ((max - base) * (e / 15)), max);
 }
 function generateTable({ pasos, resumen }, meta) {
+	console.log('=== GENERATE TABLE INPUT ===');
+console.log(JSON.stringify({
+  ctx,
+  resumen,
+  detalle
+}, null, 2));
+console.log('============================');
+
   const { shelf, uso, fuente } = getVidaBase(meta.tipo, meta.marca_pilas);
   const esDesconectable = normalizarBooleano(meta.desconectable);
   const {
@@ -398,6 +406,14 @@ function generateTable({ pasos, resumen }, meta) {
   const mitigacionCalc = factorDescon * factorFundaMit;
   const mitigacionPct   = Math.min(1, mitDescPct + mitFundaPct);
   const mitigacionMult  = 1 - mitigacionPct;
+	console.log('VALORES CRÍTICOS ANTES DE toFixed:', {
+  coste_pilas: resumen?.coste_pilas,
+  mantenimiento_12y: resumen?.mantenimiento_12y,
+  total_12y: resumen?.total_12y,
+  riesgo_multas: resumen?.riesgo_multas,
+  riesgo_fugas: resumen?.riesgo_fugas
+});
+
   const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
 
   const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
