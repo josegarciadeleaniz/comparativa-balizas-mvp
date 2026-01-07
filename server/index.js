@@ -151,7 +151,7 @@ app.post('/__echo', (req, res) => {
   });
 });
 function parseTipo(tipoRaw){
-  const t = String(tipoRaw || '').toUpperCase();
+  const t = String(tipoRaw || '').toUpperCase().replace(/\s+/g, '');
 
   // 1) Tipo base
   let tipoBase = 'AA';
