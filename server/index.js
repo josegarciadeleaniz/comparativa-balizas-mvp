@@ -344,6 +344,7 @@ function getFineProb(edad) {
   const base = 0.015, max = 0.258;
   return Math.min(base + ((max - base) * (e / 15)), max);
 }
+console.log('>>> resumen completo:', resumen);
 
 function generateTable({ pasos, resumen }, meta) {
   const { shelf, uso, fuente } = getVidaBase(meta.tipo, meta.marca_pilas);
@@ -946,11 +947,20 @@ const fuente_sulfat = 'battery_types.json';
 };
 
 
-  const resumen = {
-    coste_pilas,
-    mantenimiento_12y: +(coste_pilas + coste_fugas + coste_multas).toFixed(2),
-    total_12y: +(meta.coste_inicial + coste_pilas + coste_fugas + coste_multas).toFixed(2)
-  };
+  const mantenimiento_12y = +(coste_pilas + coste_fugas + coste_multas).toFixed(2);
+const total_12y = +(meta.coste_inicial + mantenimiento_12y).toFixed(2);
+
+const resumen = {
+  // nombres NUEVOS
+  coste_pilas,
+  mantenimiento_12y,
+  total_12y,
+
+  // 🔥 NOMBRES LEGADOS que generateTable USA
+  mantenimiento: mantenimiento_12y,
+  total_12_anios: total_12y,
+  total: total_12y
+};
 
   return { pasos, resumen };
 }
