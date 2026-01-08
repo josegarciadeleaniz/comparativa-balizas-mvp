@@ -15,7 +15,7 @@
       "Maxell":    { "precio": 2.00, "fuente": "Amazon, MediaMarkt, Farnell, RS Components" },
       "Generalista": { "precio": 2.00, "fuente": "Varta oficial y minoristas europeos" },
       "Marca Blanca": { "precio": 1.30, "fuente": "Distribuidores OEM y marketplaces nacionales" },
-      "Sin marca": { "precio": 0.80, "fuente": "AliExpress, Shein, bazares multiprecio" },
+      "Sin Marca": { "precio": 0.80, "fuente": "AliExpress, Shein, bazares multiprecio" },
       "China":     { "precio": 0.80, "fuente": "AliExpress, Shein, bazares multiprecio" }
     },
     "AAA": {
@@ -25,7 +25,7 @@
       "Maxell":    { "precio": 0.50, "fuente": "Amazon, MediaMarkt, Farnell, RS Components" },
       "Generalista": { "precio": 0.50, "fuente": "Varta oficial y minoristas europeos" },
       "Marca Blanca": { "precio": 0.38, "fuente": "Distribuidores OEM y marketplaces nacionales" },
-      "Sin marca": { "precio": 0.20, "fuente": "AliExpress, Shein, bazares multiprecio" },
+      "Sin Marca": { "precio": 0.20, "fuente": "AliExpress, Shein, bazares multiprecio" },
       "China":     { "precio": 0.20, "fuente": "AliExpress, Shein, bazares multiprecio" }
     },
     "AA": {
@@ -35,7 +35,7 @@
       "Maxell":    { "precio": 0.60, "fuente": "Amazon, MediaMarkt, Farnell, RS Components" },
       "Generalista": { "precio": 0.70, "fuente": "Varta oficial y minoristas europeos" },
       "Marca Blanca": { "precio": 0.45, "fuente": "Distribuidores OEM y marketplaces nacionales" },
-      "Sin marca": { "precio": 0.28, "fuente": "AliExpress, Shein, bazares multiprecio" },
+      "Sin Marca": { "precio": 0.28, "fuente": "AliExpress, Shein, bazares multiprecio" },
       "China":     { "precio": 0.28, "fuente": "AliExpress, Shein, bazares multiprecio" }
     }
   },
@@ -48,7 +48,7 @@
       "Maxell":    { "shelf": 5, "uso": 3,   "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
       "Generalista": { "shelf": 4.5, "uso": 2.75, "fuente": "Varta / Panasonic specs, Battery University" },
       "Marca Blanca": { "shelf": 3, "uso": 2, "fuente": "SGS QA informal test, comparativas minoristas" },
-      "Sin marca": { "shelf": 1.5, "uso": 1.5, "fuente": "Medición empírica, foros técnicos y datos no certificados" },
+      "Sin Marca": { "shelf": 1.5, "uso": 1.5, "fuente": "Medición empírica, foros técnicos y datos no certificados" },
       "China":     { "shelf": 1.5, "uso": 1.5, "fuente": "Medición empírica, foros técnicos y datos no certificados" }
     },
     "AAA": {
@@ -58,7 +58,7 @@
       "Maxell":    { "shelf": 5,  "uso": 3,   "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
       "Generalista": { "shelf": 7, "uso": 4.5, "fuente": "Varta / Panasonic specs, Battery University" },
       "Marca Blanca": { "shelf": 4.5, "uso": 3.5, "fuente": "SGS QA informal test, comparativas minoristas" },
-      "Sin marca": { "shelf": 2.5, "uso": 1.75, "fuente": "Medición empírica, foros técnicos y datos no certificados" },
+      "Sin Marca": { "shelf": 2.5, "uso": 1.75, "fuente": "Medición empírica, foros técnicos y datos no certificados" },
       "China":     { "shelf": 2.5, "uso": 1.75, "fuente": "Medición empírica, foros técnicos y datos no certificados" }
     },
     "AA": {
@@ -68,7 +68,7 @@
       "Maxell":    { "shelf": 5,  "uso": 3, "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
       "Generalista": { "shelf": 7, "uso": 4.5, "fuente": "Varta / Panasonic specs, Battery University" },
       "Marca Blanca": { "shelf": 4.5, "uso": 3.5, "fuente": "SGS QA informal test, comparativas minoristas" },
-      "Sin marca": { "shelf": 2.5, "uso": 1.75, "fuente": "Medición empírica, foros técnicos y datos no certificados" },
+      "Sin Marca": { "shelf": 2.5, "uso": 1.75, "fuente": "Medición empírica, foros técnicos y datos no certificados" },
       "China":     { "shelf": 2.5, "uso": 1.75, "fuente": "Medición empírica, foros técnicos y datos no certificados" }
     }
   },
@@ -81,7 +81,7 @@
       "Maxell":    { "tasa_anual": 0.0095, "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
       "Generalista": { "tasa_anual": 0.0105, "fuente": "Panasonic Battery Aging Reports" },
       "Marca Blanca": { "tasa_anual": 0.0125, "fuente": "Independent Lab Tests (2023)" },
-      "Sin marca": { "tasa_anual": 0.0155, "fuente": "Empirical Data from Repair Shops" },
+      "Sin Marca": { "tasa_anual": 0.0155, "fuente": "Empirical Data from Repair Shops" },
       "China":     { "tasa_anual": 0.0155, "fuente": "Tear Down Analysis (YouTube Tech Channels)" }
     },
     "AAA": {
@@ -91,7 +91,7 @@
       "Maxell":    { "tasa_anual": 0.0095, "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
       "Generalista": { "tasa_anual": 0.0105, "fuente": "Battery Industry Benchmarks" },
       "Marca Blanca": { "tasa_anual": 0.0125, "fuente": "OEM Leakage Tests" },
-      "Sin marca": { "tasa_anual": 0.0155, "fuente": "User-Reported Failure Rates" },
+      "Sin Marca": { "tasa_anual": 0.0155, "fuente": "User-Reported Failure Rates" },
       "China":     { "tasa_anual": 0.0155, "fuente": "Import Quality Control Samples" }
     },
     "AA": {
@@ -101,7 +101,7 @@
       "Maxell":    { "tasa_anual": 0.0095, "fuente": "Maxell LR03 datasheet (biz.maxell.com)" },
       "Generalista": { "tasa_anual": 0.0105, "fuente": "EU Battery Performance Database" },
       "Marca Blanca": { "tasa_anual": 0.0125, "fuente": "Retailer Quality Audits" },
-      "Sin marca": { "tasa_anual": 0.0155, "fuente": "Crowdsourced Device Damage Reports" },
+      "Sin Marca": { "tasa_anual": 0.0155, "fuente": "Crowdsourced Device Damage Reports" },
       "China":     { "tasa_anual": 0.0155, "fuente": "Bulk Import Testing" }
     }
   },
@@ -127,7 +127,7 @@
             "id": 2,
             "pregunta": "Marca de esas pilas",
             "tipo": "select",
-            "opciones": ["Energizer","Duracell","Varta","Maxell","Marca Blanca","Sin marca"],
+            "opciones": ["Energizer","Duracell","Varta","Maxell","Marca Blanca","Sin Marca"],
             "requerido": true
           }
         ]
@@ -148,7 +148,7 @@
     "Maxell":      { "AAA": 0.50, "AA": 0.60, "9V": 2.00 },
     "Generalista": { "AAA": 0.50, "AA": 0.60, "9V": 2.00 },
     "Marca Blanca":{ "AAA": 0.38, "AA": 0.45, "9V": 1.30 },
-    "Sin marca":   { "AAA": 0.20, "AA": 0.28, "9V": 0.80 },
+    "Sin Marca":   { "AAA": 0.20, "AA": 0.28, "9V": 0.80 },
     "China":       { "AAA": 0.20, "AA": 0.28, "9V": 0.80 }
   }
 }
