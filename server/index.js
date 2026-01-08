@@ -42,14 +42,17 @@ try {
 const app = express();
 app.disable("x-powered-by");
 
-// ===== CORS UNIVERSAL (para widget/app/*.comparativabalizas.es) =====
-const ALLOWED_ORIGINS = new Set([
+// ===== CORS UNIVERSAL (para widget/app/*.balizas.pro) =====
+const allowedOrigins = [
   'https://widget.comparativabalizas.es',
   'https://comparativabalizas.es',
   'https://www.comparativabalizas.es',
   'https://app.comparativabalizas.es',
-  'https://comparativa-balizas-mvp.onrender.com' // pruebas
-]);
+  'https://comparativa-balizas-mvp.onrender.com',
+  'https://balizas.pro',
+  'https://www.balizas.pro'
+];
+
 console.log('✅ Whitelist cargada:', Array.from(ALLOWED_ORIGINS));
 
 app.use((req, res, next) => {
@@ -1034,7 +1037,7 @@ try {
     console.log('✅ Cálculo guardado en BD (directo)');
   } else {
     const relayUrl = process.env.RELAY_SAVE_URL
-      || 'https://comparativabalizas.es/comparativa-balizas-mvp/api/save-calc.php';
+      || 'https://balizas.pro/comparador/api/save-calc.php';
     const payload = {
       email, userHash, contexto, marca_baliza, modelo,
       provincia, coste_inicial: parseFloat(coste_inicial),
@@ -1118,7 +1121,7 @@ app.post('/api/enviar-pdf', async (req, res) => {
     }
 
     const relayUrl = process.env.RELAY_MAIL_URL 
-      || 'https://comparativabalizas.es/comparativa-balizas-mvp/api/send-mail.php';
+      || 'https://balizas.pro/comparador/api/send-mail.php';
 
     const r = await fetch(relayUrl, {
       method: 'POST',
@@ -1160,7 +1163,7 @@ app.get('/api/proxy-image', async (req, res) => {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; WidgetComparativa/1.0)',
         'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
-        'Referer': 'https://comparativabalizas.es/'
+        'Referer': 'https://balizas.pro/'
       }
     });
 
@@ -1258,11 +1261,11 @@ app.post('/api/pre-register', async (req,res)=>{
     const exp   = Date.now() + 1000*60*30; // 30 minutos
     pending.set(token, { email, exp });
 
-    const base = process.env.PUBLIC_BASE || 'https://comparativabalizas.es';
+    const base = process.env.PUBLIC_BASE || 'https://balizas.pro';
     const link = `${base}/comparativa-balizas-mvp/client/verify.html?token=${token}`;
     const transporter = getTransporter();
     await transporter.sendMail({
-      from: process.env.MAIL_FROM || 'no-reply@comparativabalizas.es',
+      from: process.env.MAIL_FROM || 'no-reply@balizas.pro',
       to: email,
       subject: 'Confirma tu acceso a ComparativaBalizas',
       html: `<p>Hola, confirma tu acceso haciendo clic:</p>
