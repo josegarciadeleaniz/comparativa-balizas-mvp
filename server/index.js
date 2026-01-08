@@ -37,13 +37,10 @@ try {
   console.warn('⚠️ Error inicializando pool MySQL:', e.message);
   pool = null;
 }
-
-
 const app = express();
 app.disable("x-powered-by");
 
-// ===== CORS UNIVERSAL (para widget/app/*.balizas.pro) =====
-const allowedOrigins = [
+const ALLOWED_ORIGINS = new Set([
   'https://widget.comparativabalizas.es',
   'https://comparativabalizas.es',
   'https://www.comparativabalizas.es',
@@ -51,7 +48,7 @@ const allowedOrigins = [
   'https://comparativa-balizas-mvp.onrender.com',
   'https://balizas.pro',
   'https://www.balizas.pro'
-];
+]);
 
 console.log('✅ Whitelist cargada:', Array.from(ALLOWED_ORIGINS));
 
