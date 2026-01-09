@@ -382,24 +382,7 @@ function getFineProb(edad) {
 }
 
 function generateTable({ pasos, resumen }, meta) {
-  const marcaPilas = (meta?.marca_pilas || 'generica')
-  .toString()
-  .trim()
-  .toLowerCase();
-  if (marcaPilas === 'generica') {
-  console.warn('⚠️ Marca de pilas no definida, usando genérica');
-}
-const tipoPila = (tipoPila || '')
-  .toString()
-  .trim()
-  .toUpperCase();
-  const vidaBase = getVidaBase(tipoPila, marcaPilas) || {};
-const {
-  shelf = 0,
-  uso = 0,
-  fuente = 'Sin fuente'
-} = vidaBase;
-
+  const { shelf, uso, fuente } = getVidaBase(meta.tipo, meta.marca_pilas);
 
   const esDesconectable = normalizarBooleano(meta.desconectable);
   const {
@@ -424,16 +407,7 @@ const {
     prob_fuga         = 0
   } = pasos;
 
-  let numeroPilas = 1;
-
-// Solo formatos tipo "2xAA", "3xAAA"
-if (typeof tipoPila === 'string' && /^\d+\s*[xX]/.test(tipoPila)) {
-  numeroPilas = parseInt(tipoPila.match(/^(\d+)/)[1], 10);
-} else {
-  // AA, AAA, 9V, CR123 → siempre 1 pila
-  numeroPilas = 1;
-}
-
+  const numeroPilas    = parseInt(meta.tipo.match(/^(\d+)/)?.[1] || '1', 10);
   const precioUnitario = precio_pack / numeroPilas;
 
   const provinciaData  = provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(meta.provincia)) || {};
@@ -585,7 +559,7 @@ const hasModeloCompra =
           <tbody>
             <!-- 1) Vida base conectada -->
             <tr>
-              <td>Vida de las Pilas (conectadas)<br><strong>"${marcaPilas}"</strong>
+              <td>Vida de las Pilas (conectadas)<br><strong>"${meta.marca_pilas}"</strong>
 </td>
               <td>
                 Duración estimada con las pilas conectadas a la baliza:
@@ -599,7 +573,7 @@ const hasModeloCompra =
 	    <tr style="background-color: #f9f9f9;">
   	      <td>
     		Factor Desconexión<br>
-    		<strong>"${tipoPila}"</strong>
+    		<strong>"${meta.tipo}"</strong>
   		</td>
   		<td>
     		<strong>${esDesconectable 
@@ -653,7 +627,7 @@ const hasModeloCompra =
   		<td>Vida útil Real de las Pilas</td>
   		<td>
   Vida útil estimada de las pilas en la baliza <strong>${meta.marca_baliza} ${meta.modelo}</strong>,
-  considerando el tipo de pila <strong>(${tipoPila})</strong>, su marca <strong>(${marcaPilas})</strong>,
+  considerando el tipo de pila <strong>(${meta.tipo})</strong>, su marca <strong>(${meta.marca_pilas})</strong>,
   la <strong>desconexión</strong> (${esDesconectable ? 'Sí' : 'No'}), el estrés térmico por provincia (modelo de <strong>Arrhenius</strong>)
   y el <strong>factor funda</strong> (${meta.funda}).<br>
   <li><strong>Vida Útil Ajustada = Vida base ${(esDesconectable?'(shelf)':'(uso)')} ÷ mult<sub>avg,SD</sub> × ${factorFunda.toFixed(2).replace('.', ',')}</strong></li>
@@ -674,9 +648,9 @@ const hasModeloCompra =
 
             <!-- 7) Precio pilas -->
             <tr>
-              <td>Precio de sus pilas <strong>${marcaPilas}</strong></td>
+              <td>Precio de sus pilas <strong>${meta.marca_pilas}</strong></td>
               <td>
-                Su baliza <strong>${meta.marca_baliza} ${meta.modelo}</strong> ha sido homologada en España con una pilas <strong>"${tipoPila}"</strong> de la marca <strong>"${marcaPilas}"</strong> cuyo precio unitario por pila actualmente es de <strong>${precioUnitario.toFixed(2).replace('.', ',')}€</strong>. Por tanto, cada reposición de pilas recomendada tendrá un coste de:<br><strong><li>Precio por reposición de pilas = ${precioUnitario.toFixed(2).replace('.', ',')}€ × ${numeroPilas}</strong>= ${pasos.precio_pack.toFixed(2).replace('.', ',')} €<br> Fuente: ${pasos.precio_fuente}
+                Su baliza <strong>${meta.marca_baliza} ${meta.modelo}</strong> ha sido homologada en España con una pilas <strong>"${meta.tipo}"</strong> de la marca <strong>"${meta.marca_pilas}"</strong> cuyo precio unitario por pila actualmente es de <strong>${precioUnitario.toFixed(2).replace('.', ',')}€</strong>. Por tanto, cada reposición de pilas recomendada tendrá un coste de:<br><strong><li>Precio por reposición de pilas = ${precioUnitario.toFixed(2).replace('.', ',')}€ × ${numeroPilas}</strong>= ${pasos.precio_pack.toFixed(2).replace('.', ',')} €<br> Fuente: ${pasos.precio_fuente}
               </td>
               <td><strong>${pasos.precio_pack.toFixed(2).replace('.', ',')} €<strong/></td>
             </tr>
@@ -685,7 +659,7 @@ const hasModeloCompra =
             <tr style="background-color:#eaf4ff;">
               <td>Coste por <strong>cambio de pilas a 12 años</strong></td>
               <td>
-                Teniendo en cuenta el número de reposiciones previstas <strong>(${pasos.reposiciones.toFixed(2).replace('.', ',')})</strong>, el número de pilas por reposición <strong>(${numeroPilas})</strong> y el precio por pila <strong>(${precioUnitario.toFixed(2).replace('.', ',')}€)</strong> de la marca <strong>"${marcaPilas}"</strong> el coste previsto por cambio de pilas asumiendo las variables anteriormente descritas será de:<br> <li><strong>Coste total estimado en pilas durante 12 años= ${pasos.reposiciones.toFixed(2).replace('.', ',')} x ${numeroPilas} x ${precioUnitario.toFixed(2).replace('.', ',')}€= ${resumen.coste_pilas.toFixed(2).replace('.', ',')} €</strong></li>
+                Teniendo en cuenta el número de reposiciones previstas <strong>(${pasos.reposiciones.toFixed(2).replace('.', ',')})</strong>, el número de pilas por reposición <strong>(${numeroPilas})</strong> y el precio por pila <strong>(${precioUnitario.toFixed(2).replace('.', ',')}€)</strong> de la marca <strong>"${meta.marca_pilas}"</strong> el coste previsto por cambio de pilas asumiendo las variables anteriormente descritas será de:<br> <li><strong>Coste total estimado en pilas durante 12 años= ${pasos.reposiciones.toFixed(2).replace('.', ',')} x ${numeroPilas} x ${precioUnitario.toFixed(2).replace('.', ',')}€= ${resumen.coste_pilas.toFixed(2).replace('.', ',')} €</strong></li>
               </td>
               <td><strong>${resumen.coste_pilas.toFixed(2).replace('.', ',')} €</strong></td>
             </tr>
@@ -694,7 +668,7 @@ const hasModeloCompra =
             <tr>
               <td>Riesgo de fuga anual</td>
               <td>
-                La Probabilidad de Fuga en una Baliza depende las pilas y de la temperatura a las que la baliza se ve sometida. Estudios científicos muestran que las temperaturas en el interior de un coche pueden alcanzar 1.5-2x.<br>Si tenemos en cuenta los días al año en <strong>${meta.provincia}</strong> con temperaturas por encima de 30ºC  <strong>(${dias_calidos} días)</strong>  , la tasa de sulfatación de las pilas de la baliza  <strong>( ${tipoPila}, de la marca " ${marcaPilas}"), </strong>  el ratio de fugas anual de las pilas <strong>(${tasa_anual})</strong> y el factor provincia vinculado a las temperaturas máximas a lo largo de todo año <strong>(multiplica x ${factor_provincia} en ${meta.provincia})</strong>, el riesgo de fuga anual de su balizas es de:<br> 
+                La Probabilidad de Fuga en una Baliza depende las pilas y de la temperatura a las que la baliza se ve sometida. Estudios científicos muestran que las temperaturas en el interior de un coche pueden alcanzar 1.5-2x.<br>Si tenemos en cuenta los días al año en <strong>${meta.provincia}</strong> con temperaturas por encima de 30ºC  <strong>(${dias_calidos} días)</strong>  , la tasa de sulfatación de las pilas de la baliza  <strong>( ${meta.tipo}, de la marca " ${meta.marca_pilas}"), </strong>  el ratio de fugas anual de las pilas <strong>(${tasa_anual})</strong> y el factor provincia vinculado a las temperaturas máximas a lo largo de todo año <strong>(multiplica x ${factor_provincia} en ${meta.provincia})</strong>, el riesgo de fuga anual de su balizas es de:<br> 
                 <li><strong>
 			Riesgo de fuga Anual = ${tasa_anual} × mult<sub>avg</sub> × ${factor_provincia}</strong><small>, con <em>mult<sub>avg</sub> = (1 − d/365) + (d/365) × mult(T<sub>hot</sub>)</em>y <em>mult(T) = e^{(E<sub>a</sub>/R)(1/T<sub>ref</sub> − 1/T)}</em>.
 </small>
