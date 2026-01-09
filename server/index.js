@@ -864,6 +864,7 @@ app.post('/api/calcula', async (req, res) => {
     const baseData = getVidaBase(tipo, marca_pilas);
     const uso   = baseData.uso;
     const shelf = baseData.shelf;
+	console.log('DEBUG VIDA BASE:', { tipo, marca_pilas, baseData });
 
     const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
 
