@@ -877,7 +877,9 @@ const tipoTecnico    = String(bateria_tipo || 'AA').toUpperCase();
   Number(coste_inicial) ||
   Number(sourceData.precio_venta) ||
   Number(sourceData.precio) ||
+  Number(sourceData.pvp) ||
   0;
+
 
     // ========= VIDA DE PILAS =========
     const baseData = getVidaBase(tipoTecnico, marcaPilasNorm);
@@ -1047,7 +1049,7 @@ const meta = {
   desconectable,
   funda,
   provincia,
-  coste_inicial: parseFloat(coste_inicial),
+  coste_inicial: precio_venta_final,
   edad_vehiculo: parseInt(edad_vehiculo)
 };
 
