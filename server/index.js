@@ -202,13 +202,17 @@ function canonicalBrand(s){
   return 'Sin Marca';
 }
 
-function getFundaFactor(tipoFunda) {
-  const v = String(tipoFunda || '').toLowerCase().trim();
-  if (v.includes('eva'))        return 1.15; // EVA Foam / silicona térmica buena
+function getFundaFactor(funda) {
+  const v = String(funda || '').toLowerCase().trim();
+
+  if (v.includes('eva'))        return 1.15;
   if (v.includes('neopreno'))   return 1.10;
   if (v.includes('tela'))       return 1.01;
-  return 1.00;
+  if (v.includes('plastico'))   return 1.00;
+
+  return 1.00; // No funda
 }
+
 function getVidaBase(tipo, marca_pilas) {
   const tipoUpper = String(tipo || '').toUpperCase();
 
@@ -869,6 +873,12 @@ const tipoTecnico    = String(bateria_tipo || 'AA').toUpperCase();
     const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
     const sourceData     = beaconInfo || salesPointInfo || {};
 
+	const precio_venta_final =
+  Number(coste_inicial) ||
+  Number(sourceData.precio_venta) ||
+  Number(sourceData.precio) ||
+  0;
+
     // ========= VIDA DE PILAS =========
     const baseData = getVidaBase(tipoTecnico, marcaPilasNorm);
     const uso   = baseData.uso;
@@ -943,8 +953,9 @@ const tipoTecnico    = String(bateria_tipo || 'AA').toUpperCase();
       Math.max(0, Math.min(1, prob_fuga)) * mitigacionMult
     ).toFixed(4);
 
-    const coste_fugas    = +((parseFloat(coste_inicial) || 0) * riesgo_final).toFixed(2);
+    const coste_fugas = +(precio_venta_final * riesgo_final).toFixed(2);
     const coste_fugas_12 = +(coste_fugas * 12).toFixed(2);
+
 
     // ========= MULTAS =========
     const importeMulta = 200;
