@@ -382,7 +382,8 @@ function getFineProb(edad) {
 }
 
 function generateTable({ pasos, resumen }, meta) {
-  const { shelf, uso, fuente } = getVidaBase(meta.tipo, meta.marca_pilas);
+  const { shelf, uso, fuente } = getVidaBase(meta.bateria_tipo, meta.marca_pilas);
+
 
   const esDesconectable = normalizarBooleano(meta.desconectable);
   const {
@@ -833,24 +834,32 @@ const hasModeloCompra =
 app.post('/api/calcula', async (req, res) => {
   try {
     const {
-      id_baliza,
-      id_sales_point,
-      marca,
-      tipo = '3x AA',
-      desconectable = 'no',
-      funda = 'no',
-      provincia = 'Madrid',
-      coste_inicial = 0,
-      edad_vehiculo = 5,
-      marca_baliza = 'Desconocida',
-      modelo = 'Desconocido',
-      modelo_compra = '',
-      email = '',
-      contexto = 'A'
-    } = req.body;
+  id_baliza,
+  id_sales_point,
+
+  // 🔹 NUEVO MODELO CORRECTO
+  bateria_tipo,
+  numero_pilas,
+  marca_pilas,
+
+  desconectable = 'no',
+  funda = 'no',
+  provincia = 'Madrid',
+  coste_inicial = 0,
+  edad_vehiculo = 5,
+
+  marca_baliza = 'Desconocida',
+  modelo = 'Desconocido',
+  modelo_compra = '',
+  email = '',
+  contexto = 'A'
+} = req.body;
+
 
     // ========= NORMALIZACIÓN BÁSICA =========
-    const marca_pilas = canonicalBrand(marca);
+    const marcaPilasNorm = canonicalBrand(marca_pilas);
+const tipoTecnico    = String(bateria_tipo || 'AA').toUpperCase();
+
 
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
@@ -861,16 +870,16 @@ app.post('/api/calcula', async (req, res) => {
     const sourceData     = beaconInfo || salesPointInfo || {};
 
     // ========= VIDA DE PILAS =========
-    const baseData = getVidaBase(tipo, marca_pilas);
+    const baseData = getVidaBase(tipoTecnico, marcaPilasNorm);
     const uso   = baseData.uso;
     const shelf = baseData.shelf;
-	console.log('DEBUG VIDA BASE:', { tipo, marca_pilas, baseData });
+	console.log('DEBUG VIDA BASE:', { tipoTecnico, marcaPilasNorm, baseData });
 
     const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
 
     const vida_ajustada = lifeArrheniusYears(
-      tipo,
-      marca_pilas,
+      tipoTecnico,
+      marcaPilasNorm,
       provincia,
       desconectable,
       funda,
@@ -902,7 +911,7 @@ app.post('/api/calcula', async (req, res) => {
 
     // ========= COSTE PILAS =========
     const reposiciones = Math.ceil(12 / vida_ajustada);
-    const precio_pack  = getBatteryPackPrice(tipo, marca_pilas, sourceData);
+    const precio_pack  = getBatteryPackPrice (tipoTecnico, marcaPilasNorm, numero_pilas, sourceData);
     const precio_fuente = sourceData.precio_por_pila
       ? sourceData.precio_por_pila.fuente
       : 'battery_types.json';
@@ -911,8 +920,8 @@ app.post('/api/calcula', async (req, res) => {
 
     // ========= RIESGO DE FUGA (ARRHENIUS) =========
     const prob_fuga = leakRiskArrhenius(
-      tipo,
-      marca_pilas,
+      tipoTecnico,
+      marcaPilasNorm,
       provincia,
       batteryData,
       provincias
@@ -1015,14 +1024,22 @@ const meta = {
   marca_baliza: String(marca_baliza_eff),
   modelo: String(modelo_eff),
   modelo_compra,
-  tipo,
-  marca_pilas,
+
+  // 🔹 CANÓNICO
+  bateria_tipo: tipoTecnico,
+  numero_pilas,
+  marca_pilas: marcaPilasNorm,
+
+  // 🔹 SOLO PARA UI
+  tipo: `${numero_pilas}x ${tipoTecnico}`,
+
   desconectable,
   funda,
   provincia,
   coste_inicial: parseFloat(coste_inicial),
   edad_vehiculo: parseInt(edad_vehiculo)
 };
+
  // === GUARDAR EN BD (opcional) ===
 try {
   const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
