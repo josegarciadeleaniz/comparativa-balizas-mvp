@@ -201,16 +201,21 @@ function canonicalBrand(s){
   // fallback duro y explícito
   return 'Sin Marca';
 }
-
-function getFundaFactor(funda) {
-  const v = String(funda || '').toLowerCase().trim();
-
-  if (v.includes('eva'))        return 1.15;
-  if (v.includes('neopreno'))   return 1.10;
-  if (v.includes('tela'))       return 1.01;
-  if (v.includes('plastico'))   return 1.00;
-
-  return 1.00; // No funda
+// Funda en VIDA
+  const FUNDA_MODEL = {
+  eva:       { vida: 1.15, mitigacion: 0.60 },
+  silicona: { vida: 1.15, mitigacion: 0.60 },
+  neopreno: { vida: 1.10, mitigacion: 0.75 },
+  tela:     { vida: 1.01, mitigacion: 0.90 },
+  none:     { vida: 1.00, mitigacion: 1.00 }
+};
+ function getFundaKey(funda){
+  const v = String(funda || '').toLowerCase();
+  if (v.includes('eva')) return 'eva';
+  if (v.includes('silicona')) return 'silicona';
+  if (v.includes('neopreno')) return 'neopreno';
+  if (v.includes('tela')) return 'tela';
+  return 'none';
 }
 
 function getVidaBase(tipo, marca_pilas) {
@@ -312,25 +317,8 @@ function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, 
   const multAvg= (1 - wHot) + wHot * multHot;        // promedio ponderado
   const multAvgClamped = Math.min(multAvg, 5);       // cap prudente para vida
 
-  // Funda en VIDA
-  const FUNDA_MODEL = {
-  eva:       { vida: 1.15, mitigacion: 0.60 },
-  silicona: { vida: 1.15, mitigacion: 0.60 },
-  neopreno: { vida: 1.10, mitigacion: 0.75 },
-  tela:     { vida: 1.01, mitigacion: 0.90 },
-  none:     { vida: 1.00, mitigacion: 1.00 }
-};
- function getFundaKey(funda){
-  const v = String(funda || '').toLowerCase();
-  if (v.includes('eva')) return 'eva';
-  if (v.includes('silicona')) return 'silicona';
-  if (v.includes('neopreno')) return 'neopreno';
-  if (v.includes('tela')) return 'tela';
-  return 'none';
-}
-	
   const factorFunda = getFundaFactor(funda);
-  const vida = (baseYears / multAvgClamped) * factorFunda;
+  const vida = (baseYears / multAvgClamped) * FUNDA_MODEL[fundaKey].vida;
   return +vida.toFixed(2);
 }
 // Riesgo anual de FUGA por Arrhenius (no incluye mitigaciones)
@@ -638,7 +626,7 @@ ${(meta.funda || '').toLowerCase() === 'no'
 </strong>
               </td>
               <td>
-                ${fundaDescription.trim()}<strong>  Factor aplicado: ×${factorFunda.toFixed(2).replace('.', ',')}</strong>
+                ${fundaDescription.trim()}<strong>Factor aplicado: ×${FUNDA_MODEL[fundaKey].vida.toFixed(2)}</strong>
               </td>
               <td><strong>×${factorFunda.toFixed(2).replace('.', ',')}</strong></td>
             </tr>
@@ -1013,7 +1001,7 @@ const precio_fuente = 'battery_types.json';
     const multDesc  = tieneDescon ? 0.70 : 1.00;
 	const multFunda = FUNDA_MODEL[fundaKey].mitigacion;
   
-    const mitigacionMult = +(multDesc * multFunda).toFixed(2);
+    const mitigacionMult = multDesc * FUNDA_MODEL[fundaKey].mitigacion;
 
     const riesgo_final = +(
       Math.max(0, Math.min(1, prob_fuga)) * mitigacionMult
