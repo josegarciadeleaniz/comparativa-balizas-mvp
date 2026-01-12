@@ -337,28 +337,6 @@ marca_pilas = canonicalBrand(marca_pilas);
   // Riesgo anual (SIN mitigaciones)
   return +(tasaBase * multAvgClamped * fp).toFixed(4);
 }
-
-
-function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
-  if (sourceData?.precio_por_pila) {
-    const unit = sourceData.precio_por_pila.precio;
-    const cantidad = sourceData.numero_pilas ||
-      (tipo.includes('9V') ? 1 : (parseInt(tipo.match(/^(\d+)/)?.[1]) || (tipo.includes('AAA') ? 3 : 4)));
-    return parseFloat((unit * cantidad).toFixed(2));
-  }
-  const precios = batteryData.precios_pilas;
-  const marcaNorm = canonicalBrand(marca_pilas);
-  const tipoBase  = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
-  const parsedTipo = parseTipo(tipo);
-const numPilas = parsedTipo.numPilas;
-const cantidad = numPilas;
-  const unit = precios[marcaNorm]?.[tipoBase]
-    ?? precios['Sin marca']?.[tipoBase]
-    ?? (tipoBase === 'AAA' ? 0.8 : 1.0);
-  return parseFloat((unit * cantidad).toFixed(2));
-}
-
-
 function getTempFactor(provincia) {
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
   if (!p) return 1;
@@ -922,6 +900,7 @@ app.post('/api/calcula', async (req, res) => {
 // ========= NORMALIZACIÓN BÁSICA (CANÓNICA) 
 const beaconInfo = beacons.find(b => b.id_baliza === id_baliza);
 const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
+const sourceData     = beaconInfo || salesPointInfo || {};
 	  
 const batteryMeta = resolveBatteryMeta({
   body: req.body,
@@ -938,7 +917,7 @@ console.log('🔋 BATTERY META RESOLVED:', batteryMeta);
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
-    const sourceData     = beaconInfo || salesPointInfo || {};
+  
 
 	const precio_venta_final =
   Number(coste_inicial) ||
