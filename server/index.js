@@ -870,6 +870,22 @@ const tipoTecnico    = String(bateria_tipo || 'AA').toUpperCase();
     }
 
     const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
+	  // ======================================================
+// FUENTE ÚNICA DE VERDAD PARA DATOS DE PILAS
+// ======================================================
+const effectiveBattery = beaconInfo ? {
+  bateria_tipo: beaconInfo.bateria_tipo,
+  numero_pilas: beaconInfo.numero_pilas,
+  marca_pilas: beaconInfo.marca_pilas,
+  desconectable: beaconInfo.desconectable
+} : {
+  bateria_tipo,
+  numero_pilas,
+  marca_pilas,
+  desconectable
+};
+console.log('🔋 BATTERY SOURCE CHECK:', effectiveBattery);
+
     const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
     const sourceData     = beaconInfo || salesPointInfo || {};
 
