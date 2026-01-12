@@ -391,7 +391,7 @@ function generateTable({ pasos, resumen }, meta) {
   const {
     valor_desconexion = 0,
     factor_temp       = 1,
-    factor_funda_vida: factorFunda = 1, 
+    factor_funda_vida = 1,
     vida_ajustada     = 0,
     reposiciones      = 0,
     precio_pack       = 0,
@@ -410,6 +410,7 @@ function generateTable({ pasos, resumen }, meta) {
     prob_fuga         = 0
   } = pasos;
 
+  const factorFunda = factor_funda_vida;
   const numeroPilas    = parseInt(meta.tipo.match(/^(\d+)/)?.[1] || '1', 10);
   const precioUnitario = precio_pack / numeroPilas;
 
@@ -617,7 +618,11 @@ const hasModeloCompra =
             <tr style="background-color: #f9f9f9;">
               <td>
                 Factor Funda<br>
-                   <strong>"${meta.funda === 'No' ? 'No lleva funda' : meta.funda}"</strong>
+                   <strong>
+${(meta.funda || '').toLowerCase() === 'no'
+  ? 'No lleva funda'
+  : meta.funda}
+</strong>
               </td>
               <td>
                 ${fundaDescription.trim()}<strong>  Factor aplicado: ×${factorFunda.toFixed(2).replace('.', ',')}</strong>
