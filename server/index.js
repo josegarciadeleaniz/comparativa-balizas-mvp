@@ -227,6 +227,26 @@ function getVidaBase(tipo, marca_pilas) {
     batteryData?.vida_base?.[tipoSimple]?.['Sin marca']
   );
 }
+function getBatteryPackPrice(tipo, marca_pilas, numero_pilas, sourceData) {
+  const precios = batteryData.precios_pilas;
+  const marcaNorm = canonicalBrand(marca_pilas);
+
+  const tipoBase = tipo.includes('9V')
+    ? '9V'
+    : (tipo.includes('AAA') ? 'AAA' : 'AA');
+
+  const cantidad =
+    Number(numero_pilas) ||
+    (tipoBase === '9V' ? 1 : (tipoBase === 'AAA' ? 3 : 4));
+
+  const unit =
+    precios?.[marcaNorm]?.[tipoBase] ??
+    precios?.['Sin Marca']?.[tipoBase] ??
+    (tipoBase === 'AAA' ? 0.8 : 1.0);
+
+  return +(unit * cantidad).toFixed(2);
+}
+
 function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
   const { uso, shelf } = getVidaBase(tipo, marca_pilas);
   const baseYears = normalizarBooleano(desconectable) ? shelf : uso;
@@ -970,16 +990,18 @@ console.log('🔋 BATTERY META RESOLVED:', batteryMeta);
     const multAvgClamped_SD = Math.min(multAvg_SD, 5);
 
     const factor_temp = +(1 / multAvgClamped_SD).toFixed(3);
+// ========= COSTE PILAS =========
+const reposiciones = Math.ceil(12 / vida_ajustada);
 
-    // ========= COSTE PILAS =========
-    const reposiciones = Math.ceil(12 / vida_ajustada);
-    function getBatteryPackPrice(tipo, marca_pilas, numero_pilas, sourceData) {
-const cantidad = numero_pilas ||
-    const precio_fuente = sourceData.precio_por_pila
-      ? sourceData.precio_por_pila.fuente
-      : 'battery_types.json';
+const precio_pack = getBatteryPackPrice(
+  tipoTecnico,
+  marcaPilasNorm,
+  numeroPilas,
+  sourceData
+);
 
-    const coste_pilas = +((reposiciones * precio_pack)).toFixed(2);
+const coste_pilas = +(reposiciones * precio_pack).toFixed(2);
+const precio_fuente = 'battery_types.json';
 
     // ========= RIESGO DE FUGA (ARRHENIUS) =========
     const prob_fuga = leakRiskArrhenius(
