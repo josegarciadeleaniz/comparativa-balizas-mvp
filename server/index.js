@@ -391,7 +391,7 @@ function generateTable({ pasos, resumen }, meta) {
   const {
     valor_desconexion = 0,
     factor_temp       = 1,
-    factor_funda: factorFunda = 1, 
+    factor_funda_vida: factorFunda = 1, 
     vida_ajustada     = 0,
     reposiciones      = 0,
     precio_pack       = 0,
@@ -493,9 +493,9 @@ function generateTable({ pasos, resumen }, meta) {
 
 
 // 5) Descripción de la funda
-let fundaDescription = '';
-switch ((meta.funda || '').toLowerCase().trim()) {
-  case 'tela':
+const fundaNorm = (meta.funda || '').toLowerCase();
+switch (true) {
+  case fundaNorm.includes('tela'):
     fundaDescription = `
       Las fundas textiles (lona, algodón, poliéster…) tienen conductividad térmica ≈0,05 W/m·K (poliéster) – 0,065 W/m·K (algodón).  
       Con 1 mm de grosor ofrecen R≈0,001 m²K/W, por lo que frente a un pico de 60 °C el interior se calienta casi sin retraso,  
@@ -504,7 +504,7 @@ switch ((meta.funda || '').toLowerCase().trim()) {
     `;
     break;
 
-  case 'neopreno':
+  case fundaNorm.includes('neopreno'):
     fundaDescription = `
       El neopreno foam (trajes de buceo) tiene conductividad ≈0,054 W/m·K en estado no comprimido.  
       Con 3 mm de espesor (R≈0,055 m²K/W) atenúa picos ≈5 °C y alarga el calentamiento de minutos a decenas de minutos.  
@@ -512,7 +512,7 @@ switch ((meta.funda || '').toLowerCase().trim()) {
     `;
     break;
 
-  case 'eva foam':
+  case fundaNorm.includes('eva'):
     fundaDescription = `
       Funda térmica Foam EVA tipo Evazote EV45CN tiene conductividad ≈0,038 W/m·K.  
       Con 3 mm (R≈0,079 m²K/W) atenúa picos 7–10 °C y retrasa el calentamiento de minutos a horas.  
@@ -944,9 +944,8 @@ console.log('🔋 BATTERY META RESOLVED:', batteryMeta);
       batteryData,
       provincias
     );
-
-    const factor_funda = getFundaFactor(funda);
-
+    const factor_funda_vida = getFundaFactor(funda);
+	  
     // factor temperatura explicativo
     const pTemp = provincias.find(
       p => normalizarTexto(p.provincia) === normalizarTexto(provincia)
@@ -1057,7 +1056,7 @@ const precio_fuente = 'battery_types.json';
       vida_base: uso,
       valor_desconexion,
       factor_temp,
-      factor_funda,
+      factor_funda_vida,
       vida_ajustada,
       precio_pack,
       precio_fuente,
@@ -1093,7 +1092,7 @@ const meta = {
   marca_pilas: marcaPilasNorm,
 
   // 🔹 SOLO PARA UI
-  tipo: `${numero_pilas}x ${tipoTecnico}`,
+  tipo: `${(numero_pilas || numeroPilas || 1)}x ${tipoTecnico}`,
 
   desconectable,
   funda,
