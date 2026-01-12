@@ -191,7 +191,7 @@ function normalizarBooleano(valor) {
 function canonicalBrand(s){
   const v = String(s || '').trim().toLowerCase();
 
-  if (['sin marca', 'no', 'generic'].includes(v)) return 'Sin Marca';
+  if (['Sin Marca', 'no', 'generic'].includes(v)) return 'Sin Marca';
   if (v === 'marca blanca') return 'Marca Blanca';
   if (v === 'duracell') return 'Duracell';
   if (v === 'energizer') return 'Energizer';
@@ -224,7 +224,7 @@ function getVidaBase(tipo, marca_pilas) {
 
   return (
     batteryData?.vida_base?.[tipoSimple]?.[marcaNorm] ||
-    batteryData?.vida_base?.[tipoSimple]?.['Sin marca']
+    batteryData?.vida_base?.[tipoSimple]?.['Sin Marca']
   );
 }
 function getBatteryPackPrice(tipo, marca_pilas, numero_pilas, sourceData) {
@@ -295,7 +295,7 @@ function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, 
   // Base: uso vs shelf según desconexión
   const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
   const m = canonicalBrand(marca_pilas);
-  const base = batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin marca'];
+  const base = batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin Marca'];
   const baseYears = normalizarBooleano(desconectable) ? base.shelf : base.uso;
 
   // Provincia y “días >30 ºC”
@@ -363,7 +363,7 @@ function getLeakRisk(tipo, marca_pilas) {
     "Maxell":       0.0095,
     "Generalista":  0.0105,
     "Marca Blanca": 0.0125,
-    "Sin marca":    0.0155,
+    "Sin Marca":    0.0155,
     "China":        0.0155
   };
   return map[canonicalBrand(marca_pilas)] ?? 0.0075;
