@@ -833,6 +833,45 @@ const hasModeloCompra =
     </div>
   `;
 }
+function resolveBatteryMeta({ body, beaconInfo, salesPointInfo }) {
+  // 1️⃣ Prioridad absoluta: lo que venga explícito del formulario
+  if (body?.bateria_tipo) {
+    return {
+      bateria_tipo: String(body.bateria_tipo).toUpperCase(),
+      numero_pilas: Number(body.numero_pilas) || null,
+      marca_pilas: canonicalBrand(body.marca_pilas),
+      source: 'body'
+    };
+  }
+
+  // 2️⃣ Beacon (formulario B)
+  if (beaconInfo?.bateria_tipo) {
+    return {
+      bateria_tipo: String(beaconInfo.bateria_tipo).toUpperCase(),
+      numero_pilas: Number(beaconInfo.numero_pilas) || null,
+      marca_pilas: canonicalBrand(beaconInfo.marca_pilas),
+      source: 'beacon'
+    };
+  }
+
+  // 3️⃣ Sales point (formulario C)
+  if (salesPointInfo?.bateria_tipo) {
+    return {
+      bateria_tipo: String(salesPointInfo.bateria_tipo).toUpperCase(),
+      numero_pilas: Number(salesPointInfo.numero_pilas) || null,
+      marca_pilas: canonicalBrand(salesPointInfo.marca_pilas),
+      source: 'sales_point'
+    };
+  }
+
+  // 4️⃣ Fallback explícito (forzado)
+  return {
+    bateria_tipo: 'AA',
+    numero_pilas: 4,
+    marca_pilas: 'Sin Marca',
+    source: 'fallback'
+  };
+}
 
 // ====== ENDPOINT REAL: CALCULA ======
 app.post('/api/calcula', async (req, res) => {
@@ -860,10 +899,18 @@ app.post('/api/calcula', async (req, res) => {
 } = req.body;
 
 
-    // ========= NORMALIZACIÓN BÁSICA =========
-    const marcaPilasNorm = canonicalBrand(marca_pilas);
-const tipoTecnico    = String(bateria_tipo || 'AA').toUpperCase();
+// ========= NORMALIZACIÓN BÁSICA (CANÓNICA) =========
+const batteryMeta = resolveBatteryMeta({
+  body: req.body,
+  beaconInfo,
+  salesPointInfo
+});
 
+const tipoTecnico     = batteryMeta.bateria_tipo;
+const numeroPilas     = batteryMeta.numero_pilas;
+const marcaPilasNorm  = batteryMeta.marca_pilas;
+
+console.log('🔋 BATTERY META RESOLVED:', batteryMeta);
 
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
