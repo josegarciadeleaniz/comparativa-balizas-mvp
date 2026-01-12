@@ -899,7 +899,10 @@ app.post('/api/calcula', async (req, res) => {
 } = req.body;
 
 
-// ========= NORMALIZACIÓN BÁSICA (CANÓNICA) =========
+// ========= NORMALIZACIÓN BÁSICA (CANÓNICA) 
+const beaconInfo = beacons.find(b => b.id_baliza === id_baliza);
+const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
+	  
 const batteryMeta = resolveBatteryMeta({
   body: req.body,
   beaconInfo,
@@ -917,22 +920,6 @@ console.log('🔋 BATTERY META RESOLVED:', batteryMeta);
     }
 
     const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
-	  // ======================================================
-// FUENTE ÚNICA DE VERDAD PARA DATOS DE PILAS
-// ======================================================
-const effectiveBattery = beaconInfo ? {
-  bateria_tipo: beaconInfo.bateria_tipo,
-  numero_pilas: beaconInfo.numero_pilas,
-  marca_pilas: beaconInfo.marca_pilas,
-  desconectable: beaconInfo.desconectable
-} : {
-  bateria_tipo,
-  numero_pilas,
-  marca_pilas,
-  desconectable
-};
-console.log('🔋 BATTERY SOURCE CHECK:', effectiveBattery);
-
     const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
     const sourceData     = beaconInfo || salesPointInfo || {};
 
@@ -986,7 +973,8 @@ console.log('🔋 BATTERY SOURCE CHECK:', effectiveBattery);
 
     // ========= COSTE PILAS =========
     const reposiciones = Math.ceil(12 / vida_ajustada);
-    const precio_pack  = getBatteryPackPrice (tipoTecnico, marcaPilasNorm, numero_pilas, sourceData);
+    function getBatteryPackPrice(tipo, marca_pilas, numero_pilas, sourceData) {
+const cantidad = numero_pilas ||
     const precio_fuente = sourceData.precio_por_pila
       ? sourceData.precio_por_pila.fuente
       : 'battery_types.json';
