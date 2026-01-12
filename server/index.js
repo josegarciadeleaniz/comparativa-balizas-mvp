@@ -427,13 +427,10 @@ function generateTable({ pasos, resumen }, meta) {
   const mesesVida = Math.max(1, (vida_ajustada || 0) * 12);
 
   const fundaTipoL     = (meta.funda || '').toLowerCase();
-  const mitDescPct  = esDesconectable ? 0.30 : 0.00;
-  const mitFundaPct = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.40 : 0.00;
-	
-  const mitigacionPct = 1 - mitigacion;
-
+  const mitigacionMult = pasos.mitigacion;
+  const mitigacionPct = (1 - mitigacionMult);
   const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
-
+ 
   const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
   const mitigacionCalc = mitigacion;	
   const mitigacion01    = Math.max(0, Math.min(1, mitigacionCalc));
@@ -1127,7 +1124,12 @@ try {
         coste_pilas: pasos.coste_pilas
       });
     }
-
+	console.log('CHECK FINAL:', {
+  vida_ajustada,
+  factor_funda_vida,
+  mitigacionMult,
+  riesgo_final
+});
     return res.json({
       meta,
       pasos,
