@@ -938,9 +938,6 @@ console.log('🔋 BATTERY META RESOLVED:', batteryMeta);
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
-
-    const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
-    const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
     const sourceData     = beaconInfo || salesPointInfo || {};
 
 	const precio_venta_final =
