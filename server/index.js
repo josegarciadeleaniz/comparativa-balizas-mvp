@@ -191,7 +191,7 @@ function normalizarBooleano(valor) {
 function canonicalBrand(s){
   const v = String(s || '').trim().toLowerCase();
 
-  if (['sin Marca', 'no', 'generic'].includes(v)) return 'Sin Marca';
+ if (['sin marca', 'no', 'generic'].includes(v)) return 'Sin Marca';
   if (v === 'marca blanca') return 'Marca Blanca';
   if (v === 'duracell') return 'Duracell';
   if (v === 'energizer') return 'Energizer';
@@ -251,33 +251,6 @@ function getBatteryPackPrice(tipo, marca_pilas, numero_pilas, sourceData) {
 
   return +(unit * cantidad).toFixed(2);
 }
-
-function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
-  const { uso, shelf } = getVidaBase(tipo, marca_pilas);
-  const baseYears = normalizarBooleano(desconectable) ? shelf : uso;
-
-    // Provincia -> días calientes y factor_provincia (para estimar T_hot)
-  const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
-  const dias = p?.dias_anuales_30grados ?? 0; // <<< mismo nombre que en /api/calcula
-  const fp   = p?.factor_provincia ?? 1;
-
-
-  // Arrhenius autodescarga
-  const TrefC = batteryData?.arrhenius?.TrefC ?? 21;
-  const EaSD  = batteryData?.arrhenius?.Ea_kJ?.self_discharge ?? 40;
-  const wHot  = (dias/365);
-  const Thot  = estimateHotBinTemp(fp);
-  const multHot = arrheniusMult(Thot, EaSD, TrefC);
-  const multAvg = (1 - wHot) + wHot * multHot;
-  const multAvgClamped = Math.min(multAvg, 5); // cap prudente
-
-  // Vida efectiva ~ años_base / multiplicador térmico
-  const factorFunda = getFundaFactor(funda);
-  const vidaAjustada = (baseYears / multAvgClamped) * factorFunda;
-
-  return +vidaAjustada.toFixed(2);
-}
-
 // ===== Arrhenius (común vida y fugas) =====
 function K(c){ return c + 273.15; }
 function arrheniusMult(TC, Ea_kJ, TrefC=21){
@@ -297,11 +270,11 @@ function estimateHotBinTemp(factor_provincia){
 }
 // Vida real por Arrhenius (autodescarga) + funda (vida)
 function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias){
-  // Base: uso vs shelf según desconexión
   const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
   const m = canonicalBrand(marca_pilas);
   const base = batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin Marca'];
   const baseYears = normalizarBooleano(desconectable) ? base.shelf : base.uso;
+
 
   // Provincia y “días >30 ºC”
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia)) || {};
@@ -317,7 +290,7 @@ function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, 
   const multAvg= (1 - wHot) + wHot * multHot;        // promedio ponderado
   const multAvgClamped = Math.min(multAvg, 5);       // cap prudente para vida
 
-  const factorFunda = getFundaFactor(funda);
+  const fundaKey = getFundaKey(funda);
   const vida = (baseYears / multAvgClamped) * FUNDA_MODEL[fundaKey].vida;
   return +vida.toFixed(2);
 }
@@ -389,6 +362,7 @@ function getFineProb(edad) {
 
 function generateTable({ pasos, resumen }, meta) {
   const { shelf, uso, fuente } = getVidaBase(meta.bateria_tipo, meta.marca_pilas);
+  const fundaKey = getFundaKey(meta.funda);
 
 
   const esDesconectable = normalizarBooleano(meta.desconectable);
@@ -456,10 +430,12 @@ function generateTable({ pasos, resumen }, meta) {
   const mitDescPct  = esDesconectable ? 0.30 : 0.00;
   const mitFundaPct = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.40 : 0.00;
 	
-  const mitigacionMult  = 1 - mitigacionPct;
+  const mitigacionPct = 1 - mitigacion;
+
   const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
 
   const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
+  const mitigacionCalc = mitigacion;	
   const mitigacion01    = Math.max(0, Math.min(1, mitigacionCalc));
   const pFugaFinal      = riesgoFinalCalc;
 
@@ -951,6 +927,8 @@ console.log('🔋 BATTERY META RESOLVED:', batteryMeta);
       provincias
     );
     const fundaKey = getFundaKey(funda);
+	console.log('FUNDA VIDA:', funda, fundaKey, FUNDA_MODEL[fundaKey].vida);
+
     const factor_funda_vida = FUNDA_MODEL[fundaKey].vida;
 	  
     // factor temperatura explicativo
