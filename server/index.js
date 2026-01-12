@@ -363,10 +363,16 @@ function getFineProb(edad) {
 function generateTable({ pasos, resumen }, meta) {
   const { shelf, uso, fuente } = getVidaBase(meta.bateria_tipo, meta.marca_pilas);
   const fundaKey = getFundaKey(meta.funda);
-
-
   const esDesconectable = normalizarBooleano(meta.desconectable);
-  const {
+
+  let fundaDescription = '';
+	
+  const mitDescMult  = esDesconectable ? 0.70 : 1.00;
+  const mitFundaMult = FUNDA_MODEL[fundaKey]?.mitigacion ?? 1.00;
+  const mitDescPct   = 1 - mitDescMult;
+  const mitFundaPct  = 1 - mitFundaMult;	
+  
+const {
     valor_desconexion = 0,
     factor_temp       = 1,
     factor_funda_vida = 1,
@@ -388,7 +394,9 @@ function generateTable({ pasos, resumen }, meta) {
     prob_fuga         = 0
   } = pasos;
 
-  const factorFunda = factor_funda_vida;
+ const mitigacionMult = pasos.mitigacion;
+  const mitigacionPct = (1 - mitigacionMult); 
+const factorFunda = factor_funda_vida;
   const numeroPilas    = parseInt(meta.tipo.match(/^(\d+)/)?.[1] || '1', 10);
   const precioUnitario = precio_pack / numeroPilas;
 
@@ -427,8 +435,7 @@ function generateTable({ pasos, resumen }, meta) {
   const mesesVida = Math.max(1, (vida_ajustada || 0) * 12);
 
   const fundaTipoL     = (meta.funda || '').toLowerCase();
-  const mitigacionMult = pasos.mitigacion;
-  const mitigacionPct = (1 - mitigacionMult);
+  
   const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
  
   const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
