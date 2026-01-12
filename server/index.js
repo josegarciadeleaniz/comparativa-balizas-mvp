@@ -191,7 +191,7 @@ function normalizarBooleano(valor) {
 function canonicalBrand(s){
   const v = String(s || '').trim().toLowerCase();
 
-  if (['Sin Marca', 'no', 'generic'].includes(v)) return 'Sin Marca';
+  if (['sin Marca', 'no', 'generic'].includes(v)) return 'Sin Marca';
   if (v === 'marca blanca') return 'Marca Blanca';
   if (v === 'duracell') return 'Duracell';
   if (v === 'energizer') return 'Energizer';
@@ -313,6 +313,22 @@ function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, 
   const multAvgClamped = Math.min(multAvg, 5);       // cap prudente para vida
 
   // Funda en VIDA
+  const FUNDA_MODEL = {
+  eva:       { vida: 1.15, mitigacion: 0.60 },
+  silicona: { vida: 1.15, mitigacion: 0.60 },
+  neopreno: { vida: 1.10, mitigacion: 0.75 },
+  tela:     { vida: 1.01, mitigacion: 0.90 },
+  none:     { vida: 1.00, mitigacion: 1.00 }
+};
+ function getFundaKey(funda){
+  const v = String(funda || '').toLowerCase();
+  if (v.includes('eva')) return 'eva';
+  if (v.includes('silicona')) return 'silicona';
+  if (v.includes('neopreno')) return 'neopreno';
+  if (v.includes('tela')) return 'tela';
+  return 'none';
+}
+	
   const factorFunda = getFundaFactor(funda);
   const vida = (baseYears / multAvgClamped) * factorFunda;
   return +vida.toFixed(2);
@@ -448,13 +464,10 @@ function generateTable({ pasos, resumen }, meta) {
 
   const mesesVida = Math.max(1, (vida_ajustada || 0) * 12);
 
-  const factorDescon   = esDesconectable ? 0.3 : 1;
   const fundaTipoL     = (meta.funda || '').toLowerCase();
   const mitDescPct  = esDesconectable ? 0.30 : 0.00;
   const mitFundaPct = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.40 : 0.00;
-  const factorFundaMit = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.4 : 1;
-  const mitigacionCalc = factorDescon * factorFundaMit;
-  const mitigacionPct   = Math.min(1, mitDescPct + mitFundaPct);
+	
   const mitigacionMult  = 1 - mitigacionPct;
   const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
 
@@ -949,7 +962,8 @@ console.log('🔋 BATTERY META RESOLVED:', batteryMeta);
       batteryData,
       provincias
     );
-    const factor_funda_vida = getFundaFactor(funda);
+    const fundaKey = getFundaKey(funda);
+    const factor_funda_vida = FUNDA_MODEL[fundaKey].vida;
 	  
     // factor temperatura explicativo
     const pTemp = provincias.find(
@@ -997,11 +1011,8 @@ const precio_fuente = 'battery_types.json';
     const fundaLower  = String(funda || '').toLowerCase();
 
     const multDesc  = tieneDescon ? 0.70 : 1.00;
-    const multFunda =
-      fundaLower.includes('eva') || fundaLower.includes('silicona') ? 0.60 :
-      fundaLower.includes('neopreno') ? 0.75 :
-      fundaLower.includes('tela') ? 0.90 : 1.00;
-
+	const multFunda = FUNDA_MODEL[fundaKey].mitigacion;
+  
     const mitigacionMult = +(multDesc * multFunda).toFixed(2);
 
     const riesgo_final = +(
