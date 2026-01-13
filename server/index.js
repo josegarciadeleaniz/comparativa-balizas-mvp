@@ -363,14 +363,12 @@ function getFineProb(edad) {
 function generateTable({ pasos, resumen }, meta) {
   const { shelf, uso, fuente } = getVidaBase(meta.bateria_tipo, meta.marca_pilas);
   const fundaKey = getFundaKey(meta.funda);
-  const esDesconectable = normalizarBooleano(meta.desconectable);
-
-  let fundaDescription = '';
-	
+  const esDesconectable = normalizarBooleano(meta.desconectable);	
   const mitDescMult  = esDesconectable ? 0.70 : 1.00;
   const mitFundaMult = FUNDA_MODEL[fundaKey]?.mitigacion ?? 1.00;
   const mitDescPct   = 1 - mitDescMult;
   const mitFundaPct  = 1 - mitFundaMult;
+  const mitigacionMult = mitDescMult * mitFundaMult;	
   const mitigacionPct = 1 - (mitDescMult * mitFundaMult);	
   
 const {
@@ -395,8 +393,6 @@ const {
     prob_fuga         = 0
   } = pasos;
 
- const mitigacionMult = pasos.mitigacion;
-  const mitigacionPct = (1 - mitigacionMult); 
   const factorFunda = FUNDA_MODEL[fundaKey].vida;
   const numeroPilas = meta.numero_pilas || 1;
   const precioUnitario = precio_pack / numeroPilas;
