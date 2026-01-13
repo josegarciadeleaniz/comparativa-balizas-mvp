@@ -396,7 +396,7 @@ const {
 
  const mitigacionMult = pasos.mitigacion;
   const mitigacionPct = (1 - mitigacionMult); 
-const factorFunda = factor_funda_vida;
+  const factorFunda = FUNDA_MODEL[fundaKey].vida;
   const numeroPilas = meta.numero_pilas || 1;
   const precioUnitario = precio_pack / numeroPilas;
 
@@ -475,38 +475,35 @@ const factorFunda = factor_funda_vida;
 
 
 // 5) Descripción de la funda
-const fundaNorm = (meta.funda || '').toLowerCase();
-switch (true) {
-  case fundaNorm.includes('tela'):
+const fundaNorm = (meta.funda_tipo || '').toLowerCase();
+switch (fundaKey) {
+  case 'tela':
     fundaDescription = `
-      Las fundas textiles (lona, algodón, poliéster…) tienen conductividad térmica ≈0,05 W/m·K (poliéster) – 0,065 W/m·K (algodón).  
-      Con 1 mm de grosor ofrecen R≈0,001 m²K/W, por lo que frente a un pico de 60 °C el interior se calienta casi sin retraso,  
-      con solo 1–2 °C de atenuación.
-      Fuente: Chua et al. “Thermal Conductivity of Recycled Textile Quilts” (2025), p. 7. :contentReference[oaicite:0]{index=0}
+      Las fundas textiles (lona, algodón, poliéster…) tienen conductividad térmica ≈0,05 W/m·K.
+      No aportan aislamiento térmico efectivo frente a picos de temperatura.
     `;
     break;
 
-  case fundaNorm.includes('neopreno'):
+  case 'neopreno':
     fundaDescription = `
-      El neopreno foam (trajes de buceo) tiene conductividad ≈0,054 W/m·K en estado no comprimido.  
-      Con 3 mm de espesor (R≈0,055 m²K/W) atenúa picos ≈5 °C y alarga el calentamiento de minutos a decenas de minutos.  
-     Fuente: “Wetsuit” en Wikipedia (actualizado 2025). :contentReference[oaicite:1]{index=1}
+      El neopreno ofrece una atenuación térmica moderada (~5 °C) y retrasa el calentamiento.
     `;
     break;
 
-  case fundaNorm.includes('eva'):
+  case 'eva':
+  case 'silicona':
     fundaDescription = `
-      Funda térmica Foam EVA tipo Evazote EV45CN tiene conductividad ≈0,038 W/m·K.  
-      Con 3 mm (R≈0,079 m²K/W) atenúa picos 7–10 °C y retrasa el calentamiento de minutos a horas.  
-      Fuente: Foamparts, ficha técnica EV45CN. :contentReference[oaicite:2]{index=2}
+      Las fundas térmicas de silicona/EVA reducen picos térmicos entre 7 y 10 °C
+      y retrasan el calentamiento interno de forma significativa.
     `;
     break;
 
   default:
     fundaDescription = `
-      Sin funda o tipo de funda desconocido. No hay aislamiento adicional más allá del encapsulado.
+      Sin funda o tipo de funda desconocido. No hay aislamiento térmico adicional.
     `;
 }
+
 // ---- Datos visuales de baliza seleccionada (no pisa los campos que metió el usuario) ----
 const hasModeloCompra =
   meta && meta.modelo_compra != null && meta.modelo_compra !== '';
@@ -894,9 +891,11 @@ const batteryMeta = resolveBatteryMeta({
   salesPointInfo
 });
 
-const tipoTecnico     = batteryMeta.bateria_tipo;
-const numeroPilas     = batteryMeta.numero_pilas;
-const marcaPilasNorm  = batteryMeta.marca_pilas;
+// 🔒 CANONICAL BATTERY DEFINITION (NO TOCAR MÁS)
+const tipoTecnico  = batteryMeta.bateria_tipo;   // '9V' | 'AA' | 'AAA'
+const numeroPilas  = batteryMeta.numero_pilas;
+const marcaPilasNorm = batteryMeta.marca_pilas;
+
 
 console.log('🧪 BATERÍA FINAL USADA:', {
   tipoTecnico,
@@ -1086,7 +1085,9 @@ const meta = {
   marca_pilas: marcaPilasNorm,
 
   // 🔹 SOLO PARA UI
-  tipo: `${numeroPilas}x ${tipoTecnico}`,
+tipo: tipoTecnico === '9V'
+  ? '1x 9V'
+  : `${numeroPilas}x ${tipoTecnico}`,
   desconectable,
   funda,
   provincia,
