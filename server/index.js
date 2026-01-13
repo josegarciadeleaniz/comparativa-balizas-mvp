@@ -209,14 +209,18 @@ function canonicalBrand(s){
   tela:     { vida: 1.01, mitigacion: 0.90 },
   none:     { vida: 1.00, mitigacion: 1.00 }
 };
- function getFundaKey(funda){
+function getFundaKey(funda){
   const v = String(funda || '').toLowerCase();
+
+  if (v === 'si' || v === 'sí') return 'eva';   // ← PARCHE EXPLÍCITO
+
   if (v.includes('eva')) return 'eva';
   if (v.includes('silicona')) return 'silicona';
   if (v.includes('neopreno')) return 'neopreno';
   if (v.includes('tela')) return 'tela';
   return 'none';
 }
+
 
 function getVidaBase(tipo, marca_pilas) {
   const tipoUpper = String(tipo || '').toUpperCase();
