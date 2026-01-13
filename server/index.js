@@ -397,7 +397,7 @@ const {
  const mitigacionMult = pasos.mitigacion;
   const mitigacionPct = (1 - mitigacionMult); 
 const factorFunda = factor_funda_vida;
-  const numeroPilas    = parseInt(meta.tipo.match(/^(\d+)/)?.[1] || '1', 10);
+  const numeroPilas = meta.numero_pilas || 1;
   const precioUnitario = precio_pack / numeroPilas;
 
   const provinciaData  = provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(meta.provincia)) || {};
@@ -898,7 +898,15 @@ const tipoTecnico     = batteryMeta.bateria_tipo;
 const numeroPilas     = batteryMeta.numero_pilas;
 const marcaPilasNorm  = batteryMeta.marca_pilas;
 
-console.log('🔋 BATTERY META RESOLVED:', batteryMeta);
+console.log('🧪 BATERÍA FINAL USADA:', {
+  tipoTecnico,
+  numeroPilas,
+  marcaPilasNorm,
+  funda,
+  desconectable,
+  source: batteryMeta.source
+});
+
 
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
@@ -1078,8 +1086,7 @@ const meta = {
   marca_pilas: marcaPilasNorm,
 
   // 🔹 SOLO PARA UI
-  tipo: `${(numero_pilas || numeroPilas || 1)}x ${tipoTecnico}`,
-
+  tipo: `${numeroPilas}x ${tipoTecnico}`,
   desconectable,
   funda,
   provincia,
