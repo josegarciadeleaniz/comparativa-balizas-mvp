@@ -475,34 +475,41 @@ const {
 
 
 // 5) Descripción de la funda
-const fundaNorm = (meta.funda_tipo || '').toLowerCase();
+let fundaDescription = '';
+
 switch (fundaKey) {
   case 'tela':
     fundaDescription = `
-      Las fundas textiles (lona, algodón, poliéster…) tienen conductividad térmica ≈0,05 W/m·K.
-      No aportan aislamiento térmico efectivo frente a picos de temperatura.
+      Funda textil (lona, algodón o poliéster).  
+      Conductividad térmica ≈ 0,05–0,065 W/m·K.  
+      Atenuación térmica muy baja (≈1–2 °C).
     `;
     break;
 
   case 'neopreno':
     fundaDescription = `
-      El neopreno ofrece una atenuación térmica moderada (~5 °C) y retrasa el calentamiento.
+      Funda de neopreno.  
+      Conductividad ≈ 0,054 W/m·K.  
+      Atenúa picos térmicos ≈5 °C.
     `;
     break;
 
   case 'eva':
   case 'silicona':
     fundaDescription = `
-      Las fundas térmicas de silicona/EVA reducen picos térmicos entre 7 y 10 °C
-      y retrasan el calentamiento interno de forma significativa.
+      Funda térmica de silicona / EVA.  
+      Conductividad ≈ 0,038 W/m·K.  
+      Atenúa picos térmicos 7–10 °C y retrasa el calentamiento.
     `;
     break;
 
   default:
     fundaDescription = `
-      Sin funda o tipo de funda desconocido. No hay aislamiento térmico adicional.
+      Sin funda o funda no térmica.  
+      No aporta aislamiento adicional.
     `;
 }
+
 
 // ---- Datos visuales de baliza seleccionada (no pisa los campos que metió el usuario) ----
 const hasModeloCompra =
@@ -593,21 +600,19 @@ const hasModeloCompra =
             </tr>
 
             <!-- Factor Funda -->
-            <tr style="background-color: #f9f9f9;">
-              <td>
-                Factor Funda<br>
-                   <strong>
-${(meta.funda || '').toLowerCase() === 'no'
-  ? 'No lleva funda'
-  : meta.funda}
-</strong>
-              </td>
-              <td>
-                ${fundaDescription.trim()}<strong>Factor aplicado: ×${FUNDA_MODEL[fundaKey].vida.toFixed(2)}</strong>
-              </td>
-              <td><strong>×${factorFunda.toFixed(2).replace('.', ',')}</strong></td>
-            </tr>
-
+<tr style="background-color: #f9f9f9;">
+  <td>
+    Factor Funda<br>
+    <strong>${fundaKey === 'none' ? 'No lleva funda' : meta.funda}</strong>
+  </td>
+  <td>
+    ${fundaDescription}
+    <br><strong>Factor aplicado: ×${FUNDA_MODEL[fundaKey].vida.toFixed(2)}</strong>
+  </td>
+  <td>
+    <strong>×${FUNDA_MODEL[fundaKey].vida.toFixed(2).replace('.', ',')}</strong>
+  </td>
+</tr>
             <!-- Vida útil ajustada -->
             <tr>
   		<td>Vida útil Real de las Pilas</td>
