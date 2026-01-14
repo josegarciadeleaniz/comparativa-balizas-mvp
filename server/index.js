@@ -37,17 +37,18 @@ try {
   console.warn('⚠️ Error inicializando pool MySQL:', e.message);
   pool = null;
 }
+
+
 const app = express();
 app.disable("x-powered-by");
 
+// ===== CORS UNIVERSAL (para widget/app/*.balizs.pro) =====
 const ALLOWED_ORIGINS = new Set([
-  'https://widget.comparativabalizas.es',
-  'https://comparativabalizas.es',
-  'https://www.comparativabalizas.es',
-  'https://app.comparativabalizas.es',
-  'https://comparativa-balizas-mvp.onrender.com',
   'https://balizas.pro',
-  'https://www.balizas.pro'
+  'https://www.balizas.pro',
+  'https://app.balizas.pro',
+  'https://widget.balizas.pro',
+  'https://comparativa-balizas-mvp.onrender.com' // pruebas
 ]);
 
 console.log('✅ Whitelist cargada:', Array.from(ALLOWED_ORIGINS));
@@ -150,29 +151,6 @@ app.post('/__echo', (req, res) => {
     body: req.body
   });
 });
-function parseTipo(tipoRaw){
-  const t = String(tipoRaw || '').toUpperCase().replace(/\s+/g, '');
-
-  // 1) Tipo base
-  let tipoBase = 'AA';
-  if (t.includes('9V')) tipoBase = '9V';
-  else if (t.includes('AAA')) tipoBase = 'AAA';
-
-  // 2) Número de pilas
-  // Busca patrones tipo: "4x", "x4", "3 X", "3x AA"
-  let numPilas =
-    parseInt((t.match(/(\d+)\s*[xX]/)?.[1]) ||
-             (t.match(/[xX]\s*(\d+)/)?.[1]) || '', 10);
-
-  // Defaults seguros si no viene explícito
-  if (!Number.isFinite(numPilas)) {
-    if (tipoBase === '9V') numPilas = 1;
-    else if (tipoBase === 'AAA') numPilas = 3;
-    else numPilas = 4; // AA
-  }
-
-  return { tipoBase, numPilas };
-}
 
 // ===== Utilidades varias =====
 function stripAccents(str) {
@@ -186,90 +164,62 @@ function normalizarTexto(texto) {
 }
 function normalizarBooleano(valor) {
   const v = stripAccents(String(valor)).toLowerCase().trim();
-  return ["si","sí","yes","true","1","on"].includes(v);
+  return ["si", "yes", "true"].includes(v);
 }
-
 function canonicalBrand(s){
   const v = String(s || '').trim().toLowerCase();
-
- if (['sin marca', 'no', 'generic'].includes(v)) return 'Sin Marca';
   if (v === 'marca blanca') return 'Marca Blanca';
+  if (v === 'sin marca' || v === 'no') return 'Sin marca';
+  if (v === 'china') return 'China';
+  if (v === 'generalista' || v === 'marca generalista') return 'Generalista';
   if (v === 'duracell') return 'Duracell';
   if (v === 'energizer') return 'Energizer';
   if (v === 'varta') return 'Varta';
   if (v === 'maxell') return 'Maxell';
-
-  // fallback duro y explícito
-  return 'Sin Marca';
+  return s;
 }
-// Funda en VIDA
-  const FUNDA_MODEL = {
-  eva:       { vida: 1.15, mitigacion: 0.60 },
-  silicona: { vida: 1.15, mitigacion: 0.60 },
-  neopreno: { vida: 1.10, mitigacion: 0.75 },
-  tela:     { vida: 1.01, mitigacion: 0.90 },
-  none:     { vida: 1.00, mitigacion: 1.00 }
-};
-function getFundaKey(funda){
-  const v = String(funda || '').toLowerCase();
 
-  if (v === 'si' || v === 'sí') return 'eva';   // ← PARCHE EXPLÍCITO
-
-  if (v.includes('eva')) return 'eva';
-  if (v.includes('silicona')) return 'silicona';
-  if (v.includes('neopreno')) return 'neopreno';
-  if (v.includes('tela')) return 'tela';
-  return 'none';
-}
-function normalizeFunda(fundaRaw){
-  // Si el texto trae material, lo respetamos
-  const s = stripAccents(String(fundaRaw ?? '')).toLowerCase().trim();
-
-  if (s.includes('eva')) return 'eva';
-  if (s.includes('silicona')) return 'silicona';
-  if (s.includes('neopreno')) return 'neopreno';
-  if (s.includes('tela')) return 'tela';
-
-  // Si es booleano/numérico/texto genérico
-  if (normalizarBooleano(fundaRaw)) return 'si';
-
-  return 'no';
+function getFundaFactor(tipoFunda) {
+  const v = String(tipoFunda || '').toLowerCase().trim();
+  if (v.includes('eva'))        return 1.15; // EVA Foam / silicona térmica buena
+  if (v.includes('neopreno'))   return 1.10;
+  if (v.includes('tela'))       return 1.01;
+  return 1.00;
 }
 
 
 function getVidaBase(tipo, marca_pilas) {
-  const tipoUpper = String(tipo || '').toUpperCase();
-
-  let tipoSimple = 'AA';
-  if (tipoUpper.includes('9V')) tipoSimple = '9V';
-  else if (tipoUpper.includes('AAA')) tipoSimple = 'AAA';
-
-  const marcaNorm = canonicalBrand(marca_pilas);
-
-  return (
-    batteryData?.vida_base?.[tipoSimple]?.[marcaNorm] ||
-    batteryData?.vida_base?.[tipoSimple]?.['Sin Marca']
-  );
+  const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
+  const m = canonicalBrand(marca_pilas);
+  return batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin marca'];
 }
-function getBatteryPackPrice(tipo, marca_pilas, numero_pilas, sourceData) {
-  const precios = batteryData.precios_pilas;
-  const marcaNorm = canonicalBrand(marca_pilas);
 
-  const tipoBase = tipo.includes('9V')
-    ? '9V'
-    : (tipo.includes('AAA') ? 'AAA' : 'AA');
+function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
+  const { uso, shelf } = getVidaBase(tipo, marca_pilas);
+  const baseYears = normalizarBooleano(desconectable) ? shelf : uso;
 
-  const cantidad =
-    Number(numero_pilas) ||
-    (tipoBase === '9V' ? 1 : (tipoBase === 'AAA' ? 3 : 4));
+    // Provincia -> días calientes y factor_provincia (para estimar T_hot)
+  const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
+  const dias = p?.dias_anuales_30grados ?? 0; // <<< mismo nombre que en /api/calcula
+  const fp   = p?.factor_provincia ?? 1;
 
-  const unit =
-    precios?.[marcaNorm]?.[tipoBase] ??
-    precios?.['Sin Marca']?.[tipoBase] ??
-    (tipoBase === 'AAA' ? 0.8 : 1.0);
 
-  return +(unit * cantidad).toFixed(2);
+  // Arrhenius autodescarga
+  const TrefC = batteryData?.arrhenius?.TrefC ?? 21;
+  const EaSD  = batteryData?.arrhenius?.Ea_kJ?.self_discharge ?? 40;
+  const wHot  = (dias/365);
+  const Thot  = estimateHotBinTemp(fp);
+  const multHot = arrheniusMult(Thot, EaSD, TrefC);
+  const multAvg = (1 - wHot) + wHot * multHot;
+  const multAvgClamped = Math.min(multAvg, 5); // cap prudente
+
+  // Vida efectiva ~ años_base / multiplicador térmico
+  const factorFunda = getFundaFactor(funda);
+  const vidaAjustada = (baseYears / multAvgClamped) * factorFunda;
+
+  return +vidaAjustada.toFixed(2);
 }
+
 // ===== Arrhenius (común vida y fugas) =====
 function K(c){ return c + 273.15; }
 function arrheniusMult(TC, Ea_kJ, TrefC=21){
@@ -289,11 +239,11 @@ function estimateHotBinTemp(factor_provincia){
 }
 // Vida real por Arrhenius (autodescarga) + funda (vida)
 function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias){
+  // Base: uso vs shelf según desconexión
   const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
   const m = canonicalBrand(marca_pilas);
-  const base = batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin Marca'];
+  const base = batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin marca'];
   const baseYears = normalizarBooleano(desconectable) ? base.shelf : base.uso;
-
 
   // Provincia y “días >30 ºC”
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia)) || {};
@@ -309,13 +259,13 @@ function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, 
   const multAvg= (1 - wHot) + wHot * multHot;        // promedio ponderado
   const multAvgClamped = Math.min(multAvg, 5);       // cap prudente para vida
 
-  const fundaKey = getFundaKey(funda);
-  const vida = (baseYears / multAvgClamped) * FUNDA_MODEL[fundaKey].vida;
+  // Funda en VIDA
+  const factorFunda = getFundaFactor(funda);
+  const vida = (baseYears / multAvgClamped) * factorFunda;
   return +vida.toFixed(2);
 }
 // Riesgo anual de FUGA por Arrhenius (no incluye mitigaciones)
 function leakRiskArrhenius(tipo, marca_pilas, provincia, batteryData, provincias){
-marca_pilas = canonicalBrand(marca_pilas);	
   const tasaBase = getLeakRisk(tipo, marca_pilas);
 
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia)) || {};
@@ -333,6 +283,26 @@ marca_pilas = canonicalBrand(marca_pilas);
   // Riesgo anual (SIN mitigaciones)
   return +(tasaBase * multAvgClamped * fp).toFixed(4);
 }
+
+
+function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
+  if (sourceData?.precio_por_pila) {
+    const unit = sourceData.precio_por_pila.precio;
+    const cantidad = sourceData.numero_pilas ||
+      (tipo.includes('9V') ? 1 : (parseInt(tipo.match(/^(\d+)/)?.[1]) || (tipo.includes('AAA') ? 3 : 4)));
+    return parseFloat((unit * cantidad).toFixed(2));
+  }
+  const precios = batteryData.precios_pilas;
+  const marcaNorm = canonicalBrand(marca_pilas);
+  const tipoBase  = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
+  const cantidad  = tipo.includes('9V') ? 1 : (parseInt(tipo.match(/^(\d+)/)?.[1]) || (tipoBase === 'AAA' ? 3 : 4));
+  const unit = precios[marcaNorm]?.[tipoBase]
+    ?? precios['Sin marca']?.[tipoBase]
+    ?? (tipoBase === 'AAA' ? 0.8 : 1.0);
+  return parseFloat((unit * cantidad).toFixed(2));
+}
+
+
 function getTempFactor(provincia) {
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia));
   if (!p) return 1;
@@ -359,7 +329,7 @@ function getLeakRisk(tipo, marca_pilas) {
     "Maxell":       0.0095,
     "Generalista":  0.0105,
     "Marca Blanca": 0.0125,
-    "Sin Marca":    0.0155,
+    "Sin marca":    0.0155,
     "China":        0.0155
   };
   return map[canonicalBrand(marca_pilas)] ?? 0.0075;
@@ -380,57 +350,32 @@ function getFineProb(edad) {
 }
 
 function generateTable({ pasos, resumen }, meta) {
-  const { shelf, uso, fuente } = getVidaBase(meta.bateria_tipo, meta.marca_pilas);
-  const esDesconectable = normalizarBooleano(meta.desconectable)
-  const fundaKey = getFundaKey(meta.funda);
-  const fundaLabelMap = {
-  eva:       'Funda térmica de silicona / EVA',
-  silicona: 'Funda térmica de silicona',
-  neopreno: 'Funda térmica de neopreno',
-  tela:     'Funda textil',
-  none:     'Sin funda o funda no térmica'
-};
-  const fundaLabel = fundaLabelMap[fundaKey];
-  const fundaModelSafe = FUNDA_MODEL[fundaKey] || FUNDA_MODEL.none;
+  const { shelf, uso, fuente } = getVidaBase(meta.tipo, meta.marca_pilas);
 
-const factorFundaVida = fundaModelSafe.vida;
-const factorFundaMit  = fundaModelSafe.mitigacion;
+  const esDesconectable = normalizarBooleano(meta.desconectable);
+  const {
+    valor_desconexion = 0,
+    factor_temp       = 1,
+    factor_funda: factorFunda = 1, 
+    vida_ajustada     = 0,
+    reposiciones      = 0,
+    precio_pack       = 0,
+    precio_fuente     = '',
+    riesgo_temp       = 0,
+    mitigacion        = 1,
+    riesgo_final      = 0,
+    coste_fugas       = 0,
+    coste_multas: costeMultasPasos = 0,
+    tasa_anual        = 0,
+    fuente_sulfat     = '',
+    dias_calidos      = 0,
+    factor_provincia  = 1,
+    fuente_temp       = '',
+    fuente_dias       = '',
+    prob_fuga         = 0
+  } = pasos;
 
-// Desconexión
-const descMult = esDesconectable ? 0.70 : 1.00;
-
-// Mitigación TOTAL (ÚNICA FUENTE)
-const mitigacionMultTotal = descMult * factorFundaMit;
-const mitigacionPctTotal  = 1 - mitigacionMultTotal;
-
-// Desglose SOLO PARA TEXTO
-const mitDescPct  = esDesconectable ? 0.30 : 0.00;
-const mitFundaPct = 1 - factorFundaMit;
-
-const {
-  valor_desconexion = 0,
-  factor_temp       = 1,
-  factor_funda_vida = 1,
-  vida_ajustada     = 0,
-  reposiciones      = 0,
-  precio_pack       = 0,
-  precio_fuente     = '',
-  riesgo_temp       = 0,
-  riesgo_final      = 0,
-  coste_fugas       = 0,
-  coste_multas: costeMultasPasos = 0,
-  tasa_anual        = 0,
-  fuente_sulfat     = '',
-  dias_calidos      = 0,
-  factor_provincia  = 1,
-  fuente_temp       = '',
-  fuente_dias       = '',
-  prob_fuga         = 0
-} = pasos;
-
-
-
-  const numeroPilas = meta.numero_pilas || 1;
+  const numeroPilas    = parseInt(meta.tipo.match(/^(\d+)/)?.[1] || '1', 10);
   const precioUnitario = precio_pack / numeroPilas;
 
   const provinciaData  = provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(meta.provincia)) || {};
@@ -450,8 +395,9 @@ const {
     fabricante: beaconView?.fabricante ?? meta.fabricante ?? '—',
     origen: beaconView?.origen ?? beaconView?.pais_origen ?? meta.origen ?? '—',
     actuacion: beaconView?.actuacion_espana ?? beaconView?.actuacion_en_espana ?? meta.actuacion_espana ?? '—',
-    img: beaconView?.imagen ? `/images/${beaconView.imagen}` : ''
-
+    img: (meta.imagen_url && meta.imagen_url.trim())
+        ? meta.imagen_url
+        : (beaconView?.imagen ? `/images/${beaconView.imagen}` : '')
   };
 
   const pNuevo      = 0.015;
@@ -466,12 +412,17 @@ const {
 
   const mesesVida = Math.max(1, (vida_ajustada || 0) * 12);
 
+  const factorDescon   = esDesconectable ? 0.3 : 1;
   const fundaTipoL     = (meta.funda || '').toLowerCase();
-  
-  const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMultTotal).toFixed(4));
- 
+  const mitDescPct  = esDesconectable ? 0.30 : 0.00;
+  const mitFundaPct = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.40 : 0.00;
+  const factorFundaMit = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.4 : 1;
+  const mitigacionCalc = factorDescon * factorFundaMit;
+  const mitigacionPct   = Math.min(1, mitDescPct + mitFundaPct);
+  const mitigacionMult  = 1 - mitigacionPct;
+  const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
+
   const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
-  const mitigacionCalc = mitigacion;	
   const mitigacion01    = Math.max(0, Math.min(1, mitigacionCalc));
   const pFugaFinal      = riesgoFinalCalc;
 
@@ -508,41 +459,37 @@ const {
 
 // 5) Descripción de la funda
 let fundaDescription = '';
-
-switch (fundaKey) {
+switch ((meta.funda || '').toLowerCase().trim()) {
   case 'tela':
     fundaDescription = `
-      Funda textil (lona, algodón o poliéster).  
-      Conductividad térmica ≈ 0,05–0,065 W/m·K.  
-      Atenuación térmica muy baja (≈1–2 °C).
+      Las fundas textiles (lona, algodón, poliéster…) tienen conductividad térmica ≈0,05 W/m·K (poliéster) – 0,065 W/m·K (algodón).  
+      Con 1 mm de grosor ofrecen R≈0,001 m²K/W, por lo que frente a un pico de 60 °C el interior se calienta casi sin retraso,  
+      con solo 1–2 °C de atenuación.
+      Fuente: Chua et al. “Thermal Conductivity of Recycled Textile Quilts” (2025), p. 7. :contentReference[oaicite:0]{index=0}
     `;
     break;
 
   case 'neopreno':
     fundaDescription = `
-      Funda de neopreno.  
-      Conductividad ≈ 0,054 W/m·K.  
-      Atenúa picos térmicos ≈5 °C.
+      El neopreno foam (trajes de buceo) tiene conductividad ≈0,054 W/m·K en estado no comprimido.  
+      Con 3 mm de espesor (R≈0,055 m²K/W) atenúa picos ≈5 °C y alarga el calentamiento de minutos a decenas de minutos.  
+     Fuente: “Wetsuit” en Wikipedia (actualizado 2025). :contentReference[oaicite:1]{index=1}
     `;
     break;
 
-  case 'eva':
-  case 'silicona':
+  case 'eva foam':
     fundaDescription = `
-      Funda térmica de silicona / EVA.  
-      Conductividad ≈ 0,038 W/m·K.  
-      Atenúa picos térmicos 7–10 °C y retrasa el calentamiento.
+      Funda térmica Foam EVA tipo Evazote EV45CN tiene conductividad ≈0,038 W/m·K.  
+      Con 3 mm (R≈0,079 m²K/W) atenúa picos 7–10 °C y retrasa el calentamiento de minutos a horas.  
+      Fuente: Foamparts, ficha técnica EV45CN. :contentReference[oaicite:2]{index=2}
     `;
     break;
 
   default:
     fundaDescription = `
-      Sin funda o funda no térmica.  
-      No aporta aislamiento adicional.
+      Sin funda o tipo de funda desconocido. No hay aislamiento adicional más allá del encapsulado.
     `;
 }
-
-
 // ---- Datos visuales de baliza seleccionada (no pisa los campos que metió el usuario) ----
 const hasModeloCompra =
   meta && meta.modelo_compra != null && meta.modelo_compra !== '';
@@ -605,7 +552,7 @@ const hasModeloCompra =
 		Fuente: ${fuente}
   		</td>
   		<td>
-    		<strong>${(pasos.valor_desconexion ?? 0).toFixed(2)}.replace('.', ',')}</strong> años<br>
+    		<strong>${valor_desconexion.toFixed(2).replace('.', ',')}</strong> años<br>
   	      </td>
 	     </tr>
             <!-- Factor temperatura -->
@@ -632,20 +579,16 @@ const hasModeloCompra =
             </tr>
 
             <!-- Factor Funda -->
-<tr style="background-color: #f9f9f9;">
-  <td>
-    Factor Funda<br>
-    <strong>${fundaLabel}</strong>
-  </td>
-  <td>
-    ${fundaDescription}
-    <br>
-    <strong>Factor aplicado: ×${factorFundaVida.toFixed(2)}</strong>
-  </td>
-  <td>
-    <strong>×${factorFundaVida.toFixed(2).replace('.', ',')}</strong>
-  </td>
-</tr>
+            <tr style="background-color: #f9f9f9;">
+              <td>
+                Factor Funda<br>
+                   <strong>"${meta.funda === 'No' ? 'No lleva funda' : meta.funda}"</strong>
+              </td>
+              <td>
+                ${fundaDescription.trim()}<strong>  Factor aplicado: ×${factorFunda.toFixed(2).replace('.', ',')}</strong>
+              </td>
+              <td><strong>×${factorFunda.toFixed(2).replace('.', ',')}</strong></td>
+            </tr>
 
             <!-- Vida útil ajustada -->
             <tr>
@@ -705,27 +648,22 @@ const hasModeloCompra =
 
             <!-- 10) Mitigación de Riesgo -->
             <tr>
-  <td>Mitigación de Riesgo de fugas</td>
-  <td>
-    El riesgo de fugas se reduce si la baliza permite
-    <strong>desconectar los polos</strong> (${esDesconectable ? 'sí' : 'no'})
-    y si incluye <strong>${fundaLabel}</strong>.<br>
+              <td>Mitigación de Riesgo de fugas</td>
+                <td>El riesgo de fugas se reduce si la baliza permite <strong>desconectar los polos</strong> (${esDesconectable ? 'sí' : 'no'}) y si incluye <strong>funda térmica de silicona/EVA</strong> (${meta.funda}).<br>Reducciones aplicadas: <strong>${(mitDescPct*100).toFixed(0)}%</strong> (desconexión) y<strong>${(mitFundaPct*100).toFixed(0)}%</strong> (funda), combinadas como <strong>Factor de Mitigación = ${(mitigacionPct*100).toFixed(0)}%</strong>.<br> 
+				La temperatura eleva el riesgo de forma exponencial (Arrhenius); desconexión elimina consumos parásitos y la funda atenúa picos térmicos.
+  Fuentes: documentación técnica de fabricantes; literatura de cinética (Arrhenius).
+  Fuentes: Energizer Technical Info / Battery University; estudios de temperatura en habitáculo (NHTSA/SAE). Fuente: Estudio MIT sobre fugas.
+              </td>
+              <td><strong>${(mitigacionPct*100).toFixed(0)}%</strong></td>
+            </tr>
 
-    Reducciones aplicadas:
-    <ul style="margin:6px 0 0 18px">
-      ${esDesconectable ? `<li><strong>${(mitDescPct*100).toFixed(0)}%</strong> por desconexión</li>` : ''}
-      ${mitFundaPct > 0 ? `<li><strong>${(mitFundaPct*100).toFixed(0)}%</strong> por funda térmica</li>` : ''}
-    </ul>
-
-    Combinadas como:
-    <strong>Factor de Mitigación = ${(mitigacionPctTotal*100).toFixed(0)}%</strong>.
-    <br>
-    La temperatura eleva el riesgo de forma exponencial (Arrhenius); la desconexión
-    elimina consumos parásitos y la funda atenúa picos térmicos.
+            <!-- 11) Riesgo final de fuga -->
+<tr style="background-color:#fff7cc;">
+  <td>Riesgo final de fuga anual. <strong><em>P<sub>fuga_final</sub><em></strong></td></td>
+ <td>
+    El riesgo final de fuga o sulfatación de las baterías de su baliza. <strong>${meta.marca_baliza} ${meta.modelo}</strong> es el resultado de aplicar el riesgo de fuga anual y la mitigación de dicho riesgo. Esta cifra que se presenta como porcentaje indica que de cada 100 balizas exactamente iguales con las mismas pilas (asumiendo que se realiza el número de reposiciones calculado anteriormente), este porcentaje de balizas sufrirán fugas, y por tanto, sulfatación y rotura, teniendo en cuenta el histórico de temperaturas de su provincia, y los datos reportados por fuentes solventes respecto al riesgo de fugas por marca y modelo de pilas: <br> <li><strong>Riesgo final de fuga = ${(prob_fuga*100).toFixed(2)}% × ${(mitigacionMult*100).toFixed(0)}% = <strong>${(riesgoFinalCalc*100).toFixed(2)}%</strong>%</strong></li>
   </td>
-  <td>
-    <strong>${(mitigacionPctTotal*100).toFixed(0)}%</strong>
-  </td>
+  <td><strong>${(riesgoFinalCalc*100).toFixed(2)}%</strong></td>
 </tr>
 
 <!-- 12) Coste de fugas -->
@@ -858,241 +796,146 @@ const hasModeloCompra =
     </div>
   `;
 }
-function resolveBatteryMeta({ body, beaconInfo, salesPointInfo }) {
-  // 1️⃣ Prioridad absoluta: lo que venga explícito del formulario
-  if (body?.bateria_tipo) {
-    return {
-      bateria_tipo: String(body.bateria_tipo).toUpperCase(),
-      numero_pilas: Number(body.numero_pilas) || null,
-      marca_pilas: canonicalBrand(body.marca_pilas),
-      source: 'body'
-    };
-  }
-
-  // 2️⃣ Beacon (formulario B)
-  if (beaconInfo?.bateria_tipo) {
-    return {
-      bateria_tipo: String(beaconInfo.bateria_tipo).toUpperCase(),
-      numero_pilas: Number(beaconInfo.numero_pilas) || null,
-      marca_pilas: canonicalBrand(beaconInfo.marca_pilas),
-      source: 'beacon'
-    };
-  }
-
-  // 3️⃣ Sales point (formulario C)
-  if (salesPointInfo?.bateria_tipo) {
-    return {
-      bateria_tipo: String(salesPointInfo.bateria_tipo).toUpperCase(),
-      numero_pilas: Number(salesPointInfo.numero_pilas) || null,
-      marca_pilas: canonicalBrand(salesPointInfo.marca_pilas),
-      source: 'sales_point'
-    };
-  }
-
-  // 4️⃣ Fallback explícito (forzado)
-  return {
-    bateria_tipo: 'AA',
-    numero_pilas: 4,
-    marca_pilas: 'Sin Marca',
-    source: 'fallback'
-  };
-}
-function resolveBooleanMeta({ body, beaconInfo, salesPointInfo }, field, defaultValue = 'no') {
-  if (body?.[field] !== undefined && body?.[field] !== null && body?.[field] !== '') {
-    return body[field];
-  }
-  if (beaconInfo?.[field] !== undefined && beaconInfo?.[field] !== null) {
-    return beaconInfo[field];
-  }
-  if (salesPointInfo?.[field] !== undefined && salesPointInfo?.[field] !== null) {
-    return salesPointInfo[field];
-  }
-  return defaultValue;
-}
 
 // ====== ENDPOINT REAL: CALCULA ======
 app.post('/api/calcula', async (req, res) => {
   try {
     const {
-  id_baliza,
-  id_sales_point,
+      id_baliza,
+      id_sales_point,
+      marca,
+      tipo = '3x AA',
+      desconectable = 'no',
+      funda = 'no',
+      provincia = 'Madrid',
+      coste_inicial = 0,
+      edad_vehiculo = 5,
+      marca_baliza = 'Desconocida',
+      modelo = 'Desconocido',
+      modelo_compra = '',
+      email = '',
+      contexto = 'A'
+    } = req.body;
 
-  // 🔹 NUEVO MODELO CORRECTO
-  bateria_tipo,
-  numero_pilas,
-  marca_pilas,
-		
-  provincia = 'Madrid',
-  coste_inicial = 0,
-  edad_vehiculo = 5,
-
-  marca_baliza = 'Desconocida',
-  modelo = 'Desconocido',
-  modelo_compra = '',
-  email = '',
-  contexto = 'A'
-} = req.body;
-
-
-// ========= NORMALIZACIÓN BÁSICA (CANÓNICA) 
-const beaconInfo = beacons.find(b => b.id_baliza === id_baliza);
-const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
-// ===== NORMALIZACIÓN BOOLEANOS (SIN DUPLICAR) =====
-const desconectableRaw = resolveBooleanMeta(
-  { body: req.body, beaconInfo, salesPointInfo },
-  'desconectable',
-  'no'
-);
-const desconectableCanon = normalizarBooleano(desconectableRaw) ? 'si' : 'no';
-
-// FUNDA: aquí NO uses resolveBooleanMeta directo porque en sales_points tienes mezcla
-// (campo "funda" boolean y "funda_termica" texto). Priorizamos body, luego termica, luego funda.
-const fundaRaw =
-  (req.body?.funda ?? req.body?.funda_termica ?? '') !== ''
-    ? (req.body.funda ?? req.body.funda_termica)
-    : ((beaconInfo?.funda_termica ?? salesPointInfo?.funda_termica ?? '') !== ''
-        ? (beaconInfo?.funda_termica ?? salesPointInfo?.funda_termica)
-        : (beaconInfo?.funda ?? salesPointInfo?.funda ?? 'no'));
-
-const fundaCanon = normalizeFunda(fundaRaw);   // 'si'|'no'|'eva'|'silicona'|'neopreno'|'tela'
-const fundaKey0  = getFundaKey(fundaCanon);    // 'eva'|'silicona'|'neopreno'|'tela'|'none'
-const fundaKey   = FUNDA_MODEL[fundaKey0] ? fundaKey0 : 'none';
-
-// Fuente de datos “principal” para precios y defaults
-const sourceData = beaconInfo || salesPointInfo || {};
-	  
-const batteryMeta = resolveBatteryMeta({
-  body: req.body,
-  beaconInfo,
-  salesPointInfo
-});
-
-// 🔒 CANONICAL BATTERY DEFINITION (NO TOCAR MÁS)
-const tipoTecnico  = batteryMeta.bateria_tipo;   // '9V' | 'AA' | 'AAA'
-const numeroPilas  = batteryMeta.numero_pilas;
-const marcaPilasNorm = batteryMeta.marca_pilas;
+    const marca_pilas = marca;
 
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
-  
 
-	const precio_venta_final =
-  Number(coste_inicial) ||
-  Number(sourceData.precio_venta) ||
-  Number(sourceData.precio) ||
-  Number(sourceData.pvp) ||
-  0;
+    const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
+    const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point)
+    const sourceData     = beaconInfo || salesPointInfo || {};
 
+    const baseData = getVidaBase(tipo, marca_pilas);
+const uso  = baseData.uso;
+const shelf = baseData.shelf;
 
-    // ========= VIDA DE PILAS =========
-    const baseData = getVidaBase(tipoTecnico, marcaPilasNorm);
-    const uso   = baseData.uso;
-    const shelf = baseData.shelf;
-	const valor_desconexion = (desconectableCanon === 'si') ? shelf : uso;  
-	console.log('DEBUG VIDA BASE:', { tipoTecnico, marcaPilasNorm, baseData });
+const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
 
-    const vida_ajustada = lifeArrheniusYears(
-      tipoTecnico,
-      marcaPilasNorm,
-      provincia,
-      desconectableCanon,
-      fundaCanon,
-      batteryData,
-      provincias
-    );
-
-	console.log('FUNDA VIDA:', fundaCanon, fundaKey, FUNDA_MODEL[fundaKey].vida);
-
-
-    const factor_funda_vida = FUNDA_MODEL[fundaKey].vida;
-	  
-    // factor temperatura explicativo
-    const pTemp = provincias.find(
-      p => normalizarTexto(p.provincia) === normalizarTexto(provincia)
-    ) || {};
-
-    const dias_calidos = pTemp.dias_anuales_30grados ?? 0;
-    const factor_prov  = pTemp.factor_provincia ?? 1;
-    const fuente_temp  = pTemp.fuente_temp_extrema ?? 'provincias.json';
-    const fuente_dias  = pTemp.fuente_dias_calidos ?? 'provincias.json';
-
-    const TrefC_SD = batteryData?.arrhenius?.TrefC ?? 21;
-    const EaSD_kJ  = batteryData?.arrhenius?.Ea_kJ?.self_discharge ?? 40;
-    const wHot_SD  = Math.max(0, Math.min(1, dias_calidos / 365));
-    const Thot_SD  = estimateHotBinTemp(factor_prov);
-    const multHot_SD = arrheniusMult(Thot_SD, EaSD_kJ, TrefC_SD);
-    const multAvg_SD = (1 - wHot_SD) + wHot_SD * multHot_SD;
-    const multAvgClamped_SD = Math.min(multAvg_SD, 5);
-
-    const factor_temp = +(1 / multAvgClamped_SD).toFixed(3);
-// ========= COSTE PILAS =========
-const reposiciones = Math.ceil(12 / vida_ajustada);
-
-const precio_pack = getBatteryPackPrice(
-  tipoTecnico,
-  marcaPilasNorm,
-  numeroPilas,
-  sourceData
+// Vida ajustada por Arrhenius + funda (vida)
+const vida_ajustada = lifeArrheniusYears(
+  tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias
 );
 
-const coste_pilas = +(reposiciones * precio_pack).toFixed(2);
-const precio_fuente = 'battery_types.json';
-
-    // ========= RIESGO DE FUGA (ARRHENIUS) =========
-    const prob_fuga = leakRiskArrhenius(
-      tipoTecnico,
-      marcaPilasNorm,
-      provincia,
-      batteryData,
-      provincias
-    );
-
-    // Mitigaciones
-    const multDesc = (desconectableCanon === 'si') ? 0.70 : 1.00;
-    const mitigacionMult = multDesc * FUNDA_MODEL[fundaKey].mitigacion;
-
-    const riesgo_final = +(
-      Math.max(0, Math.min(1, prob_fuga)) * mitigacionMult
-    ).toFixed(4);
-
-    const coste_fugas = +(precio_venta_final * riesgo_final).toFixed(2);
-    const coste_fugas_12 = +(coste_fugas * 12).toFixed(2);
+// Para mostrar “factor temperatura” en la tabla (explicativo):
+// factor_temp ≈  1 / multAvgClamped  (se deduce de la vida calculada)
+const factor_funda = getFundaFactor(funda);
+let factor_temp  = +(
+  vida_ajustada && valor_desconexion
+    ? vida_ajustada / (valor_desconexion * factor_funda)
+    : 1
+).toFixed(3);
 
 
-    // ========= MULTAS =========
-    const importeMulta = 200;
-    const tasaDenuncia = 0.32;
-    const retardoMeses = 6;
-    const adherencia   = 0.80;
+// ——— Arrhenius (autodescarga) para la vida útil ———
+const pTemp = provincias.find(p => normalizarTexto(p.provincia) === normalizarTexto(provincia)) || {};
+const dias_calidos_SD = pTemp.dias_anuales_30grados ?? 0;
+const factor_prov_SD  = pTemp.factor_provincia ?? 1;
 
-    const mesesVida     = Math.max(1, vida_ajustada * 12);
-    const pBateriaInsuf = Math.min(
-      0.5,
-      (retardoMeses * (1 - adherencia)) / mesesVida
-    );
+const TrefC_SD = batteryData?.arrhenius?.TrefC ?? 21;
+const EaSD_kJ  = batteryData?.arrhenius?.Ea_kJ?.self_discharge ?? 40;
 
-    const pNoFunciona = 1 - (1 - riesgo_final) * (1 - pBateriaInsuf);
+const wHot_SD  = Math.max(0, Math.min(1, dias_calidos_SD / 365));
+const Thot_SD  = estimateHotBinTemp(factor_prov_SD);
+const multHot_SD = arrheniusMult(Thot_SD, EaSD_kJ, TrefC_SD);
+const multAvg_SD = (1 - wHot_SD) + wHot_SD * multHot_SD;
+const multAvgClamped_SD = Math.min(multAvg_SD, 5); // cap prudente
+
+factor_temp = 1 / multAvgClamped_SD; // ⇒ reduce años si el estrés térmico es alto
+// Vida ajustada por Arrhenius + funda (vida)
+
+
+
+    const reposiciones = Math.ceil(12 / vida_ajustada);
+    const precio_pack = getBatteryPackPrice(tipo, marca_pilas, sourceData);
+    let precio_fuente = sourceData.precio_por_pila ? sourceData.precio_por_pila.fuente : 'battery_types.json';
+    const coste_pilas  = parseFloat((reposiciones * precio_pack).toFixed(2));
+
+    console.log('--- Sulfatación: datos de entrada ---', {
+      id_baliza, id_sales_point, tipo, marca_pilas
+    });
+
+    const fuenteData = beacons.find(b => b.id_baliza === id_baliza)
+                       || salesPoints.find(s => s.id_punto === id_sales_point)
+                       || {};
+    console.log('fuenteData.factor_sulfatacion:', fuenteData.factor_sulfatacion);
+    const tasa_anual     = fuenteData.factor_sulfatacion?.tasa_anual ?? getLeakRisk(tipo, marca_pilas);
+    const fuente_sulfat  = fuenteData.factor_sulfatacion?.fuente     ?? 'battery_types.json';
+
+    const pData          = provincias.find(p=>normalizarTexto(p.provincia)===normalizarTexto(provincia))||{};
+    console.log('pData.dias_anuales_30grados, factor_provincia:', pData.dias_anuales_30grados, pData.factor_provincia);
+    const dias_calidos   = pData.dias_anuales_30grados ?? 0;
+    const factor_prov    = pData.factor_provincia        ?? 1;
+    const fuente_temp    = pData.fuente_temp_extrema     ?? 'provincias.json';
+    const fuente_dias    = pData.fuente_dias_calidos     ?? 'provincias.json';
+
+// === Riesgo anual de fuga (Arrhenius, sin mitigaciones aún) ===
+const prob_fuga = leakRiskArrhenius(
+  tipo, marca_pilas, provincia, batteryData, provincias
+);
+
+// === Mitigaciones ===
+// Desconexión: -30%  → multiplicador 0.70
+// Funda (silicona/EVA): -40% → multiplicador 0.60
+const tieneDescon   = normalizarBooleano(desconectable);
+const fundaLower    = String(funda || '').toLowerCase();
+const multDesc      = tieneDescon ? 0.70 : 1.00;
+const multFunda     = (fundaLower.includes('eva') || fundaLower.includes('silicona')) ? 0.60
+                    : (fundaLower.includes('neopreno') ? 0.75
+                    : (fundaLower.includes('tela') ? 0.90 : 1.00));
+const mitigacionMult = +(multDesc * multFunda).toFixed(2);
+const mitigacionPct  = +(1 - mitigacionMult).toFixed(2); // para mostrar en %
+
+const riesgo_final   = +(
+  Math.max(0, Math.min(1, prob_fuga)) * mitigacionMult
+).toFixed(4);
+
+const coste_fugas    = +((parseFloat(coste_inicial) || 0) * riesgo_final).toFixed(2);
+const coste_fugas_12 = +(coste_fugas * 12).toFixed(2);
+
+
+    const importeMulta  = 200;
+    const tasaDenuncia  = 0.32;
+    const retardoMeses  = 6;
+    const adherencia    = 0.80;
+
+    const mesesVida       = Math.max(1, (vida_ajustada || 0) * 12);
+    const pBateriaInsuf   = Math.min(0.5, (retardoMeses * (1 - adherencia)) / mesesVida);
+    const pNoFunciona     = 1 - (1 - riesgo_final) * (1 - pBateriaInsuf);
 
     const pIncHoy = getFineProb(edad_vehiculo);
-
-    const coste_multas = +(
-      importeMulta * tasaDenuncia * pIncHoy * pNoFunciona
-    ).toFixed(2);
+    const coste_multas = +(importeMulta * tasaDenuncia * pIncHoy * pNoFunciona).toFixed(2);
 
     const probAveria12 = Array.from({ length: 12 }, (_, k) =>
       getFineProb((parseInt(edad_vehiculo) || 0) + k)
     );
-
     const coste_multas_12 = +probAveria12
       .map(pInc => importeMulta * tasaDenuncia * pInc * pNoFunciona)
       .reduce((a, b) => a + b, 0)
       .toFixed(2);
 
-    // ========= RESUMEN =========
-    const total12y = +(
-      coste_pilas + coste_fugas_12 + coste_multas_12
-    ).toFixed(2);
+    const total12y = Number((coste_pilas + coste_fugas_12 + coste_multas_12).toFixed(2));
 
     const resumen = {
       reposiciones,
@@ -1102,19 +945,21 @@ const precio_fuente = 'battery_types.json';
       coste_multas,
       coste_multas_12,
       total12y,
-      medioAnual: +(total12y / 12).toFixed(2)
+      medioAnual: Number((total12y / 12).toFixed(2))
     };
 
     const pasos = {
-      vida_base: uso,
-	  valor_desconexion,	
+      vida_base:         uso,
+      valor_desconexion,
       factor_temp,
-      factor_funda_vida,
+      factor_funda,
       vida_ajustada,
       precio_pack,
       precio_fuente,
       reposiciones,
       coste_pilas,
+      tasa_anual,
+      fuente_sulfat,
       dias_calidos,
       factor_provincia: factor_prov,
       fuente_temp,
@@ -1123,10 +968,8 @@ const precio_fuente = 'battery_types.json';
       riesgo_final,
       coste_fugas,
       coste_multas,
-      mitigacion: mitigacionMult
+	  mitigacion: mitigacionMult
     };
-
-    // AQUÍ sigue tu generateTable y res.json(...)
 
     // Fallback de marca/modelo desde la baliza seleccionada (por si no vienen en el body)
 const marca_baliza_eff = (marca_baliza && String(marca_baliza).trim()) 
@@ -1138,23 +981,14 @@ const meta = {
   marca_baliza: String(marca_baliza_eff),
   modelo: String(modelo_eff),
   modelo_compra,
-
-  // 🔹 CANÓNICO
-  bateria_tipo: tipoTecnico,
-  numero_pilas: numeroPilas,
-  marca_pilas: marcaPilasNorm,
-
-  // 🔹 SOLO PARA UI
-tipo: tipoTecnico === '9V'
-  ? '1x 9V'
-  : `${numeroPilas}x ${tipoTecnico}`,
-  desconectable: desconectableCanon,
-  funda: fundaCanon,
+  tipo,
+  marca_pilas,
+  desconectable,
+  funda,
   provincia,
-  coste_inicial: precio_venta_final,
+  coste_inicial: parseFloat(coste_inicial),
   edad_vehiculo: parseInt(edad_vehiculo)
 };
-
  // === GUARDAR EN BD (opcional) ===
 try {
   const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
@@ -1167,7 +1001,7 @@ try {
     console.log('✅ Cálculo guardado en BD (directo)');
   } else {
     const relayUrl = process.env.RELAY_SAVE_URL
-      || 'https://balizas.pro/comparador/api/save-calc.php';
+  || 'https://balizas.pro/comparador/comparativa-balizas-mvp/api/save-calc.php';
     const payload = {
       email, userHash, contexto, marca_baliza, modelo,
       provincia, coste_inicial: parseFloat(coste_inicial),
@@ -1199,12 +1033,7 @@ try {
         coste_pilas: pasos.coste_pilas
       });
     }
-	console.log('CHECK FINAL:', {
-  vida_ajustada,
-  factor_funda_vida,
-  mitigacionMult,
-  riesgo_final
-});
+
     return res.json({
       meta,
       pasos,
@@ -1256,7 +1085,8 @@ app.post('/api/enviar-pdf', async (req, res) => {
     }
 
     const relayUrl = process.env.RELAY_MAIL_URL 
-      || 'https://balizas.pro/comparador/api/send-mail.php';
+  || 'https://balizas.pro/comparador/comparativa-balizas-mvp/api/send-mail.php';
+
 
     const r = await fetch(relayUrl, {
       method: 'POST',
@@ -1402,7 +1232,7 @@ app.post('/api/pre-register', async (req,res)=>{
     await transporter.sendMail({
       from: process.env.MAIL_FROM || 'no-reply@balizas.pro',
       to: email,
-      subject: 'Confirma tu acceso a ComparativaBalizas',
+      subject: 'Confirma tu acceso a balizas.pro',
       html: `<p>Hola, confirma tu acceso haciendo clic:</p>
              <p><a href="${link}">${link}</a></p>
              <p>Caduca en 30 minutos.</p>`
