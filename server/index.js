@@ -963,20 +963,6 @@ const fundaKey   = FUNDA_MODEL[fundaKey0] ? fundaKey0 : 'none';
 // Fuente de datos “principal” para precios y defaults
 const sourceData = beaconInfo || salesPointInfo || {};
 	  
-// CANÓNICOS
-const valor_desconexion = (desconectableCanon === 'si') ? shelf : uso;
-const desconectableCanon = normalizarBooleano(desconectableRaw) ? 'si' : 'no';
-
-// FUNDA KEY FINAL (solo una vez)
-
-const desconectable = resolveBooleanMeta(
-  { body: req.body, beaconInfo, salesPointInfo },
-  'desconectable',
-  'no'
-);
-	  
-const sourceData     = beaconInfo || salesPointInfo || {};
-	  
 const batteryMeta = resolveBatteryMeta({
   body: req.body,
   beaconInfo,
@@ -1006,8 +992,6 @@ const marcaPilasNorm = batteryMeta.marca_pilas;
     const uso   = baseData.uso;
     const shelf = baseData.shelf;
 	console.log('DEBUG VIDA BASE:', { tipoTecnico, marcaPilasNorm, baseData });
-
-    const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
 
     const vida_ajustada = lifeArrheniusYears(
       tipoTecnico,
@@ -1066,13 +1050,7 @@ const precio_fuente = 'battery_types.json';
     );
 
     // Mitigaciones
-    const tieneDescon = normalizarBooleano(desconectableCanon);
-    const multDesc  = (desconectableCanon === 'si') ? 0.70 : 1.00;
-    const mitigacionMult = multDesc * FUNDA_MODEL[fundaKey].mitigacion;
-
-    const multDesc  = tieneDescon ? 0.70 : 1.00;
-	const multFunda = FUNDA_MODEL[fundaKey].mitigacion;
-  
+    const multDesc = (desconectableCanon === 'si') ? 0.70 : 1.00;
     const mitigacionMult = multDesc * FUNDA_MODEL[fundaKey].mitigacion;
 
     const riesgo_final = +(
@@ -1172,7 +1150,7 @@ tipo: tipoTecnico === '9V'
   ? '1x 9V'
   : `${numeroPilas}x ${tipoTecnico}`,
   desconectable: desconectableCanon,
-funda: fundaCanon
+  funda: fundaCanon,
   provincia,
   coste_inicial: precio_venta_final,
   edad_vehiculo: parseInt(edad_vehiculo)
