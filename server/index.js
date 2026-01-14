@@ -978,9 +978,6 @@ const tipoTecnico  = batteryMeta.bateria_tipo;   // '9V' | 'AA' | 'AAA'
 const numeroPilas  = batteryMeta.numero_pilas;
 const marcaPilasNorm = batteryMeta.marca_pilas;
 
-const beaconInfo = beacons.find(b => b.id_baliza === id_baliza);
-const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
-
 // ===== FUNDA CANÓNICA FINAL =====
 const fundaKey = resolveFundaKey({
   body: req.body,
