@@ -374,14 +374,6 @@ function getLeakRisk(tipo, marca_pilas) {
   return map[canonicalBrand(marca_pilas)] ?? 0.0075;
 }
 
-
-// DEPRECATED: mantener solo si aún es invocada por código antiguo.
-function getLeakFinalRisk(tipo, marca_pilas, desconectable, funda) {
-  const mit = (normalizarBooleano(desconectable) ? 0.6 : 1) * (normalizarBooleano(funda) ? 0.6 : 1);
-  // devuelve SOLO el multiplicador de mitigación; el riesgo anual real ya se computa fuera con Arrhenius
-  return +mit.toFixed(4);
-}
-
 function getFineProb(edad) {
   const e = Math.min(parseInt(edad) || 0, 30);
   const base = 0.015, max = 0.258;
