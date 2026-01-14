@@ -391,7 +391,9 @@ function getFineProb(edad) {
 function generateTable({ pasos, resumen }, meta) {
   const { shelf, uso, fuente } = getVidaBase(meta.bateria_tipo, meta.marca_pilas);
   const esDesconectable = normalizarBooleano(meta.desconectable)
-  const fundaKey = getFundaKey(meta.funda);
+  const fundaKey = meta.funda || 'none';
+  const fundaLabel = fundaLabelMap[fundaKey] || fundaLabelMap.none;	
+
   const fundaLabelMap = {
   eva:       'Funda térmica de silicona / EVA',
   silicona: 'Funda térmica de silicona',
@@ -440,7 +442,7 @@ const {
     prob_fuga         = 0
   } = pasos;
 
-  const factorFunda = FUNDA_MODEL[fundaKey].vida;
+  const factorFunda = (FUNDA_MODEL[fundaKey] || FUNDA_MODEL.none).vida;
   const numeroPilas = meta.numero_pilas || 1;
   const precioUnitario = precio_pack / numeroPilas;
 
@@ -1066,7 +1068,6 @@ const precio_fuente = 'battery_types.json';
 
     // Mitigaciones
     const tieneDescon = normalizarBooleano(desconectableCanon);
-    const fundaLower  = String(funda || '').toLowerCase();
 
     const multDesc  = tieneDescon ? 0.70 : 1.00;
 
@@ -1146,8 +1147,6 @@ const precio_fuente = 'battery_types.json';
       coste_multas,
       mitigacion: mitigacionMult
     };
-
-    // AQUÍ sigue tu generateTable y res.json(...)
 
     // Fallback de marca/modelo desde la baliza seleccionada (por si no vienen en el body)
 const marca_baliza_eff = (marca_baliza && String(marca_baliza).trim()) 
