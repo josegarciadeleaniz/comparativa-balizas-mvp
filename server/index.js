@@ -169,7 +169,7 @@ function normalizarBooleano(valor) {
 function canonicalBrand(s){
   const v = String(s || '').trim().toLowerCase();
   if (v === 'marca blanca') return 'Marca Blanca';
-  if (v === 'sin marca' || v === 'no') return 'Sin marca';
+  if (v === 'sin marca' || v === 'no') return 'Sin Marca';
   if (v === 'china') return 'China';
   if (v === 'generalista' || v === 'marca generalista') return 'Generalista';
   if (v === 'duracell') return 'Duracell';
@@ -195,9 +195,10 @@ function getVidaBase(tipo, marca_pilas) {
 if (!baseTipo) return { uso: 0, shelf: 0, fuente: 'vida_base no definida' };
 
 return baseTipo[m]
-    || baseTipo['Sin marca']
+    || baseTipo['Sin Marca']
     || baseTipo['Marca Blanca']
     || { uso: 0, shelf: 0, fuente: 'vida_base fallback' };
+
 }
 
 function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
@@ -839,9 +840,10 @@ app.post('/api/calcula', async (req, res) => {
     const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point)
     const sourceData     = beaconInfo || salesPointInfo || {};
 
-    const baseData = getVidaBase(tipo, marca_pilas);
-const uso  = baseData.uso;
-const shelf = baseData.shelf;
+    const baseData = getVidaBase(tipo, marca_pilas) || { uso: 0, shelf: 0, fuente: 'vida_base undefined' };
+const uso   = Number(baseData.uso)   || 0;
+const shelf = Number(baseData.shelf) || 0;
+
 
 const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
 
