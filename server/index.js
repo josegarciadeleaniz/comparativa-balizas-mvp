@@ -392,8 +392,11 @@ function generateTable({ pasos, resumen }, meta) {
 };
   const fundaLabel = fundaLabelMap[fundaKey];
 
-const factorFundaVida = FUNDA_MODEL[fundaKey].vida;
-const factorFundaMit  = FUNDA_MODEL[fundaKey].mitigacion;
+const fundaModelSafe = FUNDA_MODEL[fundaKey] || FUNDA_MODEL.none;
+
+const factorFundaVida = fundaModelSafe.vida;
+const factorFundaMit  = fundaModelSafe.mitigacion;
+
 
 // Desconexión
 const descMult = esDesconectable ? 0.70 : 1.00;
