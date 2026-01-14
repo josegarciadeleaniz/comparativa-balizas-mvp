@@ -391,8 +391,7 @@ function getFineProb(edad) {
 function generateTable({ pasos, resumen }, meta) {
   const { shelf, uso, fuente } = getVidaBase(meta.bateria_tipo, meta.marca_pilas);
   const esDesconectable = normalizarBooleano(meta.desconectable)
-  const fundaKey = meta.funda || 'none';
-  const fundaLabel = fundaLabelMap[fundaKey] || fundaLabelMap.none;	
+  const fundaKey = meta.funda || 'none';	
 
   const fundaLabelMap = {
   eva:       'Funda térmica de silicona / EVA',
