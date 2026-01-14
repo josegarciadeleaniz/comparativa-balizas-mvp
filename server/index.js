@@ -191,7 +191,13 @@ function getFundaFactor(tipoFunda) {
 function getVidaBase(tipo, marca_pilas) {
   const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
   const m = canonicalBrand(marca_pilas);
-  return batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin marca'];
+  const baseTipo = batteryData.vida_base?.[tipoSimple];
+if (!baseTipo) return { uso: 0, shelf: 0, fuente: 'vida_base no definida' };
+
+return baseTipo[m]
+    || baseTipo['Sin marca']
+    || baseTipo['Marca Blanca']
+    || { uso: 0, shelf: 0, fuente: 'vida_base fallback' };
 }
 
 function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
@@ -362,7 +368,7 @@ function generateTable({ pasos, resumen }, meta) {
     precio_pack       = 0,
     precio_fuente     = '',
     riesgo_temp       = 0,
-    mitigacion        = 1,
+    mitigacion: mitigacionMult = 1,
     riesgo_final      = 0,
     coste_fugas       = 0,
     coste_multas: costeMultasPasos = 0,
