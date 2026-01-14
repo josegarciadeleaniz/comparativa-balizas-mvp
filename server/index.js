@@ -210,32 +210,41 @@ function canonicalBrand(s){
   tela:     { vida: 1.01, mitigacion: 0.90 },
   none:     { vida: 1.00, mitigacion: 1.00 }
 };
-function getFundaKey(funda){
-  const v = String(funda || '').toLowerCase();
+// ===== FUNDA CANÓNICA (NUEVO MODELO) =====
+// funda: boolean (true / false)
+// funda_termica: "Eva Foam" | "Neopreno" | "Tela" | "Plástico" | "No"
 
-  if (v === 'si' || v === 'sí') return 'eva';   // ← PARCHE EXPLÍCITO
+function resolveFundaKey({ body, beaconInfo, salesPointInfo }) {
+  // 1️⃣ Resolver si hay funda (boolean manda)
+  const fundaRaw =
+    body?.funda ??
+    beaconInfo?.funda ??
+    salesPointInfo?.funda ??
+    false;
 
-  if (v.includes('eva')) return 'eva';
-  if (v.includes('silicona')) return 'silicona';
-  if (v.includes('neopreno')) return 'neopreno';
-  if (v.includes('tela')) return 'tela';
+  const hasFunda = fundaRaw === true || normalizarBooleano(fundaRaw);
+
+  if (!hasFunda) {
+    return 'none';
+  }
+
+  // 2️⃣ Resolver tipo térmico SOLO si hay funda
+  const termicaRaw =
+    body?.funda_termica ??
+    beaconInfo?.funda_termica ??
+    salesPointInfo?.funda_termica ??
+    'No';
+
+  const t = stripAccents(String(termicaRaw)).toLowerCase();
+
+  if (t.includes('eva')) return 'eva';
+  if (t.includes('silicona')) return 'silicona';
+  if (t.includes('neopreno')) return 'neopreno';
+  if (t.includes('tela')) return 'tela';
+
+  // Plástico o "No" → no térmica
   return 'none';
 }
-function normalizeFunda(fundaRaw){
-  // Si el texto trae material, lo respetamos
-  const s = stripAccents(String(fundaRaw ?? '')).toLowerCase().trim();
-
-  if (s.includes('eva')) return 'eva';
-  if (s.includes('silicona')) return 'silicona';
-  if (s.includes('neopreno')) return 'neopreno';
-  if (s.includes('tela')) return 'tela';
-
-  // Si es booleano/numérico/texto genérico
-  if (normalizarBooleano(fundaRaw)) return 'si';
-
-  return 'no';
-}
-
 
 function getVidaBase(tipo, marca_pilas) {
   const tipoUpper = String(tipo || '').toUpperCase();
@@ -309,8 +318,8 @@ function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, 
   const multAvg= (1 - wHot) + wHot * multHot;        // promedio ponderado
   const multAvgClamped = Math.min(multAvg, 5);       // cap prudente para vida
 
-  const fundaKey = getFundaKey(funda);
-  const vida = (baseYears / multAvgClamped) * FUNDA_MODEL[fundaKey].vida;
+  const fundaModel = FUNDA_MODEL[funda] || FUNDA_MODEL.none;
+const vida = (baseYears / multAvgClamped) * fundaModel.vida;
   return +vida.toFixed(2);
 }
 // Riesgo anual de FUGA por Arrhenius (no incluye mitigaciones)
@@ -969,20 +978,16 @@ const tipoTecnico  = batteryMeta.bateria_tipo;   // '9V' | 'AA' | 'AAA'
 const numeroPilas  = batteryMeta.numero_pilas;
 const marcaPilasNorm = batteryMeta.marca_pilas;
 
-console.log('🧪 CONTEXTO FINAL:', {
-  id_baliza,
-  id_sales_point,
-  funda_raw: fundaRaw,
-  funda_canon: fundaCanon,
-  fundaKey,
-  desconectable_raw: desconectableRaw,
-  desconectable_canon: desconectableCanon,
-  fuente_funda:
-    req.body?.funda ? 'body' :
-    beaconInfo?.funda != null ? 'beacon' :
-    salesPointInfo?.funda != null ? 'sales_point' :
-    'fallback'
+const beaconInfo = beacons.find(b => b.id_baliza === id_baliza);
+const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
+
+// ===== FUNDA CANÓNICA FINAL =====
+const fundaKey = resolveFundaKey({
+  body: req.body,
+  beaconInfo,
+  salesPointInfo
 });
+
 
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
@@ -1006,16 +1011,17 @@ console.log('🧪 CONTEXTO FINAL:', {
     const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
 
     const vida_ajustada = lifeArrheniusYears(
-      tipoTecnico,
-      marcaPilasNorm,
-      provincia,
-      desconectableCanon,
-      fundaCanon,
-      batteryData,
-      provincias
-    );
+  tipoTecnico,
+  marcaPilasNorm,
+  provincia,
+  desconectableCanon,
+  fundaKey,
+  batteryData,
+  provincias
+);
 
-	console.log('FUNDA VIDA:', fundaCanon, fundaKey, FUNDA_MODEL[fundaKey].vida);
+
+	console.log('FUNDA VIDA:', fundaKey, fundaKey, FUNDA_MODEL[fundaKey].vida);
 
 
     const factor_funda_vida = FUNDA_MODEL[fundaKey].vida;
@@ -1066,9 +1072,9 @@ const precio_fuente = 'battery_types.json';
     const fundaLower  = String(funda || '').toLowerCase();
 
     const multDesc  = tieneDescon ? 0.70 : 1.00;
-	const multFunda = FUNDA_MODEL[fundaKey].mitigacion;
-  
-    const mitigacionMult = multDesc * FUNDA_MODEL[fundaKey].mitigacion;
+
+	const multFunda = (FUNDA_MODEL[fundaKey] || FUNDA_MODEL.none).mitigacion;
+	const mitigacionMult = multDesc * multFunda;
 
     const riesgo_final = +(
       Math.max(0, Math.min(1, prob_fuga)) * mitigacionMult
@@ -1167,7 +1173,7 @@ tipo: tipoTecnico === '9V'
   ? '1x 9V'
   : `${numeroPilas}x ${tipoTecnico}`,
   desconectable,
-  funda: fundaCanon,
+  funda: fundaKey,
   provincia,
   coste_inicial: precio_venta_final,
   edad_vehiculo: parseInt(edad_vehiculo)
