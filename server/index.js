@@ -466,7 +466,7 @@ const {
 
   const fundaTipoL     = (meta.funda || '').toLowerCase();
   
-  const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
+  const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMultTotal).toFixed(4));
  
   const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
   const mitigacionCalc = mitigacion;	
@@ -965,12 +965,16 @@ const desconectable = resolveBooleanMeta(
   'desconectable',
   'no'
 );
-const fundaNorm = normalizarBooleano(funda) || 
-  ['eva','neopreno','silicona','tela'].some(t => 
-    String(funda).toLowerCase().includes(t)
+const fundaNorm =
+  (
+    normalizarBooleano(funda) ||
+    ['eva','neopreno','silicona','tela'].some(t =>
+      String(funda).toLowerCase().includes(t)
+    )
   )
-  ? 'si'
-  : 'no';
+    ? 'si'
+    : 'no';
+
 	  
 const sourceData     = beaconInfo || salesPointInfo || {};
 	  
@@ -1030,7 +1034,7 @@ console.log('🧪 CONTEXTO FINAL:', {
       batteryData,
       provincias
     );
-    const fundaKey = getFundaKey(funda);
+
 	console.log('FUNDA VIDA:', fundaCanon, fundaKey, FUNDA_MODEL[fundaKey].vida);
 
 
