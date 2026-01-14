@@ -209,6 +209,7 @@ function getVidaBase(tipo, marca_pilas) {
   };
 }
 
+
 function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
   const { uso, shelf } = getVidaBase(tipo, marca_pilas);
   const baseYears = normalizarBooleano(desconectable) ? shelf : uso;
