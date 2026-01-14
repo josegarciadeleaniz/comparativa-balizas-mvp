@@ -185,6 +185,7 @@ function getFundaFactor(tipoFunda) {
   if (v.includes('neopreno'))   return 1.10;
   if (v.includes('tela'))       return 1.01;
   return 1.00;
+	
 function getVidaBase(tipo, marca_pilas) {
   const tipoNorm = String(tipo || '').toUpperCase();
 
@@ -208,8 +209,6 @@ function getVidaBase(tipo, marca_pilas) {
     fuente: base.fuente || 'battery_types.json'
   };
 }
-
-
 function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
   const { uso, shelf } = getVidaBase(tipo, marca_pilas);
   const baseYears = normalizarBooleano(desconectable) ? shelf : uso;
