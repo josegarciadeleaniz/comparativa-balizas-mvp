@@ -185,34 +185,28 @@ function getFundaFactor(tipoFunda) {
   if (v.includes('neopreno'))   return 1.10;
   if (v.includes('tela'))       return 1.01;
   return 1.00;
-}
-
-
 function getVidaBase(tipo, marca_pilas) {
-  // 🔒 Normalización robusta del tipo de pila
-const tipoNorm = String(tipo || '').toUpperCase();
+  const tipoNorm = String(tipo || '').toUpperCase();
 
-let tipoSimple = 'AA'; // default seguro
-if (tipoNorm.includes('9V')) {
-  tipoSimple = '9V';
-} else if (tipoNorm.includes('AAA')) {
-  tipoSimple = 'AAA';
-} else if (tipoNorm.includes('AA')) {
-  tipoSimple = 'AA';
-}
-	const m = canonicalBrand(marca_pilas);
+  let tipoSimple = 'AA';
+  if (tipoNorm.includes('9V')) tipoSimple = '9V';
+  else if (tipoNorm.includes('AAA')) tipoSimple = 'AAA';
+  else if (tipoNorm.includes('AA')) tipoSimple = 'AA';
 
-const baseTipo = batteryData?.vida_base?.[tipoSimple] || {};
+  const m = canonicalBrand(marca_pilas);
+  const baseTipo = batteryData?.vida_base?.[tipoSimple] || {};
 
-const base =
-  baseTipo[m] ||
-  baseTipo['Sin Marca'] ||
-  baseTipo['Marca Blanca'] ||
-  { uso: 0, shelf: 0, fuente: 'vida_base fallback (Arrhenius)' };
+  const base =
+    baseTipo[m] ||
+    baseTipo['Sin Marca'] ||
+    baseTipo['Marca Blanca'] ||
+    { uso: 0, shelf: 0, fuente: 'battery_types.json (fallback)' };
 
-const baseYears = normalizarBooleano(desconectable)
-  ? Number(base.shelf) || 0
-  : Number(base.uso)   || 0;
+  return {
+    uso: Number(base.uso) || 0,
+    shelf: Number(base.shelf) || 0,
+    fuente: base.fuente || 'battery_types.json'
+  };
 }
 
 function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
@@ -261,9 +255,12 @@ function estimateHotBinTemp(factor_provincia){
 // Vida real por Arrhenius (autodescarga) + funda (vida)
 function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias){
   // Base: uso vs shelf según desconexión
-  const tipoSimple = tipo.includes('9V')
-  ? '9V'
-  : (tipo.includes('AAA') ? 'AAA' : 'AA');
+  const tipoNorm = String(tipo || '').toUpperCase();
+
+let tipoSimple = 'AA';
+if (tipoNorm.includes('9V')) tipoSimple = '9V';
+else if (tipoNorm.includes('AAA')) tipoSimple = 'AAA';
+else if (tipoNorm.includes('AA')) tipoSimple = 'AA';
 
 const m = canonicalBrand(marca_pilas);
 
@@ -332,7 +329,7 @@ function getBatteryPackPrice(tipo, marca_pilas, sourceData) {
   const tipoBase  = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
   const cantidad  = tipo.includes('9V') ? 1 : (parseInt(tipo.match(/^(\d+)/)?.[1]) || (tipoBase === 'AAA' ? 3 : 4));
   const unit = precios[marcaNorm]?.[tipoBase]
-    ?? precios['Sin marca']?.[tipoBase]
+    ?? precios['Sin Marca']?.[tipoBase]
     ?? (tipoBase === 'AAA' ? 0.8 : 1.0);
   return parseFloat((unit * cantidad).toFixed(2));
 }
@@ -364,7 +361,7 @@ function getLeakRisk(tipo, marca_pilas) {
     "Maxell":       0.0095,
     "Generalista":  0.0105,
     "Marca Blanca": 0.0125,
-    "Sin marca":    0.0155,
+    "Sin Marca":    0.0155,
     "China":        0.0155
   };
   return map[canonicalBrand(marca_pilas)] ?? 0.0075;
@@ -622,7 +619,8 @@ const hasModeloCompra =
             <tr style="background-color: #f9f9f9;">
               <td>
                 Factor Funda<br>
-                   <strong>"${meta.funda === 'No' ? 'No lleva funda' : meta.funda}"</strong>
+                   <strong>"${String(meta.funda).toLowerCase() === 'no' ? 'No lleva funda' : meta.funda}"
+</strong>
               </td>
               <td>
                 ${fundaDescription.trim()}<strong>  Factor aplicado: ×${factorFunda.toFixed(2).replace('.', ',')}</strong>
@@ -858,8 +856,12 @@ app.post('/api/calcula', async (req, res) => {
       contexto = 'A'
     } = req.body;
 
-    const marca_pilas = marca;
-
+    const marca_pilas =
+  marca ||
+  beaconInfo?.marca_pilas ||
+  sourceData?.marca_pilas ||
+  'Sin Marca';
+	  
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
