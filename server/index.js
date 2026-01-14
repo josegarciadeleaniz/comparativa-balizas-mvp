@@ -939,13 +939,32 @@ app.post('/api/calcula', async (req, res) => {
 // ========= NORMALIZACIÓN BÁSICA (CANÓNICA) 
 const beaconInfo = beacons.find(b => b.id_baliza === id_baliza);
 const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
+// ===== NORMALIZACIÓN BOOLEANOS (SIN DUPLICAR) =====
 const desconectableRaw = resolveBooleanMeta(
   { body: req.body, beaconInfo, salesPointInfo },
   'desconectable',
   'no'
 );
+const desconectableCanon = normalizarBooleano(desconectableRaw) ? 'si' : 'no';
 
+// FUNDA: aquí NO uses resolveBooleanMeta directo porque en sales_points tienes mezcla
+// (campo "funda" boolean y "funda_termica" texto). Priorizamos body, luego termica, luego funda.
+const fundaRaw =
+  (req.body?.funda ?? req.body?.funda_termica ?? '') !== ''
+    ? (req.body.funda ?? req.body.funda_termica)
+    : ((beaconInfo?.funda_termica ?? salesPointInfo?.funda_termica ?? '') !== ''
+        ? (beaconInfo?.funda_termica ?? salesPointInfo?.funda_termica)
+        : (beaconInfo?.funda ?? salesPointInfo?.funda ?? 'no'));
+
+const fundaCanon = normalizeFunda(fundaRaw);   // 'si'|'no'|'eva'|'silicona'|'neopreno'|'tela'
+const fundaKey0  = getFundaKey(fundaCanon);    // 'eva'|'silicona'|'neopreno'|'tela'|'none'
+const fundaKey   = FUNDA_MODEL[fundaKey0] ? fundaKey0 : 'none';
+
+// Fuente de datos “principal” para precios y defaults
+const sourceData = beaconInfo || salesPointInfo || {};
+	  
 // CANÓNICOS
+const valor_desconexion = (desconectableCanon === 'si') ? shelf : uso;
 const desconectableCanon = normalizarBooleano(desconectableRaw) ? 'si' : 'no';
 
 // FUNDA KEY FINAL (solo una vez)
@@ -968,21 +987,6 @@ const batteryMeta = resolveBatteryMeta({
 const tipoTecnico  = batteryMeta.bateria_tipo;   // '9V' | 'AA' | 'AAA'
 const numeroPilas  = batteryMeta.numero_pilas;
 const marcaPilasNorm = batteryMeta.marca_pilas;
-
-console.log('🧪 CONTEXTO FINAL:', {
-  id_baliza,
-  id_sales_point,
-  funda_raw: fundaRaw,
-  funda_canon: fundaCanon,
-  fundaKey,
-  desconectable_raw: desconectableRaw,
-  desconectable_canon: desconectableCanon,
-  fuente_funda:
-    req.body?.funda ? 'body' :
-    beaconInfo?.funda != null ? 'beacon' :
-    salesPointInfo?.funda != null ? 'sales_point' :
-    'fallback'
-});
 
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
@@ -1063,7 +1067,8 @@ const precio_fuente = 'battery_types.json';
 
     // Mitigaciones
     const tieneDescon = normalizarBooleano(desconectableCanon);
-    const fundaLower  = String(funda || '').toLowerCase();
+    const multDesc  = (desconectableCanon === 'si') ? 0.70 : 1.00;
+    const mitigacionMult = multDesc * FUNDA_MODEL[fundaKey].mitigacion;
 
     const multDesc  = tieneDescon ? 0.70 : 1.00;
 	const multFunda = FUNDA_MODEL[fundaKey].mitigacion;
@@ -1166,8 +1171,8 @@ const meta = {
 tipo: tipoTecnico === '9V'
   ? '1x 9V'
   : `${numeroPilas}x ${tipoTecnico}`,
-  desconectable,
-  funda: fundaCanon,
+  desconectable: desconectableCanon,
+funda: fundaCanon
   provincia,
   coste_inicial: precio_venta_final,
   edad_vehiculo: parseInt(edad_vehiculo)
