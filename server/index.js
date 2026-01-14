@@ -186,8 +186,9 @@ function normalizarTexto(texto) {
 }
 function normalizarBooleano(valor) {
   const v = stripAccents(String(valor)).toLowerCase().trim();
-  return ["si", "yes", "true"].includes(v);
+  return ["si","sí","yes","true","1","on"].includes(v);
 }
+
 function canonicalBrand(s){
   const v = String(s || '').trim().toLowerCase();
 
@@ -219,6 +220,20 @@ function getFundaKey(funda){
   if (v.includes('neopreno')) return 'neopreno';
   if (v.includes('tela')) return 'tela';
   return 'none';
+}
+function normalizeFunda(fundaRaw){
+  // Si el texto trae material, lo respetamos
+  const s = stripAccents(String(fundaRaw ?? '')).toLowerCase().trim();
+
+  if (s.includes('eva')) return 'eva';
+  if (s.includes('silicona')) return 'silicona';
+  if (s.includes('neopreno')) return 'neopreno';
+  if (s.includes('tela')) return 'tela';
+
+  // Si es booleano/numérico/texto genérico
+  if (normalizarBooleano(fundaRaw)) return 'si';
+
+  return 'no';
 }
 
 
@@ -926,6 +941,25 @@ app.post('/api/calcula', async (req, res) => {
 // ========= NORMALIZACIÓN BÁSICA (CANÓNICA) 
 const beaconInfo = beacons.find(b => b.id_baliza === id_baliza);
 const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
+const fundaRaw = resolveBooleanMeta(
+  { body: req.body, beaconInfo, salesPointInfo },
+  'funda',
+  'no'
+);
+
+const desconectableRaw = resolveBooleanMeta(
+  { body: req.body, beaconInfo, salesPointInfo },
+  'desconectable',
+  'no'
+);
+
+// CANÓNICOS
+const fundaCanon = normalizeFunda(fundaRaw);              // 'eva'|'silicona'|'neopreno'|'tela'|'si'|'no'
+const desconectableCanon = normalizarBooleano(desconectableRaw) ? 'si' : 'no';
+
+// FUNDA KEY FINAL (solo una vez)
+const fundaKey = getFundaKey(fundaCanon);
+	  
 const funda = resolveBooleanMeta(
   { body: req.body, beaconInfo, salesPointInfo },
   'funda',
@@ -957,17 +991,21 @@ const tipoTecnico  = batteryMeta.bateria_tipo;   // '9V' | 'AA' | 'AAA'
 const numeroPilas  = batteryMeta.numero_pilas;
 const marcaPilasNorm = batteryMeta.marca_pilas;
 
-	  console.log('🧪 CONTEXTO FINAL:', {
-  funda_raw: funda,
-  funda_norm: fundaNorm,
+console.log('🧪 CONTEXTO FINAL:', {
+  id_baliza,
+  id_sales_point,
+  funda_raw: fundaRaw,
+  funda_canon: fundaCanon,
   fundaKey,
-  desconectable,
+  desconectable_raw: desconectableRaw,
+  desconectable_canon: desconectableCanon,
   fuente_funda:
     req.body?.funda ? 'body' :
     beaconInfo?.funda != null ? 'beacon' :
     salesPointInfo?.funda != null ? 'sales_point' :
     'fallback'
 });
+
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
@@ -993,13 +1031,14 @@ const marcaPilasNorm = batteryMeta.marca_pilas;
       tipoTecnico,
       marcaPilasNorm,
       provincia,
-      desconectable,
-      funda,
+      desconectableCanon,
+      fundaCanon,
       batteryData,
       provincias
     );
     const fundaKey = getFundaKey(funda);
-	console.log('FUNDA VIDA:', funda, fundaKey, FUNDA_MODEL[fundaKey].vida);
+	console.log('FUNDA VIDA:', fundaCanon, fundaKey, FUNDA_MODEL[fundaKey].vida);
+
 
     const factor_funda_vida = FUNDA_MODEL[fundaKey].vida;
 	  
@@ -1045,7 +1084,7 @@ const precio_fuente = 'battery_types.json';
     );
 
     // Mitigaciones
-    const tieneDescon = normalizarBooleano(desconectable);
+    const tieneDescon = normalizarBooleano(desconectableCanon);
     const fundaLower  = String(funda || '').toLowerCase();
 
     const multDesc  = tieneDescon ? 0.70 : 1.00;
@@ -1142,7 +1181,7 @@ const meta = {
 
   // 🔹 CANÓNICO
   bateria_tipo: tipoTecnico,
-  numero_pilas,
+  numero_pilas: numeroPilas,
   marca_pilas: marcaPilasNorm,
 
   // 🔹 SOLO PARA UI
@@ -1150,7 +1189,7 @@ tipo: tipoTecnico === '9V'
   ? '1x 9V'
   : `${numeroPilas}x ${tipoTecnico}`,
   desconectable,
-  funda,
+  funda: fundaCanon,
   provincia,
   coste_inicial: precio_venta_final,
   edad_vehiculo: parseInt(edad_vehiculo)
