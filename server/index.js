@@ -360,26 +360,27 @@ function generateTable({ pasos, resumen }, meta) {
 
   const esDesconectable = normalizarBooleano(meta.desconectable);
   const {
-    valor_desconexion = 0,
-    factor_temp       = 1,
-    factor_funda: factorFunda = 1, 
-    vida_ajustada     = 0,
-    reposiciones      = 0,
-    precio_pack       = 0,
-    precio_fuente     = '',
-    riesgo_temp       = 0,
-    mitigacion: mitigacionMult = 1,
-    riesgo_final      = 0,
-    coste_fugas       = 0,
-    coste_multas: costeMultasPasos = 0,
-    tasa_anual        = 0,
-    fuente_sulfat     = '',
-    dias_calidos      = 0,
-    factor_provincia  = 1,
-    fuente_temp       = '',
-    fuente_dias       = '',
-    prob_fuga         = 0
-  } = pasos;
+  valor_desconexion = 0,
+  factor_temp       = 1,
+  factor_funda: factorFunda = 1, 
+  vida_ajustada     = 0,
+  reposiciones      = 0,
+  precio_pack       = 0,
+  precio_fuente     = '',
+  riesgo_temp       = 0,
+  mitigacion: mitigacionMult = 1,
+  riesgo_final      = 0,
+  coste_fugas       = 0,
+  coste_multas: costeMultasPasos = 0,
+  tasa_anual        = 0,
+  fuente_sulfat     = '',
+  dias_calidos      = 0,
+  factor_provincia  = 1,
+  fuente_temp       = '',
+  fuente_dias       = '',
+  prob_fuga         = 0
+} = pasos;
+
 
   const numeroPilas    = parseInt(meta.tipo.match(/^(\d+)/)?.[1] || '1', 10);
   const precioUnitario = precio_pack / numeroPilas;
@@ -424,9 +425,13 @@ function generateTable({ pasos, resumen }, meta) {
   const mitFundaPct = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.40 : 0.00;
   const factorFundaMit = (fundaTipoL.includes('silicona') || fundaTipoL.includes('eva')) ? 0.4 : 1;
   const mitigacionCalc = factorDescon * factorFundaMit;
-  const mitigacionPct   = Math.min(1, mitDescPct + mitFundaPct);
-  const mitigacionMult  = 1 - mitigacionPct;
-  const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMult).toFixed(4));
+const mitigacionPct  = Math.min(1, mitDescPct + mitFundaPct);
+
+// 👇 OJO: CAMBIAMOS EL NOMBRE
+const mitigacionMultCalc = 1 - mitigacionPct;
+
+const riesgoFinalCalc = +(((prob_fuga ?? 0) * mitigacionMultCalc).toFixed(4));
+
 
   const probFuga01      = Math.max(0, Math.min(1, prob_fuga));
   const mitigacion01    = Math.max(0, Math.min(1, mitigacionCalc));
@@ -667,7 +672,8 @@ const hasModeloCompra =
 <tr style="background-color:#fff7cc;">
   <td>Riesgo final de fuga anual. <strong><em>P<sub>fuga_final</sub><em></strong></td></td>
  <td>
-    El riesgo final de fuga o sulfatación de las baterías de su baliza. <strong>${meta.marca_baliza} ${meta.modelo}</strong> es el resultado de aplicar el riesgo de fuga anual y la mitigación de dicho riesgo. Esta cifra que se presenta como porcentaje indica que de cada 100 balizas exactamente iguales con las mismas pilas (asumiendo que se realiza el número de reposiciones calculado anteriormente), este porcentaje de balizas sufrirán fugas, y por tanto, sulfatación y rotura, teniendo en cuenta el histórico de temperaturas de su provincia, y los datos reportados por fuentes solventes respecto al riesgo de fugas por marca y modelo de pilas: <br> <li><strong>Riesgo final de fuga = ${(prob_fuga*100).toFixed(2)}% × ${(mitigacionMult*100).toFixed(0)}% = <strong>${(riesgoFinalCalc*100).toFixed(2)}%</strong>%</strong></li>
+    El riesgo final de fuga o sulfatación de las baterías de su baliza. <strong>${meta.marca_baliza} ${meta.modelo}</strong> es el resultado de aplicar el riesgo de fuga anual y la mitigación de dicho riesgo. Esta cifra que se presenta como porcentaje indica que de cada 100 balizas exactamente iguales con las mismas pilas (asumiendo que se realiza el número de reposiciones calculado anteriormente), este porcentaje de balizas sufrirán fugas, y por tanto, sulfatación y rotura, teniendo en cuenta el histórico de temperaturas de su provincia, y los datos reportados por fuentes solventes respecto al riesgo de fugas por marca y modelo de pilas: <br> <li>Riesgo final de fuga = ${(prob_fuga*100).toFixed(2)}% × ${(mitigacionMultCalc*100).toFixed(0)}%
+ = <strong>${(riesgoFinalCalc*100).toFixed(2)}%</strong>%</strong></li>
   </td>
   <td><strong>${(riesgoFinalCalc*100).toFixed(2)}%</strong></td>
 </tr>
