@@ -851,8 +851,12 @@ app.post('/api/calcula', async (req, res) => {
       email = '',
       contexto = 'A'
     } = req.body;
-
-    const marca_pilas =
+	  
+  const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
+  const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point)
+  const sourceData     = beaconInfo || salesPointInfo || {};
+	  
+  const marca_pilas =
   marca ||
   beaconInfo?.marca_pilas ||
   sourceData?.marca_pilas ||
@@ -861,14 +865,9 @@ app.post('/api/calcula', async (req, res) => {
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
-
-    const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
-    const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point)
-    const sourceData     = beaconInfo || salesPointInfo || {};
-
     const baseData = getVidaBase(tipo, marca_pilas) || { uso: 0, shelf: 0, fuente: 'vida_base undefined' };
-const uso   = Number(baseData.uso)   || 0;
-const shelf = Number(baseData.shelf) || 0;
+	const uso   = Number(baseData.uso)   || 0;
+	const shelf = Number(baseData.shelf) || 0;
 
 
 const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
