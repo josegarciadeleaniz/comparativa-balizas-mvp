@@ -381,6 +381,7 @@ function getFineProb(edad) {
 
 function generateTable({ pasos, resumen }, meta) {
   const { shelf, uso, fuente } = getVidaBase(meta.bateria_tipo, meta.marca_pilas);
+  const esDesconectable = normalizarBooleano(meta.desconectable)
   const fundaKey = getFundaKey(meta.funda);
   const fundaLabelMap = {
   eva:       'Funda térmica de silicona / EVA',
@@ -404,7 +405,7 @@ const mitigacionPctTotal  = 1 - mitigacionMultTotal;
 // Desglose SOLO PARA TEXTO
 const mitDescPct  = esDesconectable ? 0.30 : 0.00;
 const mitFundaPct = 1 - factorFundaMit;	
-const esDesconectable = normalizarBooleano(meta.desconectable);		  
+;		  
 const {
     valor_desconexion = 0,
     factor_temp       = 1,
@@ -935,12 +936,6 @@ app.post('/api/calcula', async (req, res) => {
 // ========= NORMALIZACIÓN BÁSICA (CANÓNICA) 
 const beaconInfo = beacons.find(b => b.id_baliza === id_baliza);
 const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
-const fundaRaw = resolveBooleanMeta(
-  { body: req.body, beaconInfo, salesPointInfo },
-  'funda',
-  'no'
-);
-
 const desconectableRaw = resolveBooleanMeta(
   { body: req.body, beaconInfo, salesPointInfo },
   'desconectable',
@@ -948,33 +943,15 @@ const desconectableRaw = resolveBooleanMeta(
 );
 
 // CANÓNICOS
-const fundaCanon = normalizeFunda(fundaRaw);              // 'eva'|'silicona'|'neopreno'|'tela'|'si'|'no'
 const desconectableCanon = normalizarBooleano(desconectableRaw) ? 'si' : 'no';
 
 // FUNDA KEY FINAL (solo una vez)
-const fundaKey = getFundaKey(fundaCanon);
-	  
-const funda = resolveBooleanMeta(
-  { body: req.body, beaconInfo, salesPointInfo },
-  'funda',
-  'no'
-);
 
 const desconectable = resolveBooleanMeta(
   { body: req.body, beaconInfo, salesPointInfo },
   'desconectable',
   'no'
 );
-const fundaNorm =
-  (
-    normalizarBooleano(funda) ||
-    ['eva','neopreno','silicona','tela'].some(t =>
-      String(funda).toLowerCase().includes(t)
-    )
-  )
-    ? 'si'
-    : 'no';
-
 	  
 const sourceData     = beaconInfo || salesPointInfo || {};
 	  
