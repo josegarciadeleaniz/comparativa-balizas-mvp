@@ -247,10 +247,24 @@ function estimateHotBinTemp(factor_provincia){
 // Vida real por Arrhenius (autodescarga) + funda (vida)
 function lifeArrheniusYears(tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias){
   // Base: uso vs shelf según desconexión
-  const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
-  const m = canonicalBrand(marca_pilas);
-  const base = batteryData.vida_base[tipoSimple][m] || batteryData.vida_base[tipoSimple]['Sin marca'];
-  const baseYears = normalizarBooleano(desconectable) ? base.shelf : base.uso;
+  const tipoSimple = tipo.includes('9V')
+  ? '9V'
+  : (tipo.includes('AAA') ? 'AAA' : 'AA');
+
+const m = canonicalBrand(marca_pilas);
+
+// 🔒 BLINDAJE TOTAL
+const baseTipo = batteryData?.vida_base?.[tipoSimple] || {};
+
+const base =
+  baseTipo[m] ||
+  baseTipo['Sin Marca'] ||
+  baseTipo['Marca Blanca'] ||
+  { uso: 0, shelf: 0, fuente: 'vida_base fallback (Arrhenius)' };
+
+const baseYears = normalizarBooleano(desconectable)
+  ? Number(base.shelf) || 0
+  : Number(base.uso)   || 0;
 
   // Provincia y “días >30 ºC”
   const p = provincias.find(x => normalizarTexto(x.provincia) === normalizarTexto(provincia)) || {};
