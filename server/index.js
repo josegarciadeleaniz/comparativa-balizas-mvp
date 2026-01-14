@@ -991,6 +991,7 @@ const marcaPilasNorm = batteryMeta.marca_pilas;
     const baseData = getVidaBase(tipoTecnico, marcaPilasNorm);
     const uso   = baseData.uso;
     const shelf = baseData.shelf;
+	const valor_desconexion = (desconectableCanon === 'si') ? shelf : uso;  
 	console.log('DEBUG VIDA BASE:', { tipoTecnico, marcaPilasNorm, baseData });
 
     const vida_ajustada = lifeArrheniusYears(
@@ -1108,7 +1109,7 @@ const precio_fuente = 'battery_types.json';
 
     const pasos = {
       vida_base: uso,
-      valor_desconexion,
+	  valor_desconexion,	
       factor_temp,
       factor_funda_vida,
       vida_ajustada,
