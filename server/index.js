@@ -852,19 +852,46 @@ app.post('/api/calcula', async (req, res) => {
       contexto = 'A'
     } = req.body;
 	  
-  const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
-  const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point)
+  const beaconInfo = id_baliza != null
+  ? beacons.find(b => String(b.id_baliza) === String(id_baliza))
+  : null;
+
+const salesPointInfo = id_sales_point != null
+  ? salesPoints.find(s => String(s.id_punto) === String(id_sales_point))
+  : null;
+
   const sourceData     = beaconInfo || salesPointInfo || {};
 
 // FUENTE ÚNICA DE VERDAD
 const ctx = {
-  bateria_tipo:  req.body.bateria_tipo  ?? salesPointInfo.bateria_tipo  ?? beaconInfo.bateria_tipo,
-  numero_pilas:  req.body.numero_pilas  ?? salesPointInfo.numero_pilas  ?? beaconInfo.numero_pilas,
-  marca_pilas:   req.body.marca_pilas   ?? salesPointInfo.marca_pilas   ?? beaconInfo.marca_pilas ?? 'Sin Marca',
-  desconectable: req.body.desconectable ?? salesPointInfo.desconectable ?? beaconInfo.desconectable ?? false,
-  funda:         req.body.funda         ?? salesPointInfo.funda         ?? beaconInfo.funda ?? false,
-  provincia:     req.body.provincia     ?? 'Media Nacional'
+  tipo_pila: String(
+    req.body.tipo ||
+    req.body.bateria_tipo ||
+    salesPointInfo?.bateria_tipo ||
+    beaconInfo?.bateria_tipo ||
+    'AA'
+  ),
+  numero_pilas: Number(
+    req.body.numero_pilas ||
+    salesPointInfo?.numero_pilas ||
+    beaconInfo?.numero_pilas ||
+    1
+  ),
+  marca_pilas: canonicalBrand(
+    req.body.marca_pilas ||
+    salesPointInfo?.marca_pilas ||
+    beaconInfo?.marca_pilas ||
+    'Sin Marca'
+  ),
+  desconectable: normalizarBooleano(
+    req.body.desconectable ??
+    salesPointInfo?.desconectable ??
+    beaconInfo?.desconectable
+  ),
+  funda: req.body.funda ?? salesPointInfo?.funda ?? beaconInfo?.funda ?? 'no',
+  provincia: req.body.provincia || 'Media Nacional'
 };
+
   const tipo_pila = ctx.bateria_tipo;
 const num_pilas = ctx.numero_pilas || 1;
 
@@ -877,16 +904,23 @@ const num_pilas = ctx.numero_pilas || 1;
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
-    const baseData = getVidaBase(tipo, marca_pilas) || { uso: 0, shelf: 0, fuente: 'vida_base undefined' };
-	const uso   = Number(baseData.uso)   || 0;
-	const shelf = Number(baseData.shelf) || 0;
+const baseData = getVidaBase(ctx.tipo_pila, ctx.marca_pilas) 
+  || { uso: 0, shelf: 0, fuente: 'vida_base undefined' };
 
+const uso   = Number(baseData.uso)   || 0;
+const shelf = Number(baseData.shelf) || 0;
 
 const valor_desconexion = normalizarBooleano(desconectable) ? shelf : uso;
 
 // Vida ajustada por Arrhenius + funda (vida)
 const vida_ajustada = lifeArrheniusYears(
-  tipo, marca_pilas, provincia, desconectable, funda, batteryData, provincias
+  ctx.tipo_pila,
+  ctx.marca_pilas,
+  ctx.provincia,
+  ctx.desconectable,
+  ctx.funda,
+  batteryData,
+  provincias
 );
 
 // Para mostrar “factor temperatura” en la tabla (explicativo):
