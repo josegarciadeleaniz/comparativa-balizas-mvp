@@ -404,13 +404,7 @@ const mitigacionPctTotal  = 1 - mitigacionMultTotal;
 // Desglose SOLO PARA TEXTO
 const mitDescPct  = esDesconectable ? 0.30 : 0.00;
 const mitFundaPct = 1 - factorFundaMit;	
-  const esDesconectable = normalizarBooleano(meta.desconectable);	
-  const mitDescMult  = esDesconectable ? 0.70 : 1.00;
-  const mitFundaMult = FUNDA_MODEL[fundaKey]?.mitigacion ?? 1.00;
-  const mitDescPct   = 1 - mitDescMult;
-  const mitigacionMult = mitDescMult * mitFundaMult;	
-  const mitigacionPct = 1 - (mitDescMult * mitFundaMult);	
-  
+const esDesconectable = normalizarBooleano(meta.desconectable);		  
 const {
     valor_desconexion = 0,
     factor_temp       = 1,
