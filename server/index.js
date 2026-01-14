@@ -367,11 +367,32 @@ function getFineProb(edad) {
 function generateTable({ pasos, resumen }, meta) {
   const { shelf, uso, fuente } = getVidaBase(meta.bateria_tipo, meta.marca_pilas);
   const fundaKey = getFundaKey(meta.funda);
+  const fundaLabelMap = {
+  eva:       'Funda térmica de silicona / EVA',
+  silicona: 'Funda térmica de silicona',
+  neopreno: 'Funda térmica de neopreno',
+  tela:     'Funda textil',
+  none:     'Sin funda o funda no térmica'
+};
+  const fundaLabel = fundaLabelMap[fundaKey];
+
+const factorFundaVida = FUNDA_MODEL[fundaKey].vida;
+const factorFundaMit  = FUNDA_MODEL[fundaKey].mitigacion;
+
+// Desconexión
+const descMult = esDesconectable ? 0.70 : 1.00;
+
+// Mitigación TOTAL (ÚNICA FUENTE)
+const mitigacionMultTotal = descMult * factorFundaMit;
+const mitigacionPctTotal  = 1 - mitigacionMultTotal;
+
+// Desglose SOLO PARA TEXTO
+const mitDescPct  = esDesconectable ? 0.30 : 0.00;
+const mitFundaPct = 1 - factorFundaMit;	
   const esDesconectable = normalizarBooleano(meta.desconectable);	
   const mitDescMult  = esDesconectable ? 0.70 : 1.00;
   const mitFundaMult = FUNDA_MODEL[fundaKey]?.mitigacion ?? 1.00;
   const mitDescPct   = 1 - mitDescMult;
-  const mitFundaPct  = 1 - mitFundaMult;
   const mitigacionMult = mitDescMult * mitFundaMult;	
   const mitigacionPct = 1 - (mitDescMult * mitFundaMult);	
   
@@ -604,16 +625,18 @@ const hasModeloCompra =
 <tr style="background-color: #f9f9f9;">
   <td>
     Factor Funda<br>
-    <strong>${fundaKey === 'none' ? 'No lleva funda' : meta.funda}</strong>
+    <strong>${fundaLabel}</strong>
   </td>
   <td>
     ${fundaDescription}
-    <br><strong>Factor aplicado: ×${FUNDA_MODEL[fundaKey].vida.toFixed(2)}</strong>
+    <br>
+    <strong>Factor aplicado: ×${factorFundaVida.toFixed(2)}</strong>
   </td>
   <td>
-    <strong>×${FUNDA_MODEL[fundaKey].vida.toFixed(2).replace('.', ',')}</strong>
+    <strong>×${factorFundaVida.toFixed(2).replace('.', ',')}</strong>
   </td>
 </tr>
+
             <!-- Vida útil ajustada -->
             <tr>
   		<td>Vida útil Real de las Pilas</td>
@@ -672,26 +695,27 @@ const hasModeloCompra =
 
             <!-- 10) Mitigación de Riesgo -->
             <tr>
-              <td>Mitigación de Riesgo de fugas</td>
-                <td>El riesgo de fugas se reduce si la baliza permite <strong>desconectar los polos</strong> (${esDesconectable ? 'sí' : 'no'}) y si incluye <strong>funda térmica de silicona/EVA</strong> (${meta.funda}).<br>Reducciones aplicadas:
-<strong>${(mitDescPct*100).toFixed(0)}%</strong> (desconexión) y
-<strong>${(mitFundaPct*100).toFixed(0)}%</strong> (funda),
-combinadas como <strong>Factor de Mitigación = ${(mitigacionPct*100).toFixed(0)}%</strong>.
- 
-				La temperatura eleva el riesgo de forma exponencial (Arrhenius); desconexión elimina consumos parásitos y la funda atenúa picos térmicos.
-  Fuentes: documentación técnica de fabricantes; literatura de cinética (Arrhenius).
-  Fuentes: Energizer Technical Info / Battery University; estudios de temperatura en habitáculo (NHTSA/SAE). Fuente: Estudio MIT sobre fugas.
-              </td>
-              <td><strong>${(mitigacionPct*100).toFixed(0)}%</strong></td>
-            </tr>
+  <td>Mitigación de Riesgo de fugas</td>
+  <td>
+    El riesgo de fugas se reduce si la baliza permite
+    <strong>desconectar los polos</strong> (${esDesconectable ? 'sí' : 'no'})
+    y si incluye <strong>${fundaLabel}</strong>.<br>
 
-            <!-- 11) Riesgo final de fuga -->
-<tr style="background-color:#fff7cc;">
-  <td>Riesgo final de fuga anual. <strong><em>P<sub>fuga_final</sub><em></strong></td></td>
- <td>
-    El riesgo final de fuga o sulfatación de las baterías de su baliza. <strong>${meta.marca_baliza} ${meta.modelo}</strong> es el resultado de aplicar el riesgo de fuga anual y la mitigación de dicho riesgo. Esta cifra que se presenta como porcentaje indica que de cada 100 balizas exactamente iguales con las mismas pilas (asumiendo que se realiza el número de reposiciones calculado anteriormente), este porcentaje de balizas sufrirán fugas, y por tanto, sulfatación y rotura, teniendo en cuenta el histórico de temperaturas de su provincia, y los datos reportados por fuentes solventes respecto al riesgo de fugas por marca y modelo de pilas: <br> <li><strong>Riesgo final de fuga = ${(prob_fuga*100).toFixed(2)}% × ${(mitigacionMult*100).toFixed(0)}% = <strong>${(riesgoFinalCalc*100).toFixed(2)}%</strong>%</strong></li>
+    Reducciones aplicadas:
+    <ul style="margin:6px 0 0 18px">
+      ${esDesconectable ? `<li><strong>${(mitDescPct*100).toFixed(0)}%</strong> por desconexión</li>` : ''}
+      ${mitFundaPct > 0 ? `<li><strong>${(mitFundaPct*100).toFixed(0)}%</strong> por funda térmica</li>` : ''}
+    </ul>
+
+    Combinadas como:
+    <strong>Factor de Mitigación = ${(mitigacionPctTotal*100).toFixed(0)}%</strong>.
+    <br>
+    La temperatura eleva el riesgo de forma exponencial (Arrhenius); la desconexión
+    elimina consumos parásitos y la funda atenúa picos térmicos.
   </td>
-  <td><strong>${(riesgoFinalCalc*100).toFixed(2)}%</strong></td>
+  <td>
+    <strong>${(mitigacionPctTotal*100).toFixed(0)}%</strong>
+  </td>
 </tr>
 
 <!-- 12) Coste de fugas -->
