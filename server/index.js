@@ -855,7 +855,19 @@ app.post('/api/calcula', async (req, res) => {
   const beaconInfo     = beacons.find(b => b.id_baliza === id_baliza);
   const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point)
   const sourceData     = beaconInfo || salesPointInfo || {};
-	  
+
+// FUENTE ÚNICA DE VERDAD
+const ctx = {
+  bateria_tipo:  req.body.bateria_tipo  ?? salesPointInfo.bateria_tipo  ?? beaconInfo.bateria_tipo,
+  numero_pilas:  req.body.numero_pilas  ?? salesPointInfo.numero_pilas  ?? beaconInfo.numero_pilas,
+  marca_pilas:   req.body.marca_pilas   ?? salesPointInfo.marca_pilas   ?? beaconInfo.marca_pilas ?? 'Sin Marca',
+  desconectable: req.body.desconectable ?? salesPointInfo.desconectable ?? beaconInfo.desconectable ?? false,
+  funda:         req.body.funda         ?? salesPointInfo.funda         ?? beaconInfo.funda ?? false,
+  provincia:     req.body.provincia     ?? 'Media Nacional'
+};
+  const tipo_pila = ctx.bateria_tipo;
+const num_pilas = ctx.numero_pilas || 1;
+
   const marca_pilas =
   marca ||
   beaconInfo?.marca_pilas ||
