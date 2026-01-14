@@ -439,9 +439,8 @@ const {
     fabricante: beaconView?.fabricante ?? meta.fabricante ?? '—',
     origen: beaconView?.origen ?? beaconView?.pais_origen ?? meta.origen ?? '—',
     actuacion: beaconView?.actuacion_espana ?? beaconView?.actuacion_en_espana ?? meta.actuacion_espana ?? '—',
-    img: (meta.imagen_url && meta.imagen_url.trim())
-        ? meta.imagen_url
-        : (beaconView?.imagen ? `/images/${beaconView.imagen}` : '')
+    img: beaconView?.imagen ? `/images/${beaconView.imagen}` : ''
+
   };
 
   const pNuevo      = 0.015;
