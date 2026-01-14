@@ -391,12 +391,10 @@ function generateTable({ pasos, resumen }, meta) {
   none:     'Sin funda o funda no térmica'
 };
   const fundaLabel = fundaLabelMap[fundaKey];
-
-const fundaModelSafe = FUNDA_MODEL[fundaKey] || FUNDA_MODEL.none;
+  const fundaModelSafe = FUNDA_MODEL[fundaKey] || FUNDA_MODEL.none;
 
 const factorFundaVida = fundaModelSafe.vida;
 const factorFundaMit  = fundaModelSafe.mitigacion;
-
 
 // Desconexión
 const descMult = esDesconectable ? 0.70 : 1.00;
@@ -407,31 +405,31 @@ const mitigacionPctTotal  = 1 - mitigacionMultTotal;
 
 // Desglose SOLO PARA TEXTO
 const mitDescPct  = esDesconectable ? 0.30 : 0.00;
-const mitFundaPct = 1 - factorFundaMit;	
-;		  
-const {
-    valor_desconexion = 0,
-    factor_temp       = 1,
-    factor_funda_vida = 1,
-    vida_ajustada     = 0,
-    reposiciones      = 0,
-    precio_pack       = 0,
-    precio_fuente     = '',
-    riesgo_temp       = 0,
-    mitigacion        = 1,
-    riesgo_final      = 0,
-    coste_fugas       = 0,
-    coste_multas: costeMultasPasos = 0,
-    tasa_anual        = 0,
-    fuente_sulfat     = '',
-    dias_calidos      = 0,
-    factor_provincia  = 1,
-    fuente_temp       = '',
-    fuente_dias       = '',
-    prob_fuga         = 0
-  } = pasos;
+const mitFundaPct = 1 - factorFundaMit;
 
-  const factorFunda = FUNDA_MODEL[fundaKey].vida;
+const {
+  valor_desconexion = 0,
+  factor_temp       = 1,
+  factor_funda_vida = 1,
+  vida_ajustada     = 0,
+  reposiciones      = 0,
+  precio_pack       = 0,
+  precio_fuente     = '',
+  riesgo_temp       = 0,
+  riesgo_final      = 0,
+  coste_fugas       = 0,
+  coste_multas: costeMultasPasos = 0,
+  tasa_anual        = 0,
+  fuente_sulfat     = '',
+  dias_calidos      = 0,
+  factor_provincia  = 1,
+  fuente_temp       = '',
+  fuente_dias       = '',
+  prob_fuga         = 0
+} = pasos;
+
+
+
   const numeroPilas = meta.numero_pilas || 1;
   const precioUnitario = precio_pack / numeroPilas;
 
@@ -607,7 +605,7 @@ const hasModeloCompra =
 		Fuente: ${fuente}
   		</td>
   		<td>
-    		<strong>${valor_desconexion.toFixed(2).replace('.', ',')}</strong> años<br>
+    		<strong>${(pasos.valor_desconexion ?? 0).toFixed(2)}.replace('.', ',')}</strong> años<br>
   	      </td>
 	     </tr>
             <!-- Factor temperatura -->
