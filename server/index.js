@@ -189,16 +189,30 @@ function getFundaFactor(tipoFunda) {
 
 
 function getVidaBase(tipo, marca_pilas) {
-  const tipoSimple = tipo.includes('9V') ? '9V' : (tipo.includes('AAA') ? 'AAA' : 'AA');
-  const m = canonicalBrand(marca_pilas);
-  const baseTipo = batteryData.vida_base?.[tipoSimple];
-if (!baseTipo) return { uso: 0, shelf: 0, fuente: 'vida_base no definida' };
+  // 🔒 Normalización robusta del tipo de pila
+const tipoNorm = String(tipo || '').toUpperCase();
 
-return baseTipo[m]
-    || baseTipo['Sin Marca']
-    || baseTipo['Marca Blanca']
-    || { uso: 0, shelf: 0, fuente: 'vida_base fallback' };
+let tipoSimple = 'AA'; // default seguro
+if (tipoNorm.includes('9V')) {
+  tipoSimple = '9V';
+} else if (tipoNorm.includes('AAA')) {
+  tipoSimple = 'AAA';
+} else if (tipoNorm.includes('AA')) {
+  tipoSimple = 'AA';
+}
+	const m = canonicalBrand(marca_pilas);
 
+const baseTipo = batteryData?.vida_base?.[tipoSimple] || {};
+
+const base =
+  baseTipo[m] ||
+  baseTipo['Sin Marca'] ||
+  baseTipo['Marca Blanca'] ||
+  { uso: 0, shelf: 0, fuente: 'vida_base fallback (Arrhenius)' };
+
+const baseYears = normalizarBooleano(desconectable)
+  ? Number(base.shelf) || 0
+  : Number(base.uso)   || 0;
 }
 
 function getLifeYears(tipo, marca_pilas, provincia, desconectable, funda) {
