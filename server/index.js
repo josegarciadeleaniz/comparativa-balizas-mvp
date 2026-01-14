@@ -886,6 +886,18 @@ function resolveBatteryMeta({ body, beaconInfo, salesPointInfo }) {
     source: 'fallback'
   };
 }
+function resolveBooleanMeta({ body, beaconInfo, salesPointInfo }, field, defaultValue = 'no') {
+  if (body?.[field] !== undefined && body?.[field] !== null && body?.[field] !== '') {
+    return body[field];
+  }
+  if (beaconInfo?.[field] !== undefined && beaconInfo?.[field] !== null) {
+    return beaconInfo[field];
+  }
+  if (salesPointInfo?.[field] !== undefined && salesPointInfo?.[field] !== null) {
+    return salesPointInfo[field];
+  }
+  return defaultValue;
+}
 
 // ====== ENDPOINT REAL: CALCULA ======
 app.post('/api/calcula', async (req, res) => {
@@ -898,9 +910,7 @@ app.post('/api/calcula', async (req, res) => {
   bateria_tipo,
   numero_pilas,
   marca_pilas,
-
-  desconectable = 'no',
-  funda = 'no',
+		
   provincia = 'Madrid',
   coste_inicial = 0,
   edad_vehiculo = 5,
@@ -916,6 +926,24 @@ app.post('/api/calcula', async (req, res) => {
 // ========= NORMALIZACIÓN BÁSICA (CANÓNICA) 
 const beaconInfo = beacons.find(b => b.id_baliza === id_baliza);
 const salesPointInfo = salesPoints.find(s => s.id_punto === id_sales_point);
+const funda = resolveBooleanMeta(
+  { body: req.body, beaconInfo, salesPointInfo },
+  'funda',
+  'no'
+);
+
+const desconectable = resolveBooleanMeta(
+  { body: req.body, beaconInfo, salesPointInfo },
+  'desconectable',
+  'no'
+);
+const fundaNorm = normalizarBooleano(funda) || 
+  ['eva','neopreno','silicona','tela'].some(t => 
+    String(funda).toLowerCase().includes(t)
+  )
+  ? 'si'
+  : 'no';
+	  
 const sourceData     = beaconInfo || salesPointInfo || {};
 	  
 const batteryMeta = resolveBatteryMeta({
@@ -929,17 +957,17 @@ const tipoTecnico  = batteryMeta.bateria_tipo;   // '9V' | 'AA' | 'AAA'
 const numeroPilas  = batteryMeta.numero_pilas;
 const marcaPilasNorm = batteryMeta.marca_pilas;
 
-
-console.log('🧪 BATERÍA FINAL USADA:', {
-  tipoTecnico,
-  numeroPilas,
-  marcaPilasNorm,
-  funda,
+	  console.log('🧪 CONTEXTO FINAL:', {
+  funda_raw: funda,
+  funda_norm: fundaNorm,
+  fundaKey,
   desconectable,
-  source: batteryMeta.source
+  fuente_funda:
+    req.body?.funda ? 'body' :
+    beaconInfo?.funda != null ? 'beacon' :
+    salesPointInfo?.funda != null ? 'sales_point' :
+    'fallback'
 });
-
-
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
