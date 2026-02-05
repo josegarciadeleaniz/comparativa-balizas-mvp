@@ -454,8 +454,11 @@ const {
     fabricante: beaconView?.fabricante ?? meta.fabricante ?? '—',
     origen: beaconView?.origen ?? beaconView?.pais_origen ?? meta.origen ?? '—',
     actuacion: beaconView?.actuacion_espana ?? beaconView?.actuacion_en_espana ?? meta.actuacion_espana ?? '—',
-    img: beaconView?.imagen ? `/images/${beaconView.imagen}` : ''
-
+    img: beaconView?.imagen
+    ? (beaconView.imagen.startsWith('http')
+	  ? beaconView.imagen
+         : `/images/${beaconView.imagen}`)
+		   : ''
   };
 
   const pNuevo      = 0.015;
@@ -1186,11 +1189,11 @@ try {
       datos_entrada: req.body,
       datos_resultado: { meta, pasos, resumen, total_12_anios: total12y }
     };
-    const rr = await fetch(relayUrl, {
+    fetch(relayUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Relay-Token': process.env.RELAY_SECRET || '' },
       body: JSON.stringify(payload)
-    });
+    }).catch(()=>{});
     const dj = await rr.json().catch(()=> ({}));
     if (!rr.ok || dj.ok === false) {
       console.warn('⚠️ Relay save fallo:', rr.status, dj);
