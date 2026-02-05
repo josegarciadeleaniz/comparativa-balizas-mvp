@@ -1179,28 +1179,6 @@ try {
       [email, userHash, contexto, marca_baliza, modelo, provincia, parseFloat(coste_inicial), total12y, JSON.stringify(req.body), JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })]
     );
     console.log('✅ Cálculo guardado en BD (directo)');
-  } else {
-    const relayUrl = process.env.RELAY_SAVE_URL
-      || 'https://balizas.pro/comparador/api/save-calc.php';
-    const payload = {
-      email, userHash, contexto, marca_baliza, modelo,
-      provincia, coste_inicial: parseFloat(coste_inicial),
-      coste_12_anios: total12y,
-      datos_entrada: req.body,
-      datos_resultado: { meta, pasos, resumen, total_12_anios: total12y }
-    };
-    fetch(relayUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Relay-Token': process.env.RELAY_SECRET || '' },
-      body: JSON.stringify(payload)
-    }).catch(()=>{});
-    const dj = await rr.json().catch(()=> ({}));
-    if (!rr.ok || dj.ok === false) {
-      console.warn('⚠️ Relay save fallo:', rr.status, dj);
-    } else {
-      console.log('✅ Cálculo guardado vía relay');
-    }
-  }
 } catch (dbError) {
   console.warn('⚠️ Error guardando cálculo (continuando):', dbError.message);
 }
