@@ -985,15 +985,14 @@ const fundaKey = resolveFundaKey({
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
-  
-
-	const precio_venta_final =
-  Number(coste_inicial) ||
-  Number(sourceData.precio_venta) ||
-  Number(sourceData.precio) ||
-  Number(sourceData.pvp) ||
-  0;
-
+  const precio_venta_final =
+  Number.isFinite(Number(coste_inicial)) && Number(coste_inicial) > 0
+    ? Number(coste_inicial)
+    : Number(salesPointInfo?.precio_venta)
+      || Number(sourceData.precio_venta)
+      || Number(sourceData.precio)
+      || Number(sourceData.pvp)
+      || 0;
 
     // ========= VIDA DE PILAS =========
     const baseData = getVidaBase(tipoTecnico, marcaPilasNorm);
