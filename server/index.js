@@ -985,6 +985,15 @@ const fundaKey = resolveFundaKey({
     if (isNaN(parseFloat(coste_inicial)) || isNaN(parseInt(edad_vehiculo))) {
       return res.status(400).json({ error: 'Datos numéricos inválidos' });
     }
+
+	  console.log('DEBUG PRECIO INPUTS', {
+  coste_inicial,
+  coste_inicial_num: Number(coste_inicial),
+  sourceData,
+  salesPointInfo,
+  body: req.body
+});
+	  
   const precio_venta_final =
   Number.isFinite(Number(coste_inicial)) && Number(coste_inicial) > 0
     ? Number(coste_inicial)
@@ -994,6 +1003,10 @@ const fundaKey = resolveFundaKey({
       || Number(sourceData.pvp)
       || 0;
 
+	 console.log('DEBUG PRECIO FINAL', {
+  precio_venta_final
+});
+ 
     // ========= VIDA DE PILAS =========
     const baseData = getVidaBase(tipoTecnico, marcaPilasNorm);
     const uso   = baseData.uso;
