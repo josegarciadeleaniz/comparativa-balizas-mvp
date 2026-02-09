@@ -1182,18 +1182,35 @@ tipo: tipoTecnico === '9V'
 };
 
  // === GUARDAR EN BD (opcional) ===
-try {
-  const userHash = email ? Buffer.from(email).toString('base64').slice(0, 32) : 'anonimo';
+// === GUARDAR EN BD (opcional) ===
+if (pool) {
+  try {
+    const userHash = email
+      ? Buffer.from(email).toString('base64').slice(0, 32)
+      : 'anonimo';
 
-  if (pool) {
     await pool.execute(
       'INSERT INTO calculos_usuarios (user_email, user_hash, contexto, marca_baliza, modelo_baliza, provincia, coste_inicial, coste_12_anios, datos_entrada, datos_resultado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [email, userHash, contexto, marca_baliza, modelo, provincia, parseFloat(coste_inicial), total12y, JSON.stringify(req.body), JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })]
+      [
+        email,
+        userHash,
+        contexto,
+        marca_baliza,
+        modelo,
+        provincia,
+        parseFloat(coste_inicial),
+        total12y,
+        JSON.stringify(req.body),
+        JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })
+      ]
     );
-    console.log('✅ Cálculo guardado en BD (directo)');
-// } catch (dbError) {
-//   console.error(dbError);
-// }
+
+    console.log('✅ Cálculo guardado en BD');
+  } catch (dbError) {
+    console.error('⚠️ Error BD (no bloquea cálculo):', dbError);
+  }
+}
+
     if (DEBUG) {
       console.log('— /api/calcula -> meta:', meta);
       console.log('— /api/calcula -> resumen:', resumen);
