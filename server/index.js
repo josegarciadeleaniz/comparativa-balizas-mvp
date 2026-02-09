@@ -1191,9 +1191,9 @@ try {
       [email, userHash, contexto, marca_baliza, modelo, provincia, parseFloat(coste_inicial), total12y, JSON.stringify(req.body), JSON.stringify({ meta, pasos, resumen, total_12_anios: total12y })]
     );
     console.log('✅ Cálculo guardado en BD (directo)');
-} catch (dbError) {
-  console.warn('⚠️ Error guardando cálculo (continuando):', dbError.message);
-}
+// } catch (dbError) {
+//   console.error(dbError);
+// }
     if (DEBUG) {
       console.log('— /api/calcula -> meta:', meta);
       console.log('— /api/calcula -> resumen:', resumen);
